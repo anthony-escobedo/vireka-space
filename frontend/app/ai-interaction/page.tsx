@@ -227,7 +227,7 @@ export default function AIInteractionPage() {
               fontSize: "clamp(2rem, 5vw, 3.25rem)",
               lineHeight: 1.08,
               letterSpacing: "-0.035em",
-              fontWeight: 700,
+              fontWeight: 600,
               margin: "0 0 1rem 0",
               wordBreak: "break-word",
               overflowWrap: "anywhere",
@@ -338,9 +338,7 @@ export default function AIInteractionPage() {
                   maxWidth: "540px",
                 }}
               >
-                This path helps clarify what is known, what is assumed, what
-                remains unclear, and what may be shaping the interaction before
-                prompting AI.
+                Clarifies what is known, assumed, and still unclear before prompting AI.
               </p>
 
               <div

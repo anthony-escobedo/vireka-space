@@ -31,7 +31,7 @@ export default function HomePage() {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    gap: "16px",
+    gap: "12px",
     flexWrap: "wrap",
     width: "100%",
     boxSizing: "border-box",
@@ -59,7 +59,8 @@ export default function HomePage() {
     gap: "10px",
     fontSize: "13px",
     flexWrap: "wrap",
-    justifyContent: "flex-end",
+    justifyContent: "flex-start",
+    width: "100%",
     maxWidth: "100%",
   }}
 >

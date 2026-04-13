@@ -232,6 +232,7 @@ export default function ClarifyPage() {
               outline: "none",
               fontFamily: "inherit",
               transition: "border-color 0.15s",
+              opacity: loading ? 0.6 : 1,
             }}
             onFocus={(e) => {
               e.currentTarget.style.borderColor = "#aaa";

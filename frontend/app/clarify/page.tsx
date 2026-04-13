@@ -64,7 +64,7 @@ setLoading(false);
 
 return ( <main className="min-h-screen bg-neutral-950 text-neutral-100 p-6"> <div className="max-w-3xl mx-auto space-y-8">
 
-```
+
     <header className="space-y-2">
       <h1 className="text-2xl font-semibold tracking-tight">
         Clarify
@@ -152,7 +152,7 @@ return ( <main className="min-h-screen bg-neutral-950 text-neutral-100 p-6"> <di
 
   </div>
 </main>
-```
+
 
 );
 }
@@ -167,7 +167,7 @@ items: string[];
 
 return (
 
-```
+
 <div className="space-y-2">
 
   <h3 className="text-sm font-medium text-neutral-400">
@@ -187,7 +187,7 @@ return (
   </ul>
 
 </div>
-```
+
 
 );
 }

@@ -141,7 +141,7 @@ if (typeof input !== "string" || input.trim() === "") {
 
 const userInput = input.trim();
 
-if (userInput.length < 8) {
+if (userInput.length < 12) {
   return NextResponse.json(
     { error: "Please include a brief description of the situation." },
     { status: 400 }

@@ -8,7 +8,7 @@ type ClarifyResult = {
   unknown: string[];
   structural: string[];
   orientation: string;
-  question: string;
+  question?: string;
 };
 
 type OpenAIMessage = {
@@ -24,8 +24,7 @@ type OpenAIResponse = {
   choices: OpenAIChoice[];
 };
 
-const SYSTEM_PROMPT = `
-You are Vireka Space, an interpretive support system. Your function is to help people see situations more clearly before they decide or act — by separating what is observable from what is being interpreted, assumed, or inferred.
+const SYSTEM_PROMPT = `You are Vireka Space, an interpretive support system. Your function is to help people see situations more clearly before they decide or act — by separating what is observable from what is being interpreted, assumed, or inferred.
 
 You do not provide therapy, coaching, diagnosis, motivation, ideology, or prescriptive advice.
 You do not tell people what to do.

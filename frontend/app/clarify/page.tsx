@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
 declare global {
@@ -69,13 +69,20 @@ type VirekaResponse = ClarifyResponse | SimplifyResponse | CloseResponse;
 export default function ClarifyPage() {
   const [input, setInput] = useState<string>("");
   const [result, setResult] = useState<VirekaResponse | null>(null);
+  const [lastClarifyResult, setLastClarifyResult] = useState<ClarifyResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [listening, setListening] = useState<boolean>(false);
   const [history, setHistory] = useState<ConversationTurn[]>([]);
 
-  const inputRef = useRef<HTMLDivElement | null>(null);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
   const resultRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    return () => {
+      recognitionRef.current?.stop?.();
+    };
+  }, []);
 
   function cleanTranscript(text: string): string {
     let t = text.trim();
@@ -96,15 +103,21 @@ export default function ClarifyPage() {
   }
 
   function startListening(): void {
-    const SpeechRecognition =
+    const SpeechRecognitionCtor =
       window.SpeechRecognition || window.webkitSpeechRecognition;
 
-    if (!SpeechRecognition) {
+    if (!SpeechRecognitionCtor) {
       setError("Speech recognition is not supported in this browser.");
       return;
     }
 
-    const recognition = new SpeechRecognition();
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      recognitionRef.current = null;
+    }
+
+    const recognition = new SpeechRecognitionCtor();
+    recognitionRef.current = recognition;
 
     recognition.continuous = false;
     recognition.interimResults = false;
@@ -128,6 +141,7 @@ export default function ClarifyPage() {
 
     recognition.onend = () => {
       setListening(false);
+      recognitionRef.current = null;
     };
 
     recognition.start();
@@ -153,15 +167,19 @@ export default function ClarifyPage() {
     return sections.join("\n\n");
   }
 
-  async function submitToClarify(action: RequestAction): Promise<void> {
-    const trimmed = input.trim();
+  async function submitToClarify(
+    action: RequestAction,
+    overrideInput?: string
+  ): Promise<void> {
+    const effectiveInput = typeof overrideInput === "string" ? overrideInput : input;
+    const trimmed = effectiveInput.trim();
 
-    if (!trimmed) {
+    if (action === "clarify" && !trimmed) {
       setError("Please enter a situation or response.");
       return;
     }
 
-    if (action === "simplify" && !result) {
+    if (action === "simplify" && !lastClarifyResult) {
       setError("There is nothing to simplify yet.");
       return;
     }
@@ -170,16 +188,18 @@ export default function ClarifyPage() {
     setError(null);
 
     try {
-      const userTurn: ConversationTurn = {
-        role: "user",
-        content: trimmed,
-      };
-
-      const payload = {
-        input: trimmed,
-        action,
-        history,
-      };
+      const payload =
+        action === "simplify"
+          ? {
+              action,
+              history,
+              latestResult: lastClarifyResult,
+            }
+          : {
+              input: trimmed,
+              action,
+              history,
+            };
 
       const res = await fetch("/api/clarify", {
         method: "POST",
@@ -199,14 +219,38 @@ export default function ClarifyPage() {
       }
 
       const typedData = data as VirekaResponse;
-      const assistantTurn: ConversationTurn = {
-        role: "assistant",
-        content: formatResponseForHistory(typedData),
-      };
+
+      if (action === "clarify") {
+        const userTurn: ConversationTurn = {
+          role: "user",
+          content: trimmed,
+        };
+
+        const assistantTurn: ConversationTurn = {
+          role: "assistant",
+          content: formatResponseForHistory(typedData),
+        };
+
+        setHistory((prev) => [...prev, userTurn, assistantTurn]);
+        setInput("");
+
+        if (typedData.mode === "clarify") {
+          setLastClarifyResult(typedData);
+        } else {
+          setLastClarifyResult(null);
+        }
+      }
+
+      if (action === "simplify") {
+        const assistantTurn: ConversationTurn = {
+          role: "assistant",
+          content: formatResponseForHistory(typedData),
+        };
+
+        setHistory((prev) => [...prev, assistantTurn]);
+      }
 
       setResult(typedData);
-      setHistory((prev) => [...prev, userTurn, assistantTurn]);
-      setInput("");
 
       setTimeout(() => {
         resultRef.current?.scrollIntoView({
@@ -233,14 +277,11 @@ export default function ClarifyPage() {
 
   function handleDone(): void {
     if (loading) return;
-    setInput("done");
-    setTimeout(() => {
-      void submitToClarify("clarify");
-    }, 0);
+    void submitToClarify("clarify", "done");
   }
 
   const isClarifyDisabled = loading || !input.trim();
-  const isPlainLanguageDisabled = loading || !result || result.mode !== "clarify";
+  const isPlainLanguageDisabled = loading || !lastClarifyResult;
   const isMicDisabled = loading || listening;
   const isDoneDisabled = loading || !result;
 
@@ -282,6 +323,46 @@ export default function ClarifyPage() {
             </li>
           ))}
         </ul>
+      </div>
+    );
+  }
+
+  function renderPlainLanguageButton() {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-start",
+          marginBottom: "1.5rem",
+        }}
+      >
+        <button
+          type="button"
+          onClick={handlePlainLanguage}
+          disabled={isPlainLanguageDisabled}
+          style={{
+            display: "inline-flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            minWidth: "96px",
+            minHeight: "56px",
+            padding: "0.55rem 0.85rem",
+            backgroundColor: "#fff",
+            color: "#111",
+            border: "1px solid #d6d3d1",
+            borderRadius: "14px",
+            fontSize: "0.76rem",
+            fontWeight: 600,
+            lineHeight: 1.05,
+            textAlign: "center",
+            cursor: isPlainLanguageDisabled ? "not-allowed" : "pointer",
+            opacity: isPlainLanguageDisabled ? 0.6 : 1,
+          }}
+        >
+          <span>Plain</span>
+          <span>Language</span>
+        </button>
       </div>
     );
   }
@@ -339,6 +420,8 @@ export default function ClarifyPage() {
             padding: "2rem 1.75rem",
           }}
         >
+          {renderPlainLanguageButton()}
+
           <div style={{ marginBottom: "1rem" }}>
             <h3
               style={{
@@ -378,6 +461,8 @@ export default function ClarifyPage() {
           padding: "2rem 1.75rem",
         }}
       >
+        {renderPlainLanguageButton()}
+
         {renderList(response.observable, "What appears to be happening")}
         {renderList(response.interpretive, "What may be assumed")}
         {renderList(response.unknown, "What may still be unclear")}
@@ -444,36 +529,6 @@ export default function ClarifyPage() {
             </p>
           </div>
         )}
-
-        <div style={{ display: "flex", justifyContent: "flex-start" }}>
-          <button
-            type="button"
-            onClick={handlePlainLanguage}
-            disabled={isPlainLanguageDisabled}
-            style={{
-              display: "inline-flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              minWidth: "96px",
-              minHeight: "56px",
-              padding: "0.55rem 0.85rem",
-              backgroundColor: "#fff",
-              color: "#111",
-              border: "1px solid #d6d3d1",
-              borderRadius: "14px",
-              fontSize: "0.76rem",
-              fontWeight: 600,
-              lineHeight: 1.05,
-              textAlign: "center",
-              cursor: isPlainLanguageDisabled ? "not-allowed" : "pointer",
-              opacity: isPlainLanguageDisabled ? 0.6 : 1,
-            }}
-          >
-            <span>Plain</span>
-            <span>Language</span>
-          </button>
-        </div>
       </div>
     );
   }
@@ -585,6 +640,7 @@ export default function ClarifyPage() {
           }}
         >
           <label
+            htmlFor="clarify-input"
             style={{
               display: "block",
               fontSize: "0.875rem",
@@ -596,38 +652,37 @@ export default function ClarifyPage() {
             Situation or question
           </label>
 
-          <div ref={inputRef}>
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              disabled={loading}
-              placeholder="Continue the situation or introduce a new one..."
-              rows={8}
-              style={{
-                display: "block",
-                width: "100%",
-                boxSizing: "border-box",
-                backgroundColor: "#fafafa",
-                color: "#111",
-                border: "1px solid #e7e5e4",
-                borderRadius: "10px",
-                padding: "1rem 1.125rem",
-                fontSize: "0.925rem",
-                lineHeight: 1.65,
-                resize: "vertical",
-                outline: "none",
-                fontFamily: "inherit",
-                transition: "border-color 0.15s",
-                opacity: loading ? 0.6 : 1,
-              }}
-              onFocus={(e) => {
-                e.currentTarget.style.borderColor = "#aaa";
-              }}
-              onBlur={(e) => {
-                e.currentTarget.style.borderColor = "#e7e5e4";
-              }}
-            />
-          </div>
+          <textarea
+            id="clarify-input"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            disabled={loading}
+            placeholder="Continue the situation or introduce a new one..."
+            rows={8}
+            style={{
+              display: "block",
+              width: "100%",
+              boxSizing: "border-box",
+              backgroundColor: "#fafafa",
+              color: "#111",
+              border: "1px solid #e7e5e4",
+              borderRadius: "10px",
+              padding: "1rem 1.125rem",
+              fontSize: "0.925rem",
+              lineHeight: 1.65,
+              resize: "vertical",
+              outline: "none",
+              fontFamily: "inherit",
+              transition: "border-color 0.15s",
+              opacity: loading ? 0.6 : 1,
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = "#aaa";
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = "#e7e5e4";
+            }}
+          />
 
           <div
             style={{

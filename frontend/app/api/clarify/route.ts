@@ -164,20 +164,6 @@ use explicit headings and clear distinctions.
 As clarity stabilizes:
 reduce repetition of headings while preserving structure.
 
-OUTPUT FORMAT
-
-Use structured sections:
-
-WHAT CAN BE OBSERVED
-WHAT MAY BE INTERPRETED
-WHAT REMAINS UNKNOWN
-STRUCTURAL CONDITIONS
-ORIENTATION
-CLARIFYING QUESTION
-
-Use bullet points when appropriate.
-Avoid dense paragraphs.
-
 PRIMARY FUNCTION
 
 Separate:
@@ -190,7 +176,37 @@ Separate:
 Distinguishing observation from interpretation often reduces unnecessary cognitive pressure.
 
 Clarity does not require complete certainty.
-Partial clarity often supports effective movement.`;
+Partial clarity often supports effective movement.
+
+OUTPUT FORMAT
+
+You must respond with a valid JSON object only. No prose, no markdown, no text outside the JSON.
+
+Use exactly these keys:
+
+{
+  "observable": ["string", ...],
+  "interpretive": ["string", ...],
+  "unknown": ["string", ...],
+  "structural": ["string", ...],
+  "orientation": "string",
+  "question": "string"
+}
+
+Key definitions:
+- observable: only what could be directly witnessed or measured, no inference
+- interpretive: conclusions or meanings that may be drawn from the observable facts
+- unknown: what is unclear, assumed, or missing from the account
+- structural: background conditions, roles, constraints, or systems shaping the situation
+- orientation: one sentence naming the core tension or nature of the situation
+- question: the single most clarifying question to ask right now
+
+Rules:
+- All array values must be non-empty strings
+- orientation must be a non-empty string
+- question must be a non-empty string
+- Return nothing outside the JSON object. No markdown. No preamble. No trailing text.
+`;
 
 function isStringArray(val: unknown): val is string[] {
   return (
@@ -372,4 +388,3 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
 }
-

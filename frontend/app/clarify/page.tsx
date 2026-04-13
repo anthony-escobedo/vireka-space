@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 type ClarifyResult = {
   observable: string[];
@@ -54,22 +55,30 @@ export default function ClarifyPage() {
   function renderList(items: string[] | undefined, label: string) {
     if (!items || items.length === 0) return null;
     return (
-      <div style={{ marginBottom: "1.5rem" }}>
+      <div style={{ marginBottom: "1.75rem" }}>
         <h3
           style={{
+            fontSize: "0.68rem",
             fontWeight: 600,
-            marginBottom: "0.5rem",
-            color: "#c9d1d9",
-            fontSize: "0.9rem",
+            letterSpacing: "0.1em",
             textTransform: "uppercase",
-            letterSpacing: "0.05em",
+            color: "#999",
+            margin: "0 0 0.625rem 0",
           }}
         >
           {label}
         </h3>
-        <ul style={{ paddingLeft: "1.25rem", margin: 0 }}>
+        <ul style={{ paddingLeft: "1.125rem", margin: 0, listStyleType: "disc" }}>
           {items.map((item, i) => (
-            <li key={i} style={{ marginBottom: "0.35rem", color: "#8b949e" }}>
+            <li
+              key={i}
+              style={{
+                marginBottom: "0.4rem",
+                color: "#333",
+                fontSize: "0.95rem",
+                lineHeight: 1.6,
+              }}
+            >
               {item}
             </li>
           ))}
@@ -82,103 +91,237 @@ export default function ClarifyPage() {
     <main
       style={{
         minHeight: "100vh",
-        backgroundColor: "#0d1117",
-        color: "#c9d1d9",
-        fontFamily: "'Inter', system-ui, sans-serif",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        padding: "3rem 1rem",
+        backgroundColor: "#f5f3ef",
+        fontFamily:
+          "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif",
+        color: "#111",
       }}
     >
-      <div style={{ width: "100%", maxWidth: "720px" }}>
+      <div
+        style={{
+          maxWidth: "780px",
+          margin: "0 auto",
+          padding: "2.5rem 1.5rem 4rem",
+        }}
+      >
+        {/* Back link */}
+        <div style={{ marginBottom: "2rem" }}>
+          <Link
+            href="/"
+            style={{
+              fontSize: "0.875rem",
+              color: "#555",
+              textDecoration: "none",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.25rem",
+            }}
+          >
+            ← Back to home
+          </Link>
+        </div>
+
+        {/* Pill label */}
+        <div style={{ marginBottom: "1.25rem" }}>
+          <span
+            style={{
+              display: "inline-block",
+              fontSize: "0.65rem",
+              fontWeight: 600,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              color: "#555",
+              border: "1.5px solid #d6d3d1",
+              borderRadius: "999px",
+              padding: "6px 12px",
+            }}
+          >
+            Clarify
+          </span>
+        </div>
+
+        {/* Main heading */}
         <h1
           style={{
-            fontSize: "1.75rem",
+            fontSize: "clamp(2rem, 5vw, 2.85rem)",
             fontWeight: 700,
-            marginBottom: "0.5rem",
-            color: "#e6edf3",
-            letterSpacing: "-0.02em",
+            lineHeight: 1.15,
+            letterSpacing: "-0.03em",
+            color: "#111",
+            margin: "0 0 1.25rem 0",
           }}
         >
-          VIREKA Space — Clarify
+          Clarify a situation
         </h1>
-        <p
-          style={{
-            color: "#8b949e",
-            marginBottom: "2rem",
-            fontSize: "0.95rem",
-            lineHeight: 1.6,
-          }}
-        >
-          Describe a situation, decision, or dilemma. Clarify will separate
-          observation from interpretation.
-        </p>
 
-        <textarea
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Describe what is happening..."
-          rows={6}
+        {/* Intro text */}
+        <div style={{ maxWidth: "640px" }}>
+          <p
+            style={{
+              fontSize: "0.95rem",
+              color: "#444",
+              lineHeight: 1.6,
+              margin: "0 0 0.75rem 0",
+            }}
+          >
+            Describe a situation, decision, or AI-related question as it
+            currently appears.
+          </p>
+          <p
+            style={{
+              fontSize: "0.95rem",
+              color: "#444",
+              lineHeight: 1.65,
+              margin: 0,
+            }}
+          >
+            VIREKA helps distinguish what appears to be happening, what may be
+            assumed, and what may still be unclear, so responses begin from
+            clearer understanding.
+          </p>
+        </div>
+
+        {/* Divider */}
+        <div
           style={{
-            display: "block",
-            width: "100%",
-            backgroundColor: "#161b22",
-            color: "#c9d1d9",
-            border: "1px solid #30363d",
-            borderRadius: "8px",
-            padding: "0.875rem 1rem",
-            fontSize: "0.95rem",
-            resize: "vertical",
-            outline: "none",
-            fontFamily: "inherit",
-            boxSizing: "border-box",
+            borderTop: "1px solid #e7e5e4",
+            marginTop: "2.25rem",
+            marginBottom: "2.25rem",
           }}
         />
 
-        <button
-          onClick={handleClarify}
-          disabled={isDisabled}
+        {/* Form card */}
+        <div
           style={{
-            marginTop: "1rem",
-            padding: "0.65rem 1.5rem",
-            backgroundColor: isDisabled ? "#21262d" : "#238636",
-            color: isDisabled ? "#484f58" : "#ffffff",
-            border: "1px solid #30363d",
-            borderRadius: "6px",
-            fontSize: "0.9rem",
-            fontWeight: 600,
-            cursor: isDisabled ? "not-allowed" : "pointer",
-            transition: "background-color 0.2s",
+            backgroundColor: "#ffffff",
+            borderRadius: "16px",
+            border: "1px solid #e7e5e4",
+            padding: "1.75rem 1.75rem 1.5rem",
           }}
         >
-          {loading ? "Clarifying..." : "Clarify"}
-        </button>
+          <label
+            style={{
+              display: "block",
+              fontSize: "0.875rem",
+              fontWeight: 600,
+              color: "#111",
+              marginBottom: "0.875rem",
+            }}
+          >
+            Situation or question
+          </label>
 
+          <textarea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder={`Example: "A coworker stopped replying after I sent a detailed message, and now I'm assuming they may be upset or avoiding me."`}
+            rows={8}
+            style={{
+              display: "block",
+              width: "100%",
+              boxSizing: "border-box",
+              backgroundColor: "#fafafa",
+              color: "#111",
+              border: "1px solid #e7e5e4",
+              borderRadius: "10px",
+              padding: "1rem 1.125rem",
+              fontSize: "0.925rem",
+              lineHeight: 1.65,
+              resize: "vertical",
+              outline: "none",
+              fontFamily: "inherit",
+              transition: "border-color 0.15s",
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = "#aaa";
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = "#e7e5e4";
+            }}
+          />
+
+          {/* Footer row */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "flex-end",
+              justifyContent: "space-between",
+              gap: "1.5rem",
+              marginTop: "1rem",
+              flexWrap: "wrap",
+            }}
+          >
+            <p
+              style={{
+                fontSize: "0.8rem",
+                color: "#888",
+                lineHeight: 1.55,
+                margin: 0,
+                maxWidth: "480px",
+                flex: "1 1 260px",
+              }}
+            >
+              Include the situation as you currently see it, even if
+              interpretation or uncertainty are present. The system helps
+              separate these elements before a response or prompt is formed.
+            </p>
+
+            <button
+              onClick={handleClarify}
+              disabled={isDisabled}
+              style={{
+                flexShrink: 0,
+                padding: "0.7rem 1.75rem",
+                backgroundColor: isDisabled ? "#ccc" : "#111",
+                color: "#fff",
+                border: "none",
+                borderRadius: "999px",
+                fontSize: "0.9rem",
+                fontWeight: 600,
+                cursor: isDisabled ? "not-allowed" : "pointer",
+                transition: "background-color 0.15s",
+                letterSpacing: "-0.01em",
+                whiteSpace: "nowrap",
+              }}
+              onMouseEnter={(e) => {
+                if (!isDisabled) e.currentTarget.style.backgroundColor = "#333";
+              }}
+              onMouseLeave={(e) => {
+                if (!isDisabled) e.currentTarget.style.backgroundColor = "#111";
+              }}
+            >
+              {loading ? "Clarifying…" : "Clarify"}
+            </button>
+          </div>
+        </div>
+
+        {/* Error state */}
         {error && (
           <div
             style={{
               marginTop: "1.5rem",
-              padding: "0.875rem 1rem",
-              backgroundColor: "#1c1010",
-              border: "1px solid #6e2d2d",
-              borderRadius: "8px",
-              color: "#f85149",
+              padding: "1rem 1.25rem",
+              backgroundColor: "#fff5f5",
+              border: "1px solid #fcc",
+              borderRadius: "12px",
+              color: "#c00",
               fontSize: "0.9rem",
+              lineHeight: 1.5,
             }}
           >
             {error}
           </div>
         )}
 
+        {/* Results */}
         {result && (
           <div
             style={{
               marginTop: "2rem",
-              backgroundColor: "#161b22",
-              border: "1px solid #30363d",
-              borderRadius: "8px",
-              padding: "1.5rem",
+              backgroundColor: "#ffffff",
+              border: "1px solid #e7e5e4",
+              borderRadius: "16px",
+              padding: "2rem 1.75rem",
             }}
           >
             {renderList(result.observable, "What can be observed")}
@@ -187,20 +330,27 @@ export default function ClarifyPage() {
             {renderList(result.structural, "Structural conditions")}
 
             {result.orientation && (
-              <div style={{ marginBottom: "1.5rem" }}>
+              <div style={{ marginBottom: "1.75rem" }}>
                 <h3
                   style={{
+                    fontSize: "0.68rem",
                     fontWeight: 600,
-                    marginBottom: "0.5rem",
-                    color: "#c9d1d9",
-                    fontSize: "0.9rem",
+                    letterSpacing: "0.1em",
                     textTransform: "uppercase",
-                    letterSpacing: "0.05em",
+                    color: "#999",
+                    margin: "0 0 0.625rem 0",
                   }}
                 >
                   Orientation
                 </h3>
-                <p style={{ color: "#8b949e", margin: 0, lineHeight: 1.6 }}>
+                <p
+                  style={{
+                    color: "#333",
+                    margin: 0,
+                    fontSize: "0.95rem",
+                    lineHeight: 1.65,
+                  }}
+                >
                   {result.orientation}
                 </p>
               </div>
@@ -209,26 +359,34 @@ export default function ClarifyPage() {
             {result.question && (
               <div
                 style={{
-                  padding: "1rem",
-                  backgroundColor: "#0d1117",
-                  border: "1px solid rgba(56, 139, 253, 0.27)",
-                  borderLeft: "3px solid #388bfd",
-                  borderRadius: "0 6px 6px 0",
+                  padding: "1.125rem 1.25rem",
+                  backgroundColor: "#f9f8f5",
+                  border: "1px solid #e7e5e4",
+                  borderLeft: "3px solid #111",
+                  borderRadius: "0 10px 10px 0",
                 }}
               >
                 <h3
                   style={{
+                    fontSize: "0.68rem",
                     fontWeight: 600,
-                    color: "#c9d1d9",
-                    margin: "0 0 0.4rem 0",
-                    fontSize: "0.9rem",
+                    letterSpacing: "0.1em",
                     textTransform: "uppercase",
-                    letterSpacing: "0.05em",
+                    color: "#999",
+                    margin: "0 0 0.5rem 0",
                   }}
                 >
                   Clarifying question
                 </h3>
-                <p style={{ color: "#8b949e", margin: 0, lineHeight: 1.6 }}>
+                <p
+                  style={{
+                    color: "#111",
+                    margin: 0,
+                    fontSize: "0.95rem",
+                    lineHeight: 1.65,
+                    fontWeight: 500,
+                  }}
+                >
                   {result.question}
                 </p>
               </div>

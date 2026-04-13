@@ -3,7 +3,15 @@
 import { useState } from "react";
 import Link from "next/link";
 
-type ClarifyResult = {
+type RequestAction = "clarify" | "simplify";
+
+type ConversationTurn = {
+  role: "user" | "assistant";
+  content: string;
+};
+
+type ClarifyResponse = {
+  mode: "clarify";
   observable: string[];
   interpretive: string[];
   unknown: string[];
@@ -11,6 +19,18 @@ type ClarifyResult = {
   orientation: string;
   question?: string;
 };
+
+type SimplifyResponse = {
+  mode: "simplify";
+  message: string;
+};
+
+type CloseResponse = {
+  mode: "close";
+  message: string;
+};
+
+type VirekaResponse = ClarifyResponse | SimplifyResponse | CloseResponse;
 
 type SpeechRecognitionEvent = {
   results: { [key: number]: { [key: number]: { transcript: string } } };
@@ -22,46 +42,11 @@ type SpeechRecognitionErrorEvent = {
 
 export default function AIInteractionPage() {
   const [input, setInput] = useState<string>("");
-  const [result, setResult] = useState<ClarifyResult | null>(null);
+  const [result, setResult] = useState<VirekaResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [listening, setListening] = useState<boolean>(false);
-
-  async function handleClarify(): Promise<void> {
-    if (!input.trim()) return;
-
-    setLoading(true);
-    setError(null);
-    setResult(null);
-
-    try {
-      const res = await fetch("/api/clarify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          input: input.trim(),
-          mode: "ai_interaction",
-        }),
-      });
-
-      const data: unknown = await res.json().catch(() => null);
-
-      if (!res.ok) {
-        const errData = data as { error?: string } | null;
-        throw new Error(
-          errData?.error ?? `Request failed with status ${res.status}`
-        );
-      }
-
-      setResult(data as ClarifyResult);
-    } catch (err: unknown) {
-      setError(
-        err instanceof Error ? err.message : "An unexpected error occurred."
-      );
-    } finally {
-      setLoading(false);
-    }
-  }
+  const [history, setHistory] = useState<ConversationTurn[]>([]);
 
   function cleanTranscript(text: string): string {
     let t = text.trim();
@@ -79,8 +64,12 @@ export default function AIInteractionPage() {
 
   function startListening(): void {
     const SpeechRecognition =
-      (window as Window & { SpeechRecognition?: new () => SpeechRecognition }).SpeechRecognition ||
-      (window as Window & { webkitSpeechRecognition?: new () => SpeechRecognition }).webkitSpeechRecognition;
+      (window as Window & {
+        SpeechRecognition?: new () => SpeechRecognition;
+      }).SpeechRecognition ||
+      (window as Window & {
+        webkitSpeechRecognition?: new () => SpeechRecognition;
+      }).webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
       setError("Speech recognition is not supported in this browser.");
@@ -117,7 +106,98 @@ export default function AIInteractionPage() {
     recognition.start();
   }
 
-  const isDisabled = loading || !input.trim();
+  function formatResponseForHistory(response: VirekaResponse): string {
+    if (response.mode === "close" || response.mode === "simplify") {
+      return response.message;
+    }
+
+    const sections = [
+      `What appears to be happening:\n${response.observable.join("\n")}`,
+      `What may be assumed:\n${response.interpretive.join("\n")}`,
+      `What may still be unclear:\n${response.unknown.join("\n")}`,
+      `Structural considerations:\n${response.structural.join("\n")}`,
+      `Orientation:\n${response.orientation}`,
+    ];
+
+    if (response.question) {
+      sections.push(`Clarifying question:\n${response.question}`);
+    }
+
+    return sections.join("\n\n");
+  }
+
+  async function submitToClarify(action: RequestAction): Promise<void> {
+    const trimmed = input.trim();
+
+    if (!trimmed) {
+      setError("Please enter a situation or response.");
+      return;
+    }
+
+    if (action === "simplify" && !result) {
+      setError("There is nothing to simplify yet.");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const userTurn: ConversationTurn = {
+        role: "user",
+        content: trimmed,
+      };
+
+      const payload = {
+        input: trimmed,
+        action,
+        history,
+      };
+
+      const res = await fetch("/api/clarify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data: unknown = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        const errData = data as { error?: string } | null;
+        throw new Error(
+          errData?.error ?? `Request failed with status ${res.status}`
+        );
+      }
+
+      const typedData = data as VirekaResponse;
+      const assistantTurn: ConversationTurn = {
+        role: "assistant",
+        content: formatResponseForHistory(typedData),
+      };
+
+      setResult(typedData);
+      setHistory((prev) => [...prev, userTurn, assistantTurn]);
+      setInput("");
+    } catch (err: unknown) {
+      setError(
+        err instanceof Error ? err.message : "An unexpected error occurred."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function handleClarify(): void {
+    void submitToClarify("clarify");
+  }
+
+  function handleSimplify(): void {
+    void submitToClarify("simplify");
+  }
+
+  const isClarifyDisabled = loading || !input.trim();
+  const isSimplifyDisabled = loading || !result;
+  const isMicDisabled = loading || listening;
 
   function renderList(items: string[], heading: string) {
     if (!items?.length) return null;
@@ -150,6 +230,166 @@ export default function AIInteractionPage() {
             </li>
           ))}
         </ul>
+      </div>
+    );
+  }
+
+  function renderResult(response: VirekaResponse) {
+    if (response.mode === "close") {
+      return (
+        <div
+          style={{
+            marginTop: "2rem",
+            backgroundColor: "#ffffff",
+            border: "1px solid #e7e5e4",
+            borderRadius: "16px",
+            padding: "2rem 1.75rem",
+            boxShadow: "0 1px 2px rgba(0,0,0,0.03)",
+          }}
+        >
+          <div style={{ marginBottom: "1rem" }}>
+            <h3
+              style={{
+                fontSize: "0.68rem",
+                fontWeight: 600,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                color: "#999",
+                margin: "0 0 0.625rem 0",
+              }}
+            >
+              Response
+            </h3>
+            <p
+              style={{
+                color: "#333",
+                margin: 0,
+                fontSize: "0.95rem",
+                lineHeight: 1.65,
+              }}
+            >
+              {response.message}
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    if (response.mode === "simplify") {
+      return (
+        <div
+          style={{
+            marginTop: "2rem",
+            backgroundColor: "#ffffff",
+            border: "1px solid #e7e5e4",
+            borderRadius: "16px",
+            padding: "2rem 1.75rem",
+            boxShadow: "0 1px 2px rgba(0,0,0,0.03)",
+          }}
+        >
+          <div style={{ marginBottom: "1rem" }}>
+            <h3
+              style={{
+                fontSize: "0.68rem",
+                fontWeight: 600,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                color: "#999",
+                margin: "0 0 0.625rem 0",
+              }}
+            >
+              Simpler version
+            </h3>
+            <p
+              style={{
+                color: "#333",
+                margin: 0,
+                fontSize: "0.95rem",
+                lineHeight: 1.65,
+              }}
+            >
+              {response.message}
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div
+        style={{
+          marginTop: "2rem",
+          backgroundColor: "#ffffff",
+          border: "1px solid #e7e5e4",
+          borderRadius: "16px",
+          padding: "2rem 1.75rem",
+          boxShadow: "0 1px 2px rgba(0,0,0,0.03)",
+        }}
+      >
+        {renderList(response.observable, "What appears to be happening")}
+        {renderList(response.interpretive, "What may be assumed")}
+        {renderList(response.unknown, "What may still be unclear")}
+        {renderList(response.structural, "Structural considerations")}
+
+        <div style={{ marginBottom: response.question ? "1.75rem" : 0 }}>
+          <h3
+            style={{
+              fontSize: "0.68rem",
+              fontWeight: 600,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              color: "#999",
+              margin: "0 0 0.625rem 0",
+            }}
+          >
+            Orientation
+          </h3>
+          <p
+            style={{
+              color: "#333",
+              margin: 0,
+              fontSize: "0.95rem",
+              lineHeight: 1.65,
+            }}
+          >
+            {response.orientation}
+          </p>
+        </div>
+
+        {response.question && (
+          <div
+            style={{
+              padding: "1.125rem 1.25rem",
+              backgroundColor: "#f9f8f5",
+              border: "1px solid #e7e5e4",
+              borderLeft: "3px solid #111",
+              borderRadius: "0 10px 10px 0",
+            }}
+          >
+            <h3
+              style={{
+                fontSize: "0.68rem",
+                fontWeight: 600,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                color: "#999",
+                margin: "0 0 0.5rem 0",
+              }}
+            >
+              Clarifying question
+            </h3>
+            <p
+              style={{
+                color: "#333",
+                margin: 0,
+                fontSize: "0.95rem",
+                lineHeight: 1.65,
+              }}
+            >
+              {response.question}
+            </p>
+          </div>
+        )}
       </div>
     );
   }
@@ -240,7 +480,6 @@ export default function AIInteractionPage() {
             assumed, improving the quality of interaction with AI.
           </p>
 
-          {/* White form card */}
           <div
             style={{
               backgroundColor: "#ffffff",
@@ -267,7 +506,7 @@ export default function AIInteractionPage() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               disabled={loading}
-              placeholder={`Example: "The output looks reasonable, but something about the reasoning feels off. I am not sure whether the issue is the prompt, the model, or the objective."`}
+              placeholder="Continue the situation or introduce a new one..."
               rows={8}
               style={{
                 display: "block",
@@ -303,12 +542,11 @@ export default function AIInteractionPage() {
                 lineHeight: 1.7,
               }}
             >
-              Describe the issue as it currently appears. This can include an
-              unclear prompt, an output that feels off, or uncertainty about
-              what the actual problem is.
+              Continue the same AI issue, respond to a clarifying question, or
+              introduce a new one. This can include an unclear prompt, an output
+              that feels off, or uncertainty about what the actual problem is.
             </p>
 
-            {/* Footer row: helper text + buttons */}
             <div
               style={{
                 display: "flex",
@@ -339,13 +577,13 @@ export default function AIInteractionPage() {
                   gap: "0.75rem",
                   alignItems: "center",
                   flexShrink: 0,
+                  flexWrap: "wrap",
                 }}
               >
-                {/* Mic button — matches clarify page style exactly */}
                 <button
                   type="button"
                   onClick={startListening}
-                  disabled={loading || listening}
+                  disabled={isMicDisabled}
                   style={{
                     padding: "0.7rem 1rem",
                     backgroundColor: "#fff",
@@ -354,49 +592,71 @@ export default function AIInteractionPage() {
                     borderRadius: "999px",
                     fontSize: "0.9rem",
                     fontWeight: 600,
-                    cursor: loading || listening ? "not-allowed" : "pointer",
+                    cursor: isMicDisabled ? "not-allowed" : "pointer",
                     whiteSpace: "nowrap",
                     letterSpacing: "-0.01em",
-                    opacity: loading || listening ? 0.6 : 1,
+                    opacity: isMicDisabled ? 0.6 : 1,
                     transition: "background-color 0.15s",
                   }}
                 >
                   {listening ? "Listening…" : "Mic"}
                 </button>
 
-                {/* Clarify button — matches clarify page style exactly */}
                 <button
                   type="button"
                   onClick={handleClarify}
-                  disabled={isDisabled}
+                  disabled={isClarifyDisabled}
                   style={{
                     flexShrink: 0,
                     padding: "0.7rem 1.75rem",
-                    backgroundColor: isDisabled ? "#ccc" : "#111",
+                    backgroundColor: isClarifyDisabled ? "#ccc" : "#111",
                     color: "#fff",
                     border: "none",
                     borderRadius: "999px",
                     fontSize: "0.9rem",
                     fontWeight: 600,
-                    cursor: isDisabled ? "not-allowed" : "pointer",
+                    cursor: isClarifyDisabled ? "not-allowed" : "pointer",
                     transition: "background-color 0.15s",
                     letterSpacing: "-0.01em",
                     whiteSpace: "nowrap",
                   }}
                   onMouseEnter={(e) => {
-                    if (!isDisabled)
+                    if (!isClarifyDisabled) {
                       e.currentTarget.style.backgroundColor = "#333";
+                    }
                   }}
                   onMouseLeave={(e) => {
-                    if (!isDisabled)
+                    if (!isClarifyDisabled) {
                       e.currentTarget.style.backgroundColor = "#111";
+                    }
                   }}
                 >
                   {loading ? "Clarifying…" : "Clarify"}
                 </button>
+
+                <button
+                  type="button"
+                  onClick={handleSimplify}
+                  disabled={isSimplifyDisabled}
+                  style={{
+                    flexShrink: 0,
+                    padding: "0.7rem 1.35rem",
+                    backgroundColor: "#fff",
+                    color: "#111",
+                    border: "1px solid #d6d3d1",
+                    borderRadius: "999px",
+                    fontSize: "0.9rem",
+                    fontWeight: 600,
+                    cursor: isSimplifyDisabled ? "not-allowed" : "pointer",
+                    whiteSpace: "nowrap",
+                    opacity: isSimplifyDisabled ? 0.6 : 1,
+                    transition: "opacity 0.15s, background-color 0.15s",
+                  }}
+                >
+                  Simplify
+                </button>
               </div>
             </div>
-            {/* END footer row */}
 
             {error && (
               <div
@@ -415,89 +675,9 @@ export default function AIInteractionPage() {
               </div>
             )}
           </div>
-          {/* END white form card */}
 
-          {result && (
-            <div
-              style={{
-                marginTop: "2rem",
-                backgroundColor: "#ffffff",
-                border: "1px solid #e7e5e4",
-                borderRadius: "16px",
-                padding: "2rem 1.75rem",
-                boxShadow: "0 1px 2px rgba(0,0,0,0.03)",
-              }}
-            >
-              {renderList(result.observable, "What appears to be happening")}
-              {renderList(result.interpretive, "What may be assumed")}
-              {renderList(result.unknown, "What may still be unclear")}
-              {renderList(result.structural, "Structural considerations")}
-
-              <div style={{ marginBottom: result.question ? "1.75rem" : 0 }}>
-                <h3
-                  style={{
-                    fontSize: "0.68rem",
-                    fontWeight: 600,
-                    letterSpacing: "0.1em",
-                    textTransform: "uppercase",
-                    color: "#999",
-                    margin: "0 0 0.625rem 0",
-                  }}
-                >
-                  Orientation
-                </h3>
-                <p
-                  style={{
-                    color: "#333",
-                    margin: 0,
-                    fontSize: "0.95rem",
-                    lineHeight: 1.65,
-                  }}
-                >
-                  {result.orientation}
-                </p>
-              </div>
-
-              {result.question && (
-                <div
-                  style={{
-                    padding: "1.125rem 1.25rem",
-                    backgroundColor: "#f9f8f5",
-                    border: "1px solid #e7e5e4",
-                    borderLeft: "3px solid #111",
-                    borderRadius: "0 10px 10px 0",
-                  }}
-                >
-                  <h3
-                    style={{
-                      fontSize: "0.68rem",
-                      fontWeight: 600,
-                      letterSpacing: "0.1em",
-                      textTransform: "uppercase",
-                      color: "#999",
-                      margin: "0 0 0.5rem 0",
-                    }}
-                  >
-                    Question
-                  </h3>
-                  <p
-                    style={{
-                      color: "#333",
-                      margin: 0,
-                      fontSize: "0.95rem",
-                      lineHeight: 1.65,
-                    }}
-                  >
-                    {result.question}
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-          {/* END result card */}
-
+          {result && renderResult(result)}
         </div>
-        {/* END maxWidth 760px centering div */}
       </main>
     </div>
   );

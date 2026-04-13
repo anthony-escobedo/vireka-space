@@ -343,16 +343,18 @@ export default function AIInteractionPage() {
                   onClick={startListening}
                   disabled={loading || listening}
                   style={{
-                  padding: "0.7rem 1rem",
-                  backgroundColor: "#fff",
-                  color: "#111",
-                  border: "1px solid #d6d3d1",
-                  borderRadius: "999px",
-                  fontSize: "0.9rem",
-                  fontWeight: 600,
-                  cursor: loading || listening ? "not-allowed" : "pointer",
-                  whiteSpace: "nowrap",
-                  opacity: loading || listening ? 0.6 : 1,
+                  flexShrink: 0,
+    padding: "0.7rem 1rem",
+    backgroundColor: "#fff",
+    color: "#111",
+    border: "1px solid #d6d3d1",
+    borderRadius: "999px",
+    fontSize: "0.9rem",
+    fontWeight: 600,
+    cursor: isMicDisabled ? "not-allowed" : "pointer",
+    whiteSpace: "nowrap",
+    opacity: isMicDisabled ? 0.6 : 1,
+    transition: "opacity 0.15s, background-color 0.15s",
                   }}
                 >
                   {listening ? "Listening..." : "Mic"}
@@ -364,17 +366,18 @@ export default function AIInteractionPage() {
                   disabled={loading || !input.trim()}
                   style={{
                   flexShrink: 0,
-                  padding: "0.7rem 1.75rem",
-                  backgroundColor: isDisabled ? "#ccc" : "#111",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "999px",
-                  fontSize: "0.9rem",
-                  fontWeight: 600,
-                  cursor: isDisabled ? "not-allowed" : "pointer",
-                  transition: "background-color 0.15s",
-                  letterSpacing: "-0.01em",
-                  whiteSpace: "nowrap",
+    padding: "0.7rem 1.75rem",
+    backgroundColor: isClarifyDisabled ? "#ccc" : "#111",
+    color: "#fff",
+    border: "none",
+    borderRadius: "999px",
+    fontSize: "0.9rem",
+    fontWeight: 600,
+    cursor: isClarifyDisabled ? "not-allowed" : "pointer",
+    whiteSpace: "nowrap",
+    letterSpacing: "-0.01em",
+    transition: "background-color 0.15s, opacity 0.15s",
+    opacity: isClarifyDisabled ? 0.85 : 1,
                   }}
                 >
                   {loading ? "Clarifying..." : "Clarify"}

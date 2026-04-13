@@ -343,16 +343,13 @@ export default function AIInteractionPage() {
                   onClick={startListening}
                   disabled={loading || listening}
                   style={{
-                    padding: "0.85rem 1.1rem",
-                    borderRadius: "999px",
-                    border: "1px solid #d7d7cf",
-                    backgroundColor: listening ? "#111" : "#fff",
-                    color: listening ? "#fff" : "#111",
-                    fontSize: "0.95rem",
-                    fontWeight: 600,
-                    cursor: loading || listening ? "default" : "pointer",
-                    fontFamily: "inherit",
-                    opacity: loading ? 0.6 : 1,
+                  padding: "0.7rem 1rem",
+                  fontSize: "0.9rem",
+                  fontWeight: 600,
+                  borderRadius: "999px",
+                  border: "1px solid #d6d3d1",
+                  whiteSpace: "nowrap",
+                  opacity: loading ? 0.6 : 1,
                   }}
                 >
                   {listening ? "Listening..." : "Mic"}
@@ -363,17 +360,15 @@ export default function AIInteractionPage() {
                   onClick={handleClarify}
                   disabled={loading || !input.trim()}
                   style={{
-                    padding: "0.85rem 1.25rem",
-                    borderRadius: "999px",
-                    border: "1px solid #111",
-                    backgroundColor:
-                      loading || !input.trim() ? "#d4d4d4" : "#111",
-                    color: "#fff",
-                    fontSize: "0.95rem",
-                    fontWeight: 600,
-                    cursor: loading || !input.trim() ? "default" : "pointer",
-                    fontFamily: "inherit",
-                    opacity: loading || !input.trim() ? 0.85 : 1,
+                  padding: "0.7rem 1.75rem",
+                  fontSize: "0.9rem",
+                  fontWeight: 600,
+                  borderRadius: "999px",
+                  border: "1px solid #111",
+                  letterSpacing: "-0.01em",
+                  whiteSpace: "nowrap",
+                  transition: "background-color 0.15s",
+                  opacity: loading || !input.trim() ? 0.85 : 1,
                   }}
                 >
                   {loading ? "Clarifying..." : "Clarify"}

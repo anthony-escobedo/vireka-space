@@ -17,66 +17,52 @@ const [result, setResult] = useState<ClarifyResult | null>(null);
 const [loading, setLoading] = useState(false);
 
 async function handleClarify() {
-
 if (!input.trim()) return;
 
+```
 setLoading(true);
 
 try {
+  const response = await fetch("/api/clarify", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      input
+    })
+  });
 
-
-const response = await fetch("/api/clarify", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({
-    input
-  })
-});
-
-const data = await response.json();
-
-setResult(data);
-
-
+  const data = await response.json();
+  setResult(data);
 } catch (error) {
-
-
-setResult({
-  observable: [],
-  interpretive: [],
-  unknown: [],
-  structural: [],
-  orientation:
-    "The system encountered an error while processing the request.",
-  question:
-    "Could the situation be described more simply?"
-});
-
-
+  setResult({
+    observable: [],
+    interpretive: [],
+    unknown: [],
+    structural: [],
+    orientation:
+      "The system encountered an error while processing the request.",
+    question:
+      "Could the situation be described more simply?"
+  });
 }
 
 setLoading(false);
+```
 
 }
 
+return ( <main className="min-h-screen bg-neutral-950 text-neutral-100 p-6"> <div className="max-w-3xl mx-auto space-y-8"> <header className="space-y-2"> <h1 className="text-2xl font-semibold tracking-tight">
+Clarify </h1>
 
-return ( <main className="min-h-screen bg-neutral-950 text-neutral-100 p-6"> <div className="max-w-3xl mx-auto space-y-8">
-
-
-    <header className="space-y-2">
-      <h1 className="text-2xl font-semibold tracking-tight">
-        Clarify
-      </h1>
-
+```
       <p className="text-neutral-400 text-sm">
         Distinguish observation from interpretation before deciding what matters.
       </p>
     </header>
 
     <section className="space-y-3">
-
       <textarea
         value={input}
         onChange={(e) => setInput(e.target.value)}
@@ -91,13 +77,10 @@ return ( <main className="min-h-screen bg-neutral-950 text-neutral-100 p-6"> <di
       >
         {loading ? "Clarifying..." : "Clarify"}
       </button>
-
     </section>
 
     {result && (
-
       <section className="space-y-6 pt-6 border-t border-neutral-800">
-
         <Block
           title="What can be observed"
           items={result.observable}
@@ -119,7 +102,6 @@ return ( <main className="min-h-screen bg-neutral-950 text-neutral-100 p-6"> <di
         />
 
         <div className="space-y-2">
-
           <h3 className="text-sm font-medium text-neutral-400">
             Orientation
           </h3>
@@ -127,13 +109,10 @@ return ( <main className="min-h-screen bg-neutral-950 text-neutral-100 p-6"> <di
           <p className="text-sm leading-relaxed">
             {result.orientation}
           </p>
-
         </div>
 
         {result.question && (
-
           <div className="space-y-2">
-
             <h3 className="text-sm font-medium text-neutral-400">
               Clarifying question
             </h3>
@@ -141,18 +120,13 @@ return ( <main className="min-h-screen bg-neutral-950 text-neutral-100 p-6"> <di
             <p className="text-sm leading-relaxed italic">
               {result.question}
             </p>
-
           </div>
-
         )}
-
       </section>
-
     )}
-
   </div>
 </main>
-
+```
 
 );
 }
@@ -164,30 +138,19 @@ items
 title: string;
 items: string[];
 }) {
+return ( <div className="space-y-2"> <h3 className="text-sm font-medium text-neutral-400">
+{title} </h3>
 
-return (
-
-
-<div className="space-y-2">
-
-  <h3 className="text-sm font-medium text-neutral-400">
-    {title}
-  </h3>
-
+```
   <ul className="space-y-1 text-sm">
-
     {items.map((item, i) => (
-
       <li key={i} className="leading-relaxed">
         {item}
       </li>
-
     ))}
-
   </ul>
-
 </div>
-
+```
 
 );
 }

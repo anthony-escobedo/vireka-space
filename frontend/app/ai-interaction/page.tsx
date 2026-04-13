@@ -479,6 +479,7 @@ export default function AIInteractionPage() {
             </div>
           )}
           {/* END result card */}
+
         </div>
         {/* END maxWidth 760px centering div */}
       </main>

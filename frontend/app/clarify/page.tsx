@@ -227,13 +227,22 @@ export default function ClarifyPage() {
     void submitToClarify("clarify");
   }
 
-  function handleSimplify(): void {
+  function handlePlainLanguage(): void {
     void submitToClarify("simplify");
   }
 
+  function handleDone(): void {
+    if (loading) return;
+    setInput("done");
+    setTimeout(() => {
+      void submitToClarify("clarify");
+    }, 0);
+  }
+
   const isClarifyDisabled = loading || !input.trim();
-  const isSimplifyDisabled = loading || !result;
+  const isPlainLanguageDisabled = loading || !result || result.mode !== "clarify";
   const isMicDisabled = loading || listening;
+  const isDoneDisabled = loading || !result;
 
   function renderList(items: string[] | undefined, label: string) {
     if (!items || items.length === 0) return null;
@@ -341,7 +350,7 @@ export default function ClarifyPage() {
                 margin: "0 0 0.625rem 0",
               }}
             >
-              Simpler version
+              Plain language
             </h3>
             <p
               style={{
@@ -407,6 +416,7 @@ export default function ClarifyPage() {
               border: "1px solid #e7e5e4",
               borderLeft: "3px solid #111",
               borderRadius: "0 10px 10px 0",
+              marginBottom: "1.25rem",
             }}
           >
             <h3
@@ -434,6 +444,36 @@ export default function ClarifyPage() {
             </p>
           </div>
         )}
+
+        <div style={{ display: "flex", justifyContent: "flex-start" }}>
+          <button
+            type="button"
+            onClick={handlePlainLanguage}
+            disabled={isPlainLanguageDisabled}
+            style={{
+              display: "inline-flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              minWidth: "96px",
+              minHeight: "56px",
+              padding: "0.55rem 0.85rem",
+              backgroundColor: "#fff",
+              color: "#111",
+              border: "1px solid #d6d3d1",
+              borderRadius: "14px",
+              fontSize: "0.76rem",
+              fontWeight: 600,
+              lineHeight: 1.05,
+              textAlign: "center",
+              cursor: isPlainLanguageDisabled ? "not-allowed" : "pointer",
+              opacity: isPlainLanguageDisabled ? 0.6 : 1,
+            }}
+          >
+            <span>Plain</span>
+            <span>Language</span>
+          </button>
+        </div>
       </div>
     );
   }
@@ -677,24 +717,23 @@ export default function ClarifyPage() {
 
               <button
                 type="button"
-                onClick={handleSimplify}
-                disabled={isSimplifyDisabled}
+                onClick={handleDone}
+                disabled={isDoneDisabled}
                 style={{
                   flexShrink: 0,
-                  padding: "0.7rem 1.35rem",
+                  padding: "0.7rem 1.15rem",
                   backgroundColor: "#fff",
                   color: "#111",
                   border: "1px solid #d6d3d1",
                   borderRadius: "999px",
                   fontSize: "0.9rem",
                   fontWeight: 600,
-                  cursor: isSimplifyDisabled ? "not-allowed" : "pointer",
+                  cursor: isDoneDisabled ? "not-allowed" : "pointer",
                   whiteSpace: "nowrap",
-                  opacity: isSimplifyDisabled ? 0.6 : 1,
-                  transition: "opacity 0.15s, background-color 0.15s",
+                  opacity: isDoneDisabled ? 0.6 : 1,
                 }}
               >
-                Simplify
+                Done
               </button>
             </div>
           </div>

@@ -25,14 +25,18 @@ export default function HomePage() {
         }}
       >
         <div
-          style={{
-            maxWidth: "1100px",
-            margin: "0 auto",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
+  style={{
+    maxWidth: "1100px",
+    margin: "0 auto",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: "16px",
+    flexWrap: "wrap",
+    width: "100%",
+    boxSizing: "border-box",
+  }}
+>
           <Link
   href="/"
   style={{

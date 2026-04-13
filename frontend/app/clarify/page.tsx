@@ -175,7 +175,7 @@ const isDisabled = loading || !input.trim();
         style={{
           maxWidth: "780px",
           margin: "0 auto",
-          padding: "1.75rem 1.5rem 4rem",
+          padding: "1.5rem 1.5rem 4rem",
         }}
       >
         {/* Back link */}

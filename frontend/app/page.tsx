@@ -53,8 +53,11 @@ export default function HomePage() {
           <nav
   style={{
     display: "flex",
-    gap: "22px",
+    gap: "14px",
     fontSize: "15px",
+    flexWrap: "wrap",
+    justifyContent: "flex-end",
+    maxWidth: "100%",
   }}
 >
   <Link

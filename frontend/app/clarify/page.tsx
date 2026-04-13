@@ -26,11 +26,9 @@ try {
   const response = await fetch("/api/clarify", {
     method: "POST",
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      input
-    })
+    body: JSON.stringify({ input }),
   });
 
   const data = await response.json();
@@ -43,24 +41,18 @@ try {
     structural: [],
     orientation:
       "The system encountered an error while processing the request.",
-    question:
-      "Could the situation be described more simply?"
+    question: "Could the situation be described more simply?",
   });
+} finally {
+  setLoading(false);
 }
 
-setLoading(false);
-
 
 }
 
-return ( <main className="min-h-screen bg-neutral-950 text-neutral-100 p-6"> <div className="max-w-3xl mx-auto space-y-8"> <header className="space-y-2"> <h1 className="text-2xl font-semibold tracking-tight">
-Clarify </h1>
+return ( <main className="min-h-screen bg-neutral-950 text-neutral-100 p-6"> <div className="max-w-3xl mx-auto space-y-8"> <header className="space-y-2"> <h1 className="text-2xl font-semibold tracking-tight">Clarify</h1> <p className="text-neutral-400 text-sm">
+Distinguish observation from interpretation before deciding what matters. </p> </header>
 
-
-      <p className="text-neutral-400 text-sm">
-        Distinguish observation from interpretation before deciding what matters.
-      </p>
-    </header>
 
     <section className="space-y-3">
       <textarea
@@ -81,34 +73,14 @@ Clarify </h1>
 
     {result && (
       <section className="space-y-6 pt-6 border-t border-neutral-800">
-        <Block
-          title="What can be observed"
-          items={result.observable}
-        />
-
-        <Block
-          title="What may be interpreted"
-          items={result.interpretive}
-        />
-
-        <Block
-          title="What remains unknown"
-          items={result.unknown}
-        />
-
-        <Block
-          title="Structural conditions"
-          items={result.structural}
-        />
+        <Block title="What can be observed" items={result.observable} />
+        <Block title="What may be interpreted" items={result.interpretive} />
+        <Block title="What remains unknown" items={result.unknown} />
+        <Block title="Structural conditions" items={result.structural} />
 
         <div className="space-y-2">
-          <h3 className="text-sm font-medium text-neutral-400">
-            Orientation
-          </h3>
-
-          <p className="text-sm leading-relaxed">
-            {result.orientation}
-          </p>
+          <h3 className="text-sm font-medium text-neutral-400">Orientation</h3>
+          <p className="text-sm leading-relaxed">{result.orientation}</p>
         </div>
 
         {result.question && (
@@ -116,10 +88,7 @@ Clarify </h1>
             <h3 className="text-sm font-medium text-neutral-400">
               Clarifying question
             </h3>
-
-            <p className="text-sm leading-relaxed italic">
-              {result.question}
-            </p>
+            <p className="text-sm leading-relaxed italic">{result.question}</p>
           </div>
         )}
       </section>
@@ -133,24 +102,14 @@ Clarify </h1>
 
 function Block({
 title,
-items
+items,
 }: {
 title: string;
 items: string[];
 }) {
-return ( <div className="space-y-2"> <h3 className="text-sm font-medium text-neutral-400">
-{title} </h3>
-
-
-  <ul className="space-y-1 text-sm">
-    {items.map((item, i) => (
-      <li key={i} className="leading-relaxed">
-        {item}
-      </li>
-    ))}
-  </ul>
-</div>
-
-
+return ( <div className="space-y-2"> <h3 className="text-sm font-medium text-neutral-400">{title}</h3> <ul className="space-y-1 text-sm">
+{items.map((item, i) => ( <li key={i} className="leading-relaxed">
+{item} </li>
+))} </ul> </div>
 );
 }

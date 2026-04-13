@@ -42,27 +42,33 @@ export default function HomePage() {
           </div>
 
           <nav
-            style={{
-              display: "flex",
-              gap: "22px",
-              fontSize: "15px",
-            }}
-          >
-            <a href="#about" style={{ color: "#222", textDecoration: "none" }}>
-              About
-            </a>
+  style={{
+    display: "flex",
+    gap: "22px",
+    fontSize: "15px",
+  }}
+>
+  <Link
+    href="/about"
+    style={{ color: "#222", textDecoration: "none" }}
+  >
+    About
+  </Link>
 
-            <a href="#clarify" style={{ color: "#222", textDecoration: "none" }}>
-              Clarify
-            </a>
+  <Link
+    href="/clarify"
+    style={{ color: "#222", textDecoration: "none" }}
+  >
+    Clarify
+  </Link>
 
-            <a
-              href="#ai-interaction"
-              style={{ color: "#222", textDecoration: "none" }}
-            >
-              AI Interaction
-            </a>
-          </nav>
+  <Link
+    href="/ai-interaction"
+    style={{ color: "#222", textDecoration: "none" }}
+  >
+    AI Interaction
+  </Link>
+</nav>
         </div>
       </header>
 

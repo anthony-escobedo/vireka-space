@@ -19,7 +19,7 @@ const [loading, setLoading] = useState(false);
 async function handleClarify() {
 if (!input.trim()) return;
 
-```
+
 setLoading(true);
 
 try {
@@ -49,14 +49,14 @@ try {
 }
 
 setLoading(false);
-```
+
 
 }
 
 return ( <main className="min-h-screen bg-neutral-950 text-neutral-100 p-6"> <div className="max-w-3xl mx-auto space-y-8"> <header className="space-y-2"> <h1 className="text-2xl font-semibold tracking-tight">
 Clarify </h1>
 
-```
+
       <p className="text-neutral-400 text-sm">
         Distinguish observation from interpretation before deciding what matters.
       </p>
@@ -126,7 +126,7 @@ Clarify </h1>
     )}
   </div>
 </main>
-```
+
 
 );
 }
@@ -141,7 +141,7 @@ items: string[];
 return ( <div className="space-y-2"> <h3 className="text-sm font-medium text-neutral-400">
 {title} </h3>
 
-```
+
   <ul className="space-y-1 text-sm">
     {items.map((item, i) => (
       <li key={i} className="leading-relaxed">
@@ -150,7 +150,7 @@ return ( <div className="space-y-2"> <h3 className="text-sm font-medium text-neu
     ))}
   </ul>
 </div>
-```
+
 
 );
 }

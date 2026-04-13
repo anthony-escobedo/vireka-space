@@ -344,12 +344,15 @@ export default function AIInteractionPage() {
                   disabled={loading || listening}
                   style={{
                   padding: "0.7rem 1rem",
+                  backgroundColor: "#fff",
+                  color: "#111",
+                  border: "1px solid #d6d3d1",
+                  borderRadius: "999px",
                   fontSize: "0.9rem",
                   fontWeight: 600,
-                  borderRadius: "999px",
-                  border: "1px solid #d6d3d1",
+                  cursor: loading || listening ? "not-allowed" : "pointer",
                   whiteSpace: "nowrap",
-                  opacity: loading ? 0.6 : 1,
+                  opacity: loading || listening ? 0.6 : 1,
                   }}
                 >
                   {listening ? "Listening..." : "Mic"}

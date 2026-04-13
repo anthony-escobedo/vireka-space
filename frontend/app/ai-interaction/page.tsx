@@ -382,12 +382,6 @@ function startListening(): void {
   </button>
 </div>
 
-</div>
-{error && (
-  
-  
-          </div>
-
           {error && (
             <div
               style={{

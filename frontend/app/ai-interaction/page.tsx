@@ -351,10 +351,10 @@ export default function AIInteractionPage() {
     borderRadius: "999px",
     fontSize: "0.9rem",
     fontWeight: 600,
-    cursor: isMicDisabled ? "not-allowed" : "pointer",
+    cursor: loading || !input.trim() ? "default" : "pointer",
     whiteSpace: "nowrap",
     opacity: isMicDisabled ? 0.6 : 1,
-    transition: "opacity 0.15s, background-color 0.15s",
+    transition: loading || !input.trim() ? 0.85 : 1,
                   }}
                 >
                   {listening ? "Listening..." : "Mic"}
@@ -373,11 +373,11 @@ export default function AIInteractionPage() {
     borderRadius: "999px",
     fontSize: "0.9rem",
     fontWeight: 600,
-    cursor: isClarifyDisabled ? "not-allowed" : "pointer",
+    cursor: loading || !input.trim() ? "default" : "pointer",
     whiteSpace: "nowrap",
     letterSpacing: "-0.01em",
     transition: "background-color 0.15s, opacity 0.15s",
-    opacity: isClarifyDisabled ? 0.85 : 1,
+    opacity: loading || !input.trim() ? 0.85 : 1,
                   }}
                 >
                   {loading ? "Clarifying..." : "Clarify"}

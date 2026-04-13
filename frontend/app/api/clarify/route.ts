@@ -123,20 +123,23 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       );
     }
 
-    if (
-      typeof body !== "object" ||
-      body === null ||
-      typeof (body as Record<string, unknown>).input !== "string" ||
-      !(body as Record<string, unknown>).input?.trim()
-    ) {
-      return NextResponse.json(
-        { error: "Request body must include a non-empty input string." },
-        { status: 400 }
-      );
-    }
+    if (typeof body !== "object" || body === null) {
+  return NextResponse.json(
+    { error: "Request body must include a non-empty input string." },
+    { status: 400 }
+  );
+}
 
-    const userInput = ((body as Record<string, unknown>).input as string).trim();
+const input = (body as Record<string, unknown>).input;
 
+if (typeof input !== "string" || input.trim() === "") {
+  return NextResponse.json(
+    { error: "Request body must include a non-empty input string." },
+    { status: 400 }
+  );
+}
+
+const userInput = input.trim();
     const apiKey = process.env.OPENAI_API_KEY;
 
     if (!apiKey) {

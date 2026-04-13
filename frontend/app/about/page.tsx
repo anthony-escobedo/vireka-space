@@ -15,7 +15,7 @@ export default function AboutPage() {
         style={{
           maxWidth: "760px",
           margin: "0 auto",
-          padding: "5.5rem 1.5rem 4rem",
+          padding: "5rem 1.5rem 4rem",
         }}
       >
         <div style={{ marginBottom: "2rem" }}>

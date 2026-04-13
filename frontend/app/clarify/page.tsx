@@ -53,6 +53,8 @@ export default function ClarifyPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [listening, setListening] = useState(false);
+  const inputRef = useRef<HTMLDivElement | null>(null);
+  const resultRef = useRef<HTMLDivElement | null>(null);
 
   async function handleClarify(): Promise<void> {
     if (!input.trim()) return;

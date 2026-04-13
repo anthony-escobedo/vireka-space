@@ -37,7 +37,15 @@ declare global {
   }
 }
 
-type ClarifyResult = {
+type RequestAction = "clarify" | "simplify";
+
+type ConversationTurn = {
+  role: "user" | "assistant";
+  content: string;
+};
+
+type ClarifyResponse = {
+  mode: "clarify";
   observable: string[];
   interpretive: string[];
   unknown: string[];
@@ -46,28 +54,139 @@ type ClarifyResult = {
   question?: string;
 };
 
+type SimplifyResponse = {
+  mode: "simplify";
+  message: string;
+};
+
+type CloseResponse = {
+  mode: "close";
+  message: string;
+};
+
+type VirekaResponse = ClarifyResponse | SimplifyResponse | CloseResponse;
+
 export default function ClarifyPage() {
   const [input, setInput] = useState<string>("");
-  const [result, setResult] = useState<ClarifyResult | null>(null);
+  const [result, setResult] = useState<VirekaResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [listening, setListening] = useState<boolean>(false);
+  const [history, setHistory] = useState<ConversationTurn[]>([]);
 
-  const [listening, setListening] = useState(false);
-  
   const inputRef = useRef<HTMLDivElement | null>(null);
   const resultRef = useRef<HTMLDivElement | null>(null);
 
-  async function handleClarify(): Promise<void> {
-    if (!input.trim()) return;
+  function cleanTranscript(text: string): string {
+    let t = text.trim();
+
+    if (!t) return "";
+
+    t = t.charAt(0).toUpperCase() + t.slice(1);
+    t = t.replace(/\b(and|but|so|because)\b/gi, ", $1");
+    t = t.replace(/,\s*,/g, ",");
+    t = t.replace(/^,\s*/, "");
+    t = t.replace(/\s+/g, " ");
+
+    if (!/[.!?]$/.test(t)) {
+      t += ".";
+    }
+
+    return t;
+  }
+
+  function startListening(): void {
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      setError("Speech recognition is not supported in this browser.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = "en-US";
+
+    recognition.onstart = () => {
+      setListening(true);
+      setError(null);
+    };
+
+    recognition.onresult = (event) => {
+      let transcript = event.results[0][0].transcript;
+      transcript = cleanTranscript(transcript);
+
+      setInput((prev) => (prev ? `${prev} ${transcript}` : transcript));
+    };
+
+    recognition.onerror = (event) => {
+      setError("Microphone error: " + event.error);
+    };
+
+    recognition.onend = () => {
+      setListening(false);
+    };
+
+    recognition.start();
+  }
+
+  function formatResponseForHistory(response: VirekaResponse): string {
+    if (response.mode === "close" || response.mode === "simplify") {
+      return response.message;
+    }
+
+    const sections = [
+      `What appears to be happening:\n${response.observable.join("\n")}`,
+      `What may be assumed:\n${response.interpretive.join("\n")}`,
+      `What may still be unclear:\n${response.unknown.join("\n")}`,
+      `Structural considerations:\n${response.structural.join("\n")}`,
+      `Orientation:\n${response.orientation}`,
+    ];
+
+    if (response.question) {
+      sections.push(`Clarifying question:\n${response.question}`);
+    }
+
+    return sections.join("\n\n");
+  }
+
+  async function submitToClarify(action: RequestAction): Promise<void> {
+    const trimmed = input.trim();
+
+    if (!trimmed) {
+      setError("Please enter a situation or response.");
+      return;
+    }
+
+    if (action === "simplify" && !result) {
+      setError("There is nothing to simplify yet.");
+      return;
+    }
+
     setLoading(true);
     setError(null);
-    setResult(null);
 
     try {
+      const userTurn: ConversationTurn = {
+        role: "user",
+        content: trimmed,
+      };
+
+      const payload = {
+        input: trimmed,
+        action,
+        history,
+      };
+
       const res = await fetch("/api/clarify", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ input: input.trim() }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
       });
 
       const data: unknown = await res.json().catch(() => null);
@@ -79,14 +198,22 @@ export default function ClarifyPage() {
         );
       }
 
-      setResult(data as ClarifyResult);
+      const typedData = data as VirekaResponse;
+      const assistantTurn: ConversationTurn = {
+        role: "assistant",
+        content: formatResponseForHistory(typedData),
+      };
+
+      setResult(typedData);
+      setHistory((prev) => [...prev, userTurn, assistantTurn]);
+      setInput("");
 
       setTimeout(() => {
-      resultRef.current?.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-  });
-}, 100);
+        resultRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }, 100);
     } catch (err: unknown) {
       setError(
         err instanceof Error ? err.message : "An unexpected error occurred."
@@ -95,79 +222,22 @@ export default function ClarifyPage() {
       setLoading(false);
     }
   }
-      function cleanTranscript(text: string) {
-      let t = text.trim();
 
-      if (!t) return "";
-
-      // capitalize first letter
-      t = t.charAt(0).toUpperCase() + t.slice(1);
-
-      // light comma smoothing
-      t = t.replace(/\b(and|but|so|because)\b/gi, ", $1");
-
-      // remove duplicate commas
-      t = t.replace(/,\s*,/g, ",");
-
-      // prevent comma at start
-      t = t.replace(/^,\s*/, "");
-
-      // normalize spacing
-      t = t.replace(/\s+/g, " ");
-
-      // ensure ending punctuation
-      if (!/[.!?]$/.test(t)) {
-      t += ".";
+  function handleClarify(): void {
+    void submitToClarify("clarify");
   }
 
-      return t;
-}
-  
-function startListening(): void {
-  const SpeechRecognition =
-    window.SpeechRecognition || window.webkitSpeechRecognition;
-
-  if (!SpeechRecognition) {
-    setError("Speech recognition is not supported in this browser.");
-    return;
+  function handleSimplify(): void {
+    void submitToClarify("simplify");
   }
 
-  const recognition = new SpeechRecognition();
-
-  recognition.continuous = false;
-  recognition.interimResults = false;
-  recognition.lang = "en-US";
-
-  recognition.onstart = () => {
-    setListening(true);
-    setError(null);
-  };
-
-  recognition.onresult = (event) => {
-  let transcript = event.results[0][0].transcript;
-
-  transcript = cleanTranscript(transcript);
-
-  setInput((prev) =>
-    prev ? prev + " " + transcript : transcript
-  );
-};
-
-  recognition.onerror = (event) => {
-    setError("Microphone error: " + event.error);
-  };
-
-  recognition.onend = () => {
-    setListening(false);
-  };
-
-  recognition.start();
-}
-
-const isDisabled = loading || !input.trim();
+  const isClarifyDisabled = loading || !input.trim();
+  const isSimplifyDisabled = loading || !result;
+  const isMicDisabled = loading || listening;
 
   function renderList(items: string[] | undefined, label: string) {
     if (!items || items.length === 0) return null;
+
     return (
       <div style={{ marginBottom: "1.75rem" }}>
         <h3
@@ -182,7 +252,13 @@ const isDisabled = loading || !input.trim();
         >
           {label}
         </h3>
-        <ul style={{ paddingLeft: "1.125rem", margin: 0, listStyleType: "disc" }}>
+        <ul
+          style={{
+            paddingLeft: "1.125rem",
+            margin: 0,
+            listStyleType: "disc",
+          }}
+        >
           {items.map((item, i) => (
             <li
               key={i}
@@ -197,6 +273,167 @@ const isDisabled = loading || !input.trim();
             </li>
           ))}
         </ul>
+      </div>
+    );
+  }
+
+  function renderResult(response: VirekaResponse) {
+    if (response.mode === "close") {
+      return (
+        <div
+          ref={resultRef}
+          style={{
+            marginTop: "2rem",
+            backgroundColor: "#ffffff",
+            border: "1px solid #e7e5e4",
+            borderRadius: "16px",
+            padding: "2rem 1.75rem",
+          }}
+        >
+          <div style={{ marginBottom: "1rem" }}>
+            <h3
+              style={{
+                fontSize: "0.68rem",
+                fontWeight: 600,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                color: "#999",
+                margin: "0 0 0.625rem 0",
+              }}
+            >
+              Response
+            </h3>
+            <p
+              style={{
+                color: "#333",
+                margin: 0,
+                fontSize: "0.95rem",
+                lineHeight: 1.65,
+              }}
+            >
+              {response.message}
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    if (response.mode === "simplify") {
+      return (
+        <div
+          ref={resultRef}
+          style={{
+            marginTop: "2rem",
+            backgroundColor: "#ffffff",
+            border: "1px solid #e7e5e4",
+            borderRadius: "16px",
+            padding: "2rem 1.75rem",
+          }}
+        >
+          <div style={{ marginBottom: "1rem" }}>
+            <h3
+              style={{
+                fontSize: "0.68rem",
+                fontWeight: 600,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                color: "#999",
+                margin: "0 0 0.625rem 0",
+              }}
+            >
+              Simpler version
+            </h3>
+            <p
+              style={{
+                color: "#333",
+                margin: 0,
+                fontSize: "0.95rem",
+                lineHeight: 1.65,
+              }}
+            >
+              {response.message}
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div
+        ref={resultRef}
+        style={{
+          marginTop: "2rem",
+          backgroundColor: "#ffffff",
+          border: "1px solid #e7e5e4",
+          borderRadius: "16px",
+          padding: "2rem 1.75rem",
+        }}
+      >
+        {renderList(response.observable, "What appears to be happening")}
+        {renderList(response.interpretive, "What may be assumed")}
+        {renderList(response.unknown, "What may still be unclear")}
+        {renderList(response.structural, "Structural considerations")}
+
+        <div style={{ marginBottom: response.question ? "1.75rem" : 0 }}>
+          <h3
+            style={{
+              fontSize: "0.68rem",
+              fontWeight: 600,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              color: "#999",
+              margin: "0 0 0.625rem 0",
+            }}
+          >
+            Orientation
+          </h3>
+          <p
+            style={{
+              color: "#333",
+              margin: 0,
+              fontSize: "0.95rem",
+              lineHeight: 1.65,
+            }}
+          >
+            {response.orientation}
+          </p>
+        </div>
+
+        {response.question && (
+          <div
+            style={{
+              padding: "1.125rem 1.25rem",
+              backgroundColor: "#f9f8f5",
+              border: "1px solid #e7e5e4",
+              borderLeft: "3px solid #111",
+              borderRadius: "0 10px 10px 0",
+            }}
+          >
+            <h3
+              style={{
+                fontSize: "0.68rem",
+                fontWeight: 600,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                color: "#999",
+                margin: "0 0 0.5rem 0",
+              }}
+            >
+              Clarifying question
+            </h3>
+            <p
+              style={{
+                color: "#111",
+                margin: 0,
+                fontSize: "0.95rem",
+                lineHeight: 1.65,
+                fontWeight: 500,
+              }}
+            >
+              {response.question}
+            </p>
+          </div>
+        )}
       </div>
     );
   }
@@ -218,7 +455,6 @@ const isDisabled = loading || !input.trim();
           padding: "1.5rem 1.5rem 4rem",
         }}
       >
-        {/* Back link */}
         <div style={{ marginBottom: "2rem" }}>
           <Link
             href="/"
@@ -235,7 +471,6 @@ const isDisabled = loading || !input.trim();
           </Link>
         </div>
 
-        {/* Pill label */}
         <div style={{ marginBottom: "1.25rem" }}>
           <span
             style={{
@@ -254,7 +489,6 @@ const isDisabled = loading || !input.trim();
           </span>
         </div>
 
-        {/* Main heading */}
         <h1
           style={{
             fontSize: "clamp(2rem, 5vw, 2.85rem)",
@@ -268,7 +502,6 @@ const isDisabled = loading || !input.trim();
           Clarify a situation
         </h1>
 
-        {/* Intro text */}
         <div style={{ maxWidth: "640px" }}>
           <p
             style={{
@@ -295,7 +528,6 @@ const isDisabled = loading || !input.trim();
           </p>
         </div>
 
-        {/* Divider */}
         <div
           style={{
             borderTop: "1px solid #e7e5e4",
@@ -304,7 +536,6 @@ const isDisabled = loading || !input.trim();
           }}
         />
 
-        {/* Form card */}
         <div
           style={{
             backgroundColor: "#ffffff",
@@ -326,41 +557,38 @@ const isDisabled = loading || !input.trim();
           </label>
 
           <div ref={inputRef}>
+            <textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              disabled={loading}
+              placeholder="Continue the situation or introduce a new one..."
+              rows={8}
+              style={{
+                display: "block",
+                width: "100%",
+                boxSizing: "border-box",
+                backgroundColor: "#fafafa",
+                color: "#111",
+                border: "1px solid #e7e5e4",
+                borderRadius: "10px",
+                padding: "1rem 1.125rem",
+                fontSize: "0.925rem",
+                lineHeight: 1.65,
+                resize: "vertical",
+                outline: "none",
+                fontFamily: "inherit",
+                transition: "border-color 0.15s",
+                opacity: loading ? 0.6 : 1,
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = "#aaa";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = "#e7e5e4";
+              }}
+            />
+          </div>
 
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            disabled={loading}
-            placeholder={`Example: "A coworker stopped replying after I sent a detailed message, and now I'm assuming they may be upset or avoiding me."`}
-            rows={8}
-            style={{
-              display: "block",
-              width: "100%",
-              boxSizing: "border-box",
-              backgroundColor: "#fafafa",
-              color: "#111",
-              border: "1px solid #e7e5e4",
-              borderRadius: "10px",
-              padding: "1rem 1.125rem",
-              fontSize: "0.925rem",
-              lineHeight: 1.65,
-              resize: "vertical",
-              outline: "none",
-              fontFamily: "inherit",
-              transition: "border-color 0.15s",
-              opacity: loading ? 0.6 : 1,
-            }}
-            onFocus={(e) => {
-              e.currentTarget.style.borderColor = "#aaa";
-            }}
-            onBlur={(e) => {
-              e.currentTarget.style.borderColor = "#e7e5e4";
-            }}
-          />
-
-</div>
-            
-          {/* Footer row */}
           <div
             style={{
               display: "flex",
@@ -381,70 +609,97 @@ const isDisabled = loading || !input.trim();
                 flex: "1 1 260px",
               }}
             >
-              Include the situation as you currently see it, even if
-              interpretation or uncertainty are present. The system helps
-              separate these elements before a response or prompt is formed.
+              Continue the same situation, respond to a clarifying question, or
+              introduce a new one. The system helps separate these elements
+              before a response or prompt is formed.
             </p>
 
             <div
-  style={{
-    display: "flex",
-    gap: "0.75rem",
-    alignItems: "center",
-    flexShrink: 0,
-  }}
->
-  <button
-    type="button"
-    onClick={startListening}
-    disabled={loading || listening}
-    style={{
-      padding: "0.7rem 1rem",
-      backgroundColor: "#fff",
-      color: "#111",
-      border: "1px solid #d6d3d1",
-      borderRadius: "999px",
-      fontSize: "0.9rem",
-      fontWeight: 600,
-      cursor: loading || listening ? "not-allowed" : "pointer",
-      whiteSpace: "nowrap",
-      opacity: loading || listening ? 0.6 : 1,
-    }}
-  >
-    {listening ? "Listening…" : "Mic"}
-  </button>
+              style={{
+                display: "flex",
+                gap: "0.75rem",
+                alignItems: "center",
+                flexShrink: 0,
+                flexWrap: "wrap",
+              }}
+            >
+              <button
+                type="button"
+                onClick={startListening}
+                disabled={isMicDisabled}
+                style={{
+                  padding: "0.7rem 1rem",
+                  backgroundColor: "#fff",
+                  color: "#111",
+                  border: "1px solid #d6d3d1",
+                  borderRadius: "999px",
+                  fontSize: "0.9rem",
+                  fontWeight: 600,
+                  cursor: isMicDisabled ? "not-allowed" : "pointer",
+                  whiteSpace: "nowrap",
+                  opacity: isMicDisabled ? 0.6 : 1,
+                }}
+              >
+                {listening ? "Listening…" : "Mic"}
+              </button>
 
-  <button
-    onClick={handleClarify}
-    disabled={isDisabled}
-    style={{
-      flexShrink: 0,
-      padding: "0.7rem 1.75rem",
-      backgroundColor: isDisabled ? "#ccc" : "#111",
-      color: "#fff",
-      border: "none",
-      borderRadius: "999px",
-      fontSize: "0.9rem",
-      fontWeight: 600,
-      cursor: isDisabled ? "not-allowed" : "pointer",
-      transition: "background-color 0.15s",
-      letterSpacing: "-0.01em",
-      whiteSpace: "nowrap",
-    }}
-    onMouseEnter={(e) => {
-      if (!isDisabled) e.currentTarget.style.backgroundColor = "#333";
-    }}
-    onMouseLeave={(e) => {
-      if (!isDisabled) e.currentTarget.style.backgroundColor = "#111";
-    }}
-  >
-    {loading ? "Clarifying…" : "Clarify"}
-  </button>
-</div>
+              <button
+                type="button"
+                onClick={handleClarify}
+                disabled={isClarifyDisabled}
+                style={{
+                  flexShrink: 0,
+                  padding: "0.7rem 1.75rem",
+                  backgroundColor: isClarifyDisabled ? "#ccc" : "#111",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "999px",
+                  fontSize: "0.9rem",
+                  fontWeight: 600,
+                  cursor: isClarifyDisabled ? "not-allowed" : "pointer",
+                  transition: "background-color 0.15s",
+                  letterSpacing: "-0.01em",
+                  whiteSpace: "nowrap",
+                }}
+                onMouseEnter={(e) => {
+                  if (!isClarifyDisabled) {
+                    e.currentTarget.style.backgroundColor = "#333";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isClarifyDisabled) {
+                    e.currentTarget.style.backgroundColor = "#111";
+                  }
+                }}
+              >
+                {loading ? "Clarifying…" : "Clarify"}
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSimplify}
+                disabled={isSimplifyDisabled}
+                style={{
+                  flexShrink: 0,
+                  padding: "0.7rem 1.35rem",
+                  backgroundColor: "#fff",
+                  color: "#111",
+                  border: "1px solid #d6d3d1",
+                  borderRadius: "999px",
+                  fontSize: "0.9rem",
+                  fontWeight: 600,
+                  cursor: isSimplifyDisabled ? "not-allowed" : "pointer",
+                  whiteSpace: "nowrap",
+                  opacity: isSimplifyDisabled ? 0.6 : 1,
+                  transition: "opacity 0.15s, background-color 0.15s",
+                }}
+              >
+                Simplify
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Error state */}
         {error && (
           <div
             style={{
@@ -462,136 +717,7 @@ const isDisabled = loading || !input.trim();
           </div>
         )}
 
-        {/* Results */}
-        {result && (
-        <div
-          ref={resultRef}
-          style={{
-              marginTop: "2rem",
-              backgroundColor: "#ffffff",
-              border: "1px solid #e7e5e4",
-              borderRadius: "16px",
-              padding: "2rem 1.75rem",
-            }}
-          >
-            {renderList(result.observable, "What can be observed")}
-            {renderList(result.interpretive, "What may be interpreted")}
-            {renderList(result.unknown, "What remains unknown")}
-            {renderList(result.structural, "Structural conditions")}
-
-            {result.orientation && (
-              <div style={{ marginBottom: "1.75rem" }}>
-                <h3
-                  style={{
-                    fontSize: "0.68rem",
-                    fontWeight: 600,
-                    letterSpacing: "0.1em",
-                    textTransform: "uppercase",
-                    color: "#999",
-                    margin: "0 0 0.625rem 0",
-                  }}
-                >
-                  Orientation
-                </h3>
-                <p
-                  style={{
-                    color: "#333",
-                    margin: 0,
-                    fontSize: "0.95rem",
-                    lineHeight: 1.65,
-                  }}
-                >
-                  {result.orientation}
-                </p>
-              </div>
-            )}
-        <div
-  style={{
-    display: "flex",
-    gap: "0.75rem",
-    marginTop: "1.5rem",
-    marginBottom: "1.5rem",
-    flexWrap: "wrap",
-  }}
->
-  <button
-    onClick={() => {
-      inputRef.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
-    }}
-    style={{
-      padding: "0.7rem 1rem",
-      borderRadius: "999px",
-      border: "1px solid #111",
-      backgroundColor: "#fff",
-      color: "#111",
-      fontSize: "0.9rem",
-      fontWeight: 600,
-      cursor: "pointer",
-      fontFamily: "inherit",
-    }}
-  >
-    Revise
-  </button>
-
-  <button
-    onClick={() => {
-      // simplify will be wired next
-    }}
-    style={{
-      padding: "0.7rem 1rem",
-      borderRadius: "999px",
-      border: "1px solid #d6d3d1",
-      backgroundColor: "#fff",
-      color: "#111",
-      fontSize: "0.9rem",
-      fontWeight: 600,
-      cursor: "pointer",
-      fontFamily: "inherit",
-    }}
-  >
-    Simplify
-  </button>
-</div>
-            {result.question && (
-              <div
-                style={{
-                  padding: "1.125rem 1.25rem",
-                  backgroundColor: "#f9f8f5",
-                  border: "1px solid #e7e5e4",
-                  borderLeft: "3px solid #111",
-                  borderRadius: "0 10px 10px 0",
-                }}
-              >
-                <h3
-                  style={{
-                    fontSize: "0.68rem",
-                    fontWeight: 600,
-                    letterSpacing: "0.1em",
-                    textTransform: "uppercase",
-                    color: "#999",
-                    margin: "0 0 0.5rem 0",
-                  }}
-                >
-                  Clarifying question
-                </h3>
-                <p
-                  style={{
-                    color: "#111",
-                    margin: 0,
-                    fontSize: "0.95rem",
-                    lineHeight: 1.65,
-                    fontWeight: 500,
-                  }}
-                >
-                  {result.question}
-                </p>
-              </div>
-            )}
-          </div>
-        )}
+        {result && renderResult(result)}
       </div>
     </main>
   );

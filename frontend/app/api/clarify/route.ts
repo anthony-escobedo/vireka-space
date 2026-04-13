@@ -140,14 +140,22 @@ if (typeof input !== "string" || input.trim() === "") {
 }
 
 const userInput = input.trim();
-    const apiKey = process.env.OPENAI_API_KEY;
 
-    if (!apiKey) {
-      return NextResponse.json(
-        { error: "Missing OPENAI_API_KEY on server." },
-        { status: 500 }
-      );
-    }
+if (userInput.length < 8) {
+  return NextResponse.json(
+    { error: "Please include a brief description of the situation." },
+    { status: 400 }
+  );
+}
+
+const apiKey = process.env.OPENAI_API_KEY;
+
+if (!apiKey) {
+  return NextResponse.json(
+    { error: "Missing OPENAI_API_KEY on server." },
+    { status: 500 }
+  );
+}
 
     const openAIRes = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",

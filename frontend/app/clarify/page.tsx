@@ -3,6 +3,40 @@
 import { useState } from "react";
 import Link from "next/link";
 
+declare global {
+  interface Window {
+    SpeechRecognition?: new () => SpeechRecognition;
+    webkitSpeechRecognition?: new () => SpeechRecognition;
+  }
+
+  interface SpeechRecognition extends EventTarget {
+    continuous: boolean;
+    interimResults: boolean;
+    lang: string;
+    onstart: (() => void) | null;
+    onresult: ((event: SpeechRecognitionEvent) => void) | null;
+    onerror: ((event: SpeechRecognitionErrorEvent) => void) | null;
+    onend: (() => void) | null;
+    start(): void;
+    stop(): void;
+  }
+
+  interface SpeechRecognitionEvent {
+    results: {
+      [key: number]: {
+        [key: number]: {
+          transcript: string;
+        };
+      };
+      length: number;
+    };
+  }
+
+  interface SpeechRecognitionErrorEvent {
+    error: string;
+  }
+}
+
 type ClarifyResult = {
   observable: string[];
   interpretive: string[];
@@ -17,6 +51,8 @@ export default function ClarifyPage() {
   const [result, setResult] = useState<ClarifyResult | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [listening, setListening] = useState(false);
 
   async function handleClarify(): Promise<void> {
     if (!input.trim()) return;
@@ -49,8 +85,46 @@ export default function ClarifyPage() {
       setLoading(false);
     }
   }
+function startListening(): void {
+  const SpeechRecognition =
+    window.SpeechRecognition || window.webkitSpeechRecognition;
 
-  const isDisabled = loading || !input.trim();
+  if (!SpeechRecognition) {
+    setError("Speech recognition is not supported in this browser.");
+    return;
+  }
+
+  const recognition = new SpeechRecognition();
+
+  recognition.continuous = false;
+  recognition.interimResults = false;
+  recognition.lang = "en-US";
+
+  recognition.onstart = () => {
+    setListening(true);
+    setError(null);
+  };
+
+  recognition.onresult = (event) => {
+    const transcript = event.results[0][0].transcript;
+
+    setInput((prev) =>
+      prev ? prev + " " + transcript : transcript
+    );
+  };
+
+  recognition.onerror = (event) => {
+    setError("Microphone error: " + event.error);
+  };
+
+  recognition.onend = () => {
+    setListening(false);
+  };
+
+  recognition.start();
+}
+
+const isDisabled = loading || !input.trim();
 
   function renderList(items: string[] | undefined, label: string) {
     if (!items || items.length === 0) return null;
@@ -268,32 +342,61 @@ export default function ClarifyPage() {
               separate these elements before a response or prompt is formed.
             </p>
 
-            <button
-              onClick={handleClarify}
-              disabled={isDisabled}
-              style={{
-                flexShrink: 0,
-                padding: "0.7rem 1.75rem",
-                backgroundColor: isDisabled ? "#ccc" : "#111",
-                color: "#fff",
-                border: "none",
-                borderRadius: "999px",
-                fontSize: "0.9rem",
-                fontWeight: 600,
-                cursor: isDisabled ? "not-allowed" : "pointer",
-                transition: "background-color 0.15s",
-                letterSpacing: "-0.01em",
-                whiteSpace: "nowrap",
-              }}
-              onMouseEnter={(e) => {
-                if (!isDisabled) e.currentTarget.style.backgroundColor = "#333";
-              }}
-              onMouseLeave={(e) => {
-                if (!isDisabled) e.currentTarget.style.backgroundColor = "#111";
-              }}
-            >
-              {loading ? "Clarifying…" : "Clarify"}
-            </button>
+            <div
+  style={{
+    display: "flex",
+    gap: "0.75rem",
+    alignItems: "center",
+    flexShrink: 0,
+  }}
+>
+  <button
+    type="button"
+    onClick={startListening}
+    disabled={loading || listening}
+    style={{
+      padding: "0.7rem 1rem",
+      backgroundColor: "#fff",
+      color: "#111",
+      border: "1px solid #d6d3d1",
+      borderRadius: "999px",
+      fontSize: "0.9rem",
+      fontWeight: 600,
+      cursor: loading || listening ? "not-allowed" : "pointer",
+      whiteSpace: "nowrap",
+      opacity: loading || listening ? 0.6 : 1,
+    }}
+  >
+    {listening ? "Listening…" : "Mic"}
+  </button>
+
+  <button
+    onClick={handleClarify}
+    disabled={isDisabled}
+    style={{
+      flexShrink: 0,
+      padding: "0.7rem 1.75rem",
+      backgroundColor: isDisabled ? "#ccc" : "#111",
+      color: "#fff",
+      border: "none",
+      borderRadius: "999px",
+      fontSize: "0.9rem",
+      fontWeight: 600,
+      cursor: isDisabled ? "not-allowed" : "pointer",
+      transition: "background-color 0.15s",
+      letterSpacing: "-0.01em",
+      whiteSpace: "nowrap",
+    }}
+    onMouseEnter={(e) => {
+      if (!isDisabled) e.currentTarget.style.backgroundColor = "#333";
+    }}
+    onMouseLeave={(e) => {
+      if (!isDisabled) e.currentTarget.style.backgroundColor = "#111";
+    }}
+  >
+    {loading ? "Clarifying…" : "Clarify"}
+  </button>
+</div>
           </div>
         </div>
 

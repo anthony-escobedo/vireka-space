@@ -31,15 +31,18 @@ export default function HomePage() {
             alignItems: "center",
           }}
         >
-          <div
-            style={{
-              fontSize: "18px",
-              fontWeight: 650,
-              letterSpacing: "-0.015em",
-            }}
-          >
-            VIREKA Space
-          </div>
+          <Link
+  href="/"
+  style={{
+    fontSize: "18px",
+    fontWeight: 650,
+    letterSpacing: "-0.015em",
+    color: "#000",
+    textDecoration: "none",
+  }}
+>
+  VIREKA Space
+</Link>
 
           <nav
   style={{

@@ -1,5 +1,14 @@
 export default function AboutPage() {
   return (
+  <div
+    style={{
+      minHeight: "100vh",
+      backgroundColor: "#f7f7f2",
+      color: "#111111",
+      fontFamily:
+        'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    }}
+  >
     <main
       style={{
         width: "100%",
@@ -120,6 +129,7 @@ export default function AboutPage() {
           Further writing explores how awareness influences interpretation, and how clearer interpretation shapes reasoning, decision environments, and interaction with AI systems.
         </p>
       </section>
-    </main>
+        </main>
+  </div>
   );
 }

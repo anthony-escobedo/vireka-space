@@ -117,6 +117,8 @@ export default function AIInteractionPage() {
     recognition.start();
   }
 
+  const isDisabled = loading || !input.trim();
+
   function renderList(items: string[], heading: string) {
     if (!items?.length) return null;
     return (
@@ -334,53 +336,63 @@ export default function AIInteractionPage() {
               <div
                 style={{
                   display: "flex",
-                  gap: "0.8rem",
-                  flexWrap: "wrap",
+                  gap: "0.75rem",
+                  alignItems: "center",
+                  flexShrink: 0,
                 }}
               >
+                {/* Mic button — matches clarify page style exactly */}
                 <button
                   type="button"
                   onClick={startListening}
                   disabled={loading || listening}
                   style={{
-                  flexShrink: 0,
-    padding: "0.7rem 1rem",
-    backgroundColor: "#fff",
-    color: "#111",
-    border: "1px solid #d6d3d1",
-    borderRadius: "999px",
-    fontSize: "0.9rem",
-    fontWeight: 600,
-    cursor: loading || !input.trim() ? "default" : "pointer",
-    whiteSpace: "nowrap",
-    opacity: isMicDisabled ? 0.6 : 1,
-    transition: loading || !input.trim() ? 0.85 : 1,
+                    padding: "0.7rem 1rem",
+                    backgroundColor: "#fff",
+                    color: "#111",
+                    border: "1px solid #d6d3d1",
+                    borderRadius: "999px",
+                    fontSize: "0.9rem",
+                    fontWeight: 600,
+                    cursor: loading || listening ? "not-allowed" : "pointer",
+                    whiteSpace: "nowrap",
+                    letterSpacing: "-0.01em",
+                    opacity: loading || listening ? 0.6 : 1,
+                    transition: "background-color 0.15s",
                   }}
                 >
-                  {listening ? "Listening..." : "Mic"}
+                  {listening ? "Listening…" : "Mic"}
                 </button>
 
+                {/* Clarify button — matches clarify page style exactly */}
                 <button
                   type="button"
                   onClick={handleClarify}
-                  disabled={loading || !input.trim()}
+                  disabled={isDisabled}
                   style={{
-                  flexShrink: 0,
-    padding: "0.7rem 1.75rem",
-    backgroundColor: isClarifyDisabled ? "#ccc" : "#111",
-    color: "#fff",
-    border: "none",
-    borderRadius: "999px",
-    fontSize: "0.9rem",
-    fontWeight: 600,
-    cursor: loading || !input.trim() ? "default" : "pointer",
-    whiteSpace: "nowrap",
-    letterSpacing: "-0.01em",
-    transition: "background-color 0.15s, opacity 0.15s",
-    opacity: loading || !input.trim() ? 0.85 : 1,
+                    flexShrink: 0,
+                    padding: "0.7rem 1.75rem",
+                    backgroundColor: isDisabled ? "#ccc" : "#111",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "999px",
+                    fontSize: "0.9rem",
+                    fontWeight: 600,
+                    cursor: isDisabled ? "not-allowed" : "pointer",
+                    transition: "background-color 0.15s",
+                    letterSpacing: "-0.01em",
+                    whiteSpace: "nowrap",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isDisabled)
+                      e.currentTarget.style.backgroundColor = "#333";
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isDisabled)
+                      e.currentTarget.style.backgroundColor = "#111";
                   }}
                 >
-                  {loading ? "Clarifying..." : "Clarify"}
+                  {loading ? "Clarifying…" : "Clarify"}
                 </button>
               </div>
             </div>

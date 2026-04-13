@@ -16,48 +16,51 @@ const [input, setInput] = useState("");
 const [result, setResult] = useState<ClarifyResult | null>(null);
 const [loading, setLoading] = useState(false);
 
-function handleClarify() {
+async function handleClarify() {
+
 if (!input.trim()) return;
 
-```
 setLoading(true);
 
-// TEMPORARY MOCK RESPONSE
-// this will be replaced by AI endpoint in next step
+try {
 
-setTimeout(() => {
-  setResult({
-    observable: [
-      "An interaction occurred",
-      "Something was said or done",
-      "A reaction followed"
-    ],
-    interpretive: [
-      "Meaning may have been inferred",
-      "Intent may have been assumed",
-      "Emotional significance may have been assigned"
-    ],
-    unknown: [
-      "Full context may not be visible",
-      "Motivations are not directly observable",
-      "Future implications remain undetermined"
-    ],
-    structural: [
-      "Interpretation may be occurring rapidly",
-      "Incomplete information may be influencing conclusions",
-      "Cognitive closure may be occurring before sufficient observation"
-    ],
-    orientation:
-      "Additional observation may reduce unnecessary interpretive pressure. Slowing conclusion formation may allow more accurate structural perception.",
-    question:
-      "What specifically was directly observable, separate from what was inferred?"
-  });
 
-  setLoading(false);
-}, 600);
-```
+const response = await fetch("/api/clarify", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    input
+  })
+});
+
+const data = await response.json();
+
+setResult(data);
+
+
+} catch (error) {
+
+
+setResult({
+  observable: [],
+  interpretive: [],
+  unknown: [],
+  structural: [],
+  orientation:
+    "The system encountered an error while processing the request.",
+  question:
+    "Could the situation be described more simply?"
+});
+
 
 }
+
+setLoading(false);
+
+}
+
 
 return ( <main className="min-h-screen bg-neutral-950 text-neutral-100 p-6"> <div className="max-w-3xl mx-auto space-y-8">
 

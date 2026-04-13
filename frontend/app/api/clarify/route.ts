@@ -24,8 +24,7 @@ type OpenAIResponse = {
   choices: OpenAIChoice[];
 };
 
-const SYSTEM_PROMPT = `
-You are Vireka Space, an interpretive support system designed to improve structural clarity before decisions or actions are taken.
+cconst SYSTEM_PROMPT = `You are Vireka Space, an interpretive support system designed to improve structural clarity before decisions or actions are taken.
 
 Your function is to help distinguish:
 - observation from interpretation
@@ -190,8 +189,7 @@ Separate:
 Distinguishing observation from interpretation often reduces unnecessary cognitive pressure.
 
 Clarity does not require complete certainty.
-Partial clarity often supports effective movement.
-`;
+Partial clarity often supports effective movement.`;
 
 function isStringArray(val: unknown): val is string[] {
   return (

@@ -12,13 +12,12 @@ export default function HomePage() {
       <header
         style={{
           width: "100%",
-          padding: "22px 24px",
+          padding: "20px 24px",
           position: "sticky",
           top: 0,
-          backgroundColor: "rgba(247, 247, 242, 0.92)",
-          backdropFilter: "blur(10px)",
+          backgroundColor: "rgba(247,247,242,0.92)",
+          backdropFilter: "blur(8px)",
           borderBottom: "1px solid rgba(0,0,0,0.05)",
-          zIndex: 10,
         }}
       >
         <div
@@ -26,17 +25,15 @@ export default function HomePage() {
             maxWidth: "1100px",
             margin: "0 auto",
             display: "flex",
-            alignItems: "center",
             justifyContent: "space-between",
-            gap: "20px",
-            flexWrap: "wrap",
+            alignItems: "center",
           }}
         >
           <div
             style={{
               fontSize: "18px",
-              fontWeight: 700,
-              letterSpacing: "-0.02em",
+              fontWeight: 650,
+              letterSpacing: "-0.015em",
             }}
           >
             VIREKA Space
@@ -45,41 +42,21 @@ export default function HomePage() {
           <nav
             style={{
               display: "flex",
-              alignItems: "center",
               gap: "22px",
-              flexWrap: "wrap",
+              fontSize: "15px",
             }}
           >
-            <a
-              href="#about"
-              style={{
-                textDecoration: "none",
-                color: "#222222",
-                fontSize: "15px",
-                fontWeight: 500,
-              }}
-            >
+            <a href="#about" style={{ color: "#222", textDecoration: "none" }}>
               About
             </a>
-            <a
-              href="#clarify"
-              style={{
-                textDecoration: "none",
-                color: "#222222",
-                fontSize: "15px",
-                fontWeight: 500,
-              }}
-            >
+
+            <a href="#clarify" style={{ color: "#222", textDecoration: "none" }}>
               Clarify
             </a>
+
             <a
               href="#ai-interaction"
-              style={{
-                textDecoration: "none",
-                color: "#222222",
-                fontSize: "15px",
-                fontWeight: 500,
-              }}
+              style={{ color: "#222", textDecoration: "none" }}
             >
               AI Interaction
             </a>
@@ -88,6 +65,123 @@ export default function HomePage() {
       </header>
 
       <section
+        style={{
+          minHeight: "calc(100vh - 80px)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "48px 24px 72px",
+        }}
+      >
+        <div
+          style={{
+            maxWidth: "900px",
+            textAlign: "center",
+          }}
+        >
+          <div
+            style={{
+              display: "inline-block",
+              padding: "8px 14px",
+              borderRadius: "999px",
+              border: "1px solid #e1e1da",
+              backgroundColor: "#ffffff",
+              fontSize: "13px",
+              fontWeight: 500,
+              letterSpacing: "0.03em",
+              marginBottom: "28px",
+              color: "#444",
+            }}
+          >
+            VIREKA SPACE
+          </div>
+
+          <h1
+            style={{
+              fontSize: "clamp(2.35rem, 5.6vw, 4.4rem)",
+              lineHeight: 1.05,
+              letterSpacing: "-0.035em",
+              fontWeight: 700,
+              marginBottom: "36px",
+            }}
+          >
+            CLARITY BEFORE DECISION.
+            <br />
+            CLARITY BEFORE USING AI.
+          </h1>
+
+          <p
+            style={{
+              maxWidth: "720px",
+              margin: "0 auto",
+              fontSize: "clamp(1.05rem, 1.7vw, 1.28rem)",
+              lineHeight: 1.75,
+              color: "#2e2e2e",
+              marginBottom: "42px",
+            }}
+          >
+            VIREKA Space helps separate what is happening from what may be
+            assumed, so responses begin from clearer understanding.
+          </p>
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: "16px",
+              flexWrap: "wrap",
+              marginBottom: "30px",
+            }}
+          >
+            <a
+              href="#clarify"
+              style={{
+                padding: "16px 26px",
+                fontSize: "16px",
+                fontWeight: 600,
+                borderRadius: "999px",
+                border: "1px solid #111",
+                backgroundColor: "#111",
+                color: "#fff",
+                textDecoration: "none",
+                minWidth: "210px",
+              }}
+            >
+              Clarify a situation
+            </a>
+
+            <a
+              href="#ai-interaction"
+              style={{
+                padding: "16px 26px",
+                fontSize: "16px",
+                fontWeight: 600,
+                borderRadius: "999px",
+                border: "1px solid #d7d7cf",
+                backgroundColor: "#fff",
+                color: "#111",
+                textDecoration: "none",
+                minWidth: "210px",
+              }}
+            >
+              AI interaction
+            </a>
+          </div>
+
+          <div
+            style={{
+              fontSize: "14px",
+              color: "#666",
+              lineHeight: 1.7,
+            }}
+          >
+            <div>Developed by Anthony Escobedo</div>
+            <div>
+              Based on <em>Beyond Thought: Awareness as Design Intelligence</em>
+            </div>
+          </div>
+        </div>
+      </section>
         style={{
           minHeight: "calc(100vh - 82px)",
           display: "flex",

@@ -45,6 +45,9 @@ export default function HomePage() {
     letterSpacing: "-0.015em",
     color: "#000",
     textDecoration: "none",
+    display: "inline-block",
+    whiteSpace: "nowrap",
+    flexShrink: 0,
   }}
 >
   VIREKA Space

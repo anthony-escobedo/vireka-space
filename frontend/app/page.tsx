@@ -175,22 +175,24 @@ export default function HomePage() {
 >
   Clarify a situation
 </Link>
-            <a
-              href="#ai-interaction"
-              style={{
-                padding: "16px 26px",
-                fontSize: "16px",
-                fontWeight: 600,
-                borderRadius: "999px",
-                border: "1px solid #d7d7cf",
-                backgroundColor: "#fff",
-                color: "#111",
-                textDecoration: "none",
-                minWidth: "210px",
-              }}
-            >
-              AI interaction
-            </a>
+            <Link
+  href="/ai-interaction"
+  style={{
+    padding: "16px 26px",
+    fontSize: "16px",
+    fontWeight: 600,
+    borderRadius: "999px",
+    border: "1px solid #d7d7cf",
+    backgroundColor: "#fff",
+    color: "#111",
+    textDecoration: "none",
+    minWidth: "210px",
+    display: "inline-block",
+    textAlign: "center",
+  }}
+>
+  AI interaction
+</Link>
           </div>
 
           <div

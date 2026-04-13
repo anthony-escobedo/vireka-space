@@ -3,113 +3,239 @@
 import { useState } from "react";
 
 type ClarifyResult = {
-observable: string[];
-interpretive: string[];
-unknown: string[];
-structural: string[];
-orientation: string;
-question?: string;
+  observable: string[];
+  interpretive: string[];
+  unknown: string[];
+  structural: string[];
+  orientation: string;
+  question?: string;
 };
 
 export default function ClarifyPage() {
-const [input, setInput] = useState("");
-const [result, setResult] = useState<ClarifyResult | null>(null);
-const [loading, setLoading] = useState(false);
+  const [input, setInput] = useState<string>("");
+  const [result, setResult] = useState<ClarifyResult | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
-async function handleClarify() {
-if (!input.trim()) return;
+  async function handleClarify(): Promise<void> {
+    if (!input.trim()) return;
+    setLoading(true);
+    setError(null);
+    setResult(null);
 
+    try {
+      const res = await fetch("/api/clarify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ input: input.trim() }),
+      });
 
-setLoading(true);
+      const data: unknown = await res.json().catch(() => null);
 
-try {
-  const response = await fetch("/api/clarify", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ input }),
-  });
+      if (!res.ok) {
+        const errData = data as { error?: string } | null;
+        throw new Error(
+          errData?.error ?? `Request failed with status ${res.status}`
+        );
+      }
 
-  const data = await response.json();
-  setResult(data);
-} catch (error) {
-  setResult({
-    observable: [],
-    interpretive: [],
-    unknown: [],
-    structural: [],
-    orientation:
-      "The system encountered an error while processing the request.",
-    question: "Could the situation be described more simply?",
-  });
-} finally {
-  setLoading(false);
-}
+      setResult(data as ClarifyResult);
+    } catch (err: unknown) {
+      setError(
+        err instanceof Error ? err.message : "An unexpected error occurred."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
 
+  const isDisabled = loading || !input.trim();
 
-}
+  function renderList(items: string[] | undefined, label: string) {
+    if (!items || items.length === 0) return null;
+    return (
+      <div style={{ marginBottom: "1.5rem" }}>
+        <h3
+          style={{
+            fontWeight: 600,
+            marginBottom: "0.5rem",
+            color: "#c9d1d9",
+            fontSize: "0.9rem",
+            textTransform: "uppercase",
+            letterSpacing: "0.05em",
+          }}
+        >
+          {label}
+        </h3>
+        <ul style={{ paddingLeft: "1.25rem", margin: 0 }}>
+          {items.map((item, i) => (
+            <li key={i} style={{ marginBottom: "0.35rem", color: "#8b949e" }}>
+              {item}
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  }
 
-return ( <main className="min-h-screen bg-neutral-950 text-neutral-100 p-6"> <div className="max-w-3xl mx-auto space-y-8"> <header className="space-y-2"> <h1 className="text-2xl font-semibold tracking-tight">Clarify</h1> <p className="text-neutral-400 text-sm">
-Distinguish observation from interpretation before deciding what matters. </p> </header>
+  return (
+    <main
+      style={{
+        minHeight: "100vh",
+        backgroundColor: "#0d1117",
+        color: "#c9d1d9",
+        fontFamily: "'Inter', system-ui, sans-serif",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        padding: "3rem 1rem",
+      }}
+    >
+      <div style={{ width: "100%", maxWidth: "720px" }}>
+        <h1
+          style={{
+            fontSize: "1.75rem",
+            fontWeight: 700,
+            marginBottom: "0.5rem",
+            color: "#e6edf3",
+            letterSpacing: "-0.02em",
+          }}
+        >
+          VIREKA Space — Clarify
+        </h1>
+        <p
+          style={{
+            color: "#8b949e",
+            marginBottom: "2rem",
+            fontSize: "0.95rem",
+            lineHeight: 1.6,
+          }}
+        >
+          Describe a situation, decision, or dilemma. Clarify will separate
+          observation from interpretation.
+        </p>
 
+        <textarea
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Describe what is happening..."
+          rows={6}
+          style={{
+            display: "block",
+            width: "100%",
+            backgroundColor: "#161b22",
+            color: "#c9d1d9",
+            border: "1px solid #30363d",
+            borderRadius: "8px",
+            padding: "0.875rem 1rem",
+            fontSize: "0.95rem",
+            resize: "vertical",
+            outline: "none",
+            fontFamily: "inherit",
+            boxSizing: "border-box",
+          }}
+        />
 
-    <section className="space-y-3">
-      <textarea
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        placeholder="Describe the situation you would like to clarify..."
-        className="w-full h-32 bg-neutral-900 border border-neutral-800 rounded-lg p-3 text-sm outline-none focus:border-neutral-600"
-      />
+        <button
+          onClick={handleClarify}
+          disabled={isDisabled}
+          style={{
+            marginTop: "1rem",
+            padding: "0.65rem 1.5rem",
+            backgroundColor: isDisabled ? "#21262d" : "#238636",
+            color: isDisabled ? "#484f58" : "#ffffff",
+            border: "1px solid #30363d",
+            borderRadius: "6px",
+            fontSize: "0.9rem",
+            fontWeight: 600,
+            cursor: isDisabled ? "not-allowed" : "pointer",
+            transition: "background-color 0.2s",
+          }}
+        >
+          {loading ? "Clarifying..." : "Clarify"}
+        </button>
 
-      <button
-        onClick={handleClarify}
-        disabled={loading}
-        className="bg-neutral-100 text-neutral-900 px-4 py-2 rounded-md text-sm font-medium hover:bg-white transition disabled:opacity-40"
-      >
-        {loading ? "Clarifying..." : "Clarify"}
-      </button>
-    </section>
-
-    {result && (
-      <section className="space-y-6 pt-6 border-t border-neutral-800">
-        <Block title="What can be observed" items={result.observable} />
-        <Block title="What may be interpreted" items={result.interpretive} />
-        <Block title="What remains unknown" items={result.unknown} />
-        <Block title="Structural conditions" items={result.structural} />
-
-        <div className="space-y-2">
-          <h3 className="text-sm font-medium text-neutral-400">Orientation</h3>
-          <p className="text-sm leading-relaxed">{result.orientation}</p>
-        </div>
-
-        {result.question && (
-          <div className="space-y-2">
-            <h3 className="text-sm font-medium text-neutral-400">
-              Clarifying question
-            </h3>
-            <p className="text-sm leading-relaxed italic">{result.question}</p>
+        {error && (
+          <div
+            style={{
+              marginTop: "1.5rem",
+              padding: "0.875rem 1rem",
+              backgroundColor: "#1c1010",
+              border: "1px solid #6e2d2d",
+              borderRadius: "8px",
+              color: "#f85149",
+              fontSize: "0.9rem",
+            }}
+          >
+            {error}
           </div>
         )}
-      </section>
-    )}
-  </div>
-</main>
 
+        {result && (
+          <div
+            style={{
+              marginTop: "2rem",
+              backgroundColor: "#161b22",
+              border: "1px solid #30363d",
+              borderRadius: "8px",
+              padding: "1.5rem",
+            }}
+          >
+            {renderList(result.observable, "What can be observed")}
+            {renderList(result.interpretive, "What may be interpreted")}
+            {renderList(result.unknown, "What remains unknown")}
+            {renderList(result.structural, "Structural conditions")}
 
-);
-}
+            {result.orientation && (
+              <div style={{ marginBottom: "1.5rem" }}>
+                <h3
+                  style={{
+                    fontWeight: 600,
+                    marginBottom: "0.5rem",
+                    color: "#c9d1d9",
+                    fontSize: "0.9rem",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                  }}
+                >
+                  Orientation
+                </h3>
+                <p style={{ color: "#8b949e", margin: 0, lineHeight: 1.6 }}>
+                  {result.orientation}
+                </p>
+              </div>
+            )}
 
-function Block({
-title,
-items,
-}: {
-title: string;
-items: string[];
-}) {
-return ( <div className="space-y-2"> <h3 className="text-sm font-medium text-neutral-400">{title}</h3> <ul className="space-y-1 text-sm">
-{items.map((item, i) => ( <li key={i} className="leading-relaxed">
-{item} </li>
-))} </ul> </div>
-);
+            {result.question && (
+              <div
+                style={{
+                  padding: "1rem",
+                  backgroundColor: "#0d1117",
+                  border: "1px solid rgba(56, 139, 253, 0.27)",
+                  borderLeft: "3px solid #388bfd",
+                  borderRadius: "0 6px 6px 0",
+                }}
+              >
+                <h3
+                  style={{
+                    fontWeight: 600,
+                    color: "#c9d1d9",
+                    margin: "0 0 0.4rem 0",
+                    fontSize: "0.9rem",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                  }}
+                >
+                  Clarifying question
+                </h3>
+                <p style={{ color: "#8b949e", margin: 0, lineHeight: 1.6 }}>
+                  {result.question}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </main>
+  );
 }

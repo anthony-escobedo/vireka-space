@@ -17,6 +17,7 @@ export default function AIInteractionPage() {
   const [result, setResult] = useState<ClarifyResult | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [listening, setListening] = useState<boolean>(false);
 
   async function handleClarify(): Promise<void> {
     if (!input.trim()) return;
@@ -54,6 +55,66 @@ export default function AIInteractionPage() {
     }
   }
 
+function cleanTranscript(text: string) {
+  let t = text.trim();
+
+  if (!t) return "";
+
+  t = t.charAt(0).toUpperCase() + t.slice(1);
+
+  t = t.replace(/\b(and|but|so|because)\b/gi, ", $1");
+  t = t.replace(/,\s*,/g, ",");
+  t = t.replace(/^,\s*/, "");
+  t = t.replace(/\s+/g, " ");
+
+  if (!/[.!?]$/.test(t)) {
+    t += ".";
+  }
+
+  return t;
+}
+
+function startListening(): void {
+  const SpeechRecognition =
+    (window as any).SpeechRecognition ||
+    (window as any).webkitSpeechRecognition;
+
+  if (!SpeechRecognition) {
+    setError("Speech recognition is not supported in this browser.");
+    return;
+  }
+
+  const recognition = new SpeechRecognition();
+
+  recognition.continuous = false;
+  recognition.interimResults = false;
+  recognition.lang = "en-US";
+
+  recognition.onstart = () => {
+    setListening(true);
+    setError(null);
+  };
+
+  recognition.onresult = (event: any) => {
+    let transcript = event.results[0][0].transcript;
+    transcript = cleanTranscript(transcript);
+
+    setInput((prev) =>
+      prev.trim() ? `${prev.trim()} ${transcript}` : transcript
+    );
+  };
+
+  recognition.onerror = (event: any) => {
+    setError("Microphone error: " + event.error);
+  };
+
+  recognition.onend = () => {
+    setListening(false);
+  };
+
+  recognition.start();
+}
+  
   function renderList(items: string[], heading: string) {
     if (!items?.length) return null;
 
@@ -299,23 +360,23 @@ export default function AIInteractionPage() {
 
                 <button
                   type="button"
-                  onClick={handleClarify}
-                  disabled={loading || !input.trim()}
+                  onClick={startListening}
+                  disabled={loading || listening}
                   style={{
-                    padding: "0.85rem 1.25rem",
-                    borderRadius: "999px",
-                    border: "1px solid #111",
-                    backgroundColor: loading || !input.trim() ? "#d4d4d4" : "#111",
-                    color: "#fff",
-                    fontSize: "0.95rem",
-                    fontWeight: 600,
-                    cursor: loading || !input.trim() ? "default" : "pointer",
-                    fontFamily: "inherit",
-                    opacity: loading || !input.trim() ? 0.85 : 1,
-                  }}
-                >
-                  {loading ? "Clarifying..." : "Clarify"}
-                </button>
+                  padding: "0.85rem 1.1rem",
+                  borderRadius: "999px",
+                  border: "1px solid #d7d7cf",
+                  backgroundColor: listening ? "#111" : "#fff",
+                  color: listening ? "#fff" : "#111",
+                  fontSize: "0.95rem",
+                  fontWeight: 600,
+                  cursor: loading || listening ? "default" : "pointer",
+                  fontFamily: "inherit",
+                  opacity: loading ? 0.6 : 1,
+                }}
+              >
+                {listening ? "Listening..." : "Mic"}
+              </button>
               </div>
             </div>
           </div>

@@ -35,7 +35,7 @@ export default function ClarifyPage() {
       if (!res.ok) {
         const errData = data as { error?: string } | null;
         throw new Error(
-          errData?.error ?? `Request failed with status ${res.status}`
+          errData?.error ?? `Request failed with status ${res.status}
         );
       }
 

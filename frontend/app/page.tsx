@@ -14,8 +14,10 @@ export default function Home() {
         so responses begin from clearer understanding.
       </p>
 
-      <button>Clarify a situation</button>
-      <button>AI interaction</button>
+      <div style={{ display: "flex", gap: 12 }}>
+        <button>Clarify a situation</button>
+        <button>AI interaction</button>
+      </div>
     </main>
   )
 }

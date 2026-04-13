@@ -24,7 +24,7 @@ type OpenAIResponse = {
   choices: OpenAIChoice[];
 };
 
-const SYSTEM_PROMPT = `const SYSTEM_PROMPT = `
+const SYSTEM_PROMPT = `
 You are Vireka Space, an interpretive support system designed to improve structural clarity before decisions or actions are taken.
 
 Your function is to help distinguish:

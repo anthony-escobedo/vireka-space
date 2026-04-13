@@ -78,7 +78,7 @@ export default function HomePage() {
           display: "flex",
           alignItems: "flex-start",
           justifyContent: "center",
-          padding: "32px 24px 72px",
+          padding: "24px 24px 72px",
         }}
       >
         <div

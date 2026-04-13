@@ -164,7 +164,8 @@ export default function ClarifyPage() {
               margin: "0 0 0.75rem 0",
             }}
           >
-            Describe a situation as you currently understand it.
+            Describe a situation, decision, or AI-related question as it
+            currently appears.
           </p>
           <p
             style={{
@@ -174,9 +175,9 @@ export default function ClarifyPage() {
               margin: 0,
             }}
           >
-            VIREKA will help distinguish what appears to be happening, what may
-            be assumed, what may still be unclear, and what conditions may be
-            shaping the situation before a response is formed.
+            VIREKA helps distinguish what appears to be happening, what may be
+            assumed, and what may still be unclear, so responses begin from
+            clearer understanding.
           </p>
         </div>
 
@@ -207,7 +208,7 @@ export default function ClarifyPage() {
               marginBottom: "0.875rem",
             }}
           >
-            Situation
+            Situation or question
           </label>
 
           <textarea
@@ -260,9 +261,9 @@ export default function ClarifyPage() {
                 flex: "1 1 260px",
               }}
             >
-              Include the situation as you currently see it, even if it contains
-              interpretation, uncertainty, or pressure. The system will help
-              separate those elements more clearly.
+              Include the situation as you currently see it, even if
+              interpretation or uncertainty are present. The system helps
+              separate these elements before a response or prompt is formed.
             </p>
 
             <button

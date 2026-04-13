@@ -6,6 +6,8 @@ export default function HomePage() {
       style={{
         minHeight: "100vh",
         backgroundColor: "#f7f7f2",
+        overflowX: "hidden",
+        width: "100%",
         color: "#111111",
         fontFamily:
           'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',

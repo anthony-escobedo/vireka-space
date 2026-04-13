@@ -53,6 +53,7 @@ export default function ClarifyPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [listening, setListening] = useState(false);
+  
   const inputRef = useRef<HTMLDivElement | null>(null);
   const resultRef = useRef<HTMLDivElement | null>(null);
 
@@ -79,6 +80,13 @@ export default function ClarifyPage() {
       }
 
       setResult(data as ClarifyResult);
+
+      setTimeout(() => {
+      resultRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+  });
+}, 100);
     } catch (err: unknown) {
       setError(
         err instanceof Error ? err.message : "An unexpected error occurred."
@@ -287,6 +295,8 @@ const isDisabled = loading || !input.trim();
             Situation or question
           </label>
 
+          <div ref={inputRef}>
+
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -318,6 +328,8 @@ const isDisabled = loading || !input.trim();
             }}
           />
 
+</div>
+            
           {/* Footer row */}
           <div
             style={{
@@ -422,8 +434,9 @@ const isDisabled = loading || !input.trim();
 
         {/* Results */}
         {result && (
-          <div
-            style={{
+        <div
+          ref={resultRef}
+          style={{
               marginTop: "2rem",
               backgroundColor: "#ffffff",
               border: "1px solid #e7e5e4",
@@ -462,7 +475,56 @@ const isDisabled = loading || !input.trim();
                 </p>
               </div>
             )}
+        <div
+  style={{
+    display: "flex",
+    gap: "0.75rem",
+    marginTop: "1.5rem",
+    marginBottom: "1.5rem",
+    flexWrap: "wrap",
+  }}
+>
+  <button
+    onClick={() => {
+      inputRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }}
+    style={{
+      padding: "0.7rem 1rem",
+      borderRadius: "999px",
+      border: "1px solid #111",
+      backgroundColor: "#fff",
+      color: "#111",
+      fontSize: "0.9rem",
+      fontWeight: 600,
+      cursor: "pointer",
+      fontFamily: "inherit",
+    }}
+  >
+    Revise
+  </button>
 
+  <button
+    onClick={() => {
+      // simplify will be wired next
+    }}
+    style={{
+      padding: "0.7rem 1rem",
+      borderRadius: "999px",
+      border: "1px solid #d6d3d1",
+      backgroundColor: "#fff",
+      color: "#111",
+      fontSize: "0.9rem",
+      fontWeight: 600,
+      cursor: "pointer",
+      fontFamily: "inherit",
+    }}
+  >
+    Simplify
+  </button>
+</div>
             {result.question && (
               <div
                 style={{

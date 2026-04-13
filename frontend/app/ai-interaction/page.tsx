@@ -12,6 +12,14 @@ type ClarifyResult = {
   question?: string;
 };
 
+type SpeechRecognitionEvent = {
+  results: { [key: number]: { [key: number]: { transcript: string } } };
+};
+
+type SpeechRecognitionErrorEvent = {
+  error: string;
+};
+
 export default function AIInteractionPage() {
   const [input, setInput] = useState<string>("");
   const [result, setResult] = useState<ClarifyResult | null>(null);
@@ -55,69 +63,62 @@ export default function AIInteractionPage() {
     }
   }
 
-function cleanTranscript(text: string) {
-  let t = text.trim();
-
-  if (!t) return "";
-
-  t = t.charAt(0).toUpperCase() + t.slice(1);
-
-  t = t.replace(/\b(and|but|so|because)\b/gi, ", $1");
-  t = t.replace(/,\s*,/g, ",");
-  t = t.replace(/^,\s*/, "");
-  t = t.replace(/\s+/g, " ");
-
-  if (!/[.!?]$/.test(t)) {
-    t += ".";
+  function cleanTranscript(text: string): string {
+    let t = text.trim();
+    if (!t) return "";
+    t = t.charAt(0).toUpperCase() + t.slice(1);
+    t = t.replace(/\b(and|but|so|because)\b/gi, ", $1");
+    t = t.replace(/,\s*,/g, ",");
+    t = t.replace(/^,\s*/, "");
+    t = t.replace(/\s+/g, " ");
+    if (!/[.!?]$/.test(t)) {
+      t += ".";
+    }
+    return t;
   }
 
-  return t;
-}
+  function startListening(): void {
+    const SpeechRecognition =
+      (window as Window & { SpeechRecognition?: new () => SpeechRecognition }).SpeechRecognition ||
+      (window as Window & { webkitSpeechRecognition?: new () => SpeechRecognition }).webkitSpeechRecognition;
 
-function startListening(): void {
-  const SpeechRecognition =
-    (window as any).SpeechRecognition ||
-    (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      setError("Speech recognition is not supported in this browser.");
+      return;
+    }
 
-  if (!SpeechRecognition) {
-    setError("Speech recognition is not supported in this browser.");
-    return;
+    const recognition = new SpeechRecognition();
+
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = "en-US";
+
+    recognition.onstart = () => {
+      setListening(true);
+      setError(null);
+    };
+
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
+      let transcript = event.results[0][0].transcript;
+      transcript = cleanTranscript(transcript);
+      setInput((prev) =>
+        prev.trim() ? `${prev.trim()} ${transcript}` : transcript
+      );
+    };
+
+    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+      setError("Microphone error: " + event.error);
+    };
+
+    recognition.onend = () => {
+      setListening(false);
+    };
+
+    recognition.start();
   }
 
-  const recognition = new SpeechRecognition();
-
-  recognition.continuous = false;
-  recognition.interimResults = false;
-  recognition.lang = "en-US";
-
-  recognition.onstart = () => {
-    setListening(true);
-    setError(null);
-  };
-
-  recognition.onresult = (event: any) => {
-    let transcript = event.results[0][0].transcript;
-    transcript = cleanTranscript(transcript);
-
-    setInput((prev) =>
-      prev.trim() ? `${prev.trim()} ${transcript}` : transcript
-    );
-  };
-
-  recognition.onerror = (event: any) => {
-    setError("Microphone error: " + event.error);
-  };
-
-  recognition.onend = () => {
-    setListening(false);
-  };
-
-  recognition.start();
-}
-  
   function renderList(items: string[], heading: string) {
     if (!items?.length) return null;
-
     return (
       <div style={{ marginBottom: "1.75rem" }}>
         <h3
@@ -132,7 +133,6 @@ function startListening(): void {
         >
           {heading}
         </h3>
-
         <ul
           style={{
             margin: 0,
@@ -152,10 +152,6 @@ function startListening(): void {
     );
   }
 
-  function insertPrompt(text: string) {
-    setInput(text);
-  }
-
   return (
     <div
       style={{
@@ -168,13 +164,12 @@ function startListening(): void {
         overflowX: "hidden",
       }}
     >
-
       <main
         style={{
           width: "100%",
           maxWidth: "960px",
           margin: "0 auto",
-          padding: "1,75rem 1.25rem 3rem",
+          padding: "1.75rem 1.25rem 3rem",
           boxSizing: "border-box",
         }}
       >
@@ -243,6 +238,7 @@ function startListening(): void {
             assumed, improving the quality of interaction with AI.
           </p>
 
+          {/* White form card */}
           <div
             style={{
               backgroundColor: "#ffffff",
@@ -310,7 +306,7 @@ function startListening(): void {
               what the actual problem is.
             </p>
 
-            
+            {/* Footer row: helper text + buttons */}
             <div
               style={{
                 display: "flex",
@@ -323,81 +319,87 @@ function startListening(): void {
             >
               <p
                 style={{
-              fontSize: "0.8rem",
-              color: "#888",
-              lineHeight: 1.55,
-              margin: 0,
-              maxWidth: "480px",
-              flex: "1 1 260px",
-            }}
+                  fontSize: "0.8rem",
+                  color: "#888",
+                  lineHeight: 1.55,
+                  margin: 0,
+                  maxWidth: "480px",
+                  flex: "1 1 260px",
+                }}
               >
-                Clarifies what is known, assumed, and still unclear before prompting AI.
+                Clarifies what is known, assumed, and still unclear before
+                prompting AI.
               </p>
 
-<div
-  style={{
-    display: "flex",
-    gap: "0.8rem",
-    flexWrap: "wrap",
-  }}
->
-  <button
-    type="button"
-    onClick={startListening}
-    disabled={loading || listening}
-    style={{
-      padding: "0.85rem 1.1rem",
-      borderRadius: "999px",
-      border: "1px solid #d7d7cf",
-      backgroundColor: listening ? "#111" : "#fff",
-      color: listening ? "#fff" : "#111",
-      fontSize: "0.95rem",
-      fontWeight: 600,
-      cursor: loading || listening ? "default" : "pointer",
-      fontFamily: "inherit",
-      opacity: loading ? 0.6 : 1,
-    }}
-  >
-    {listening ? "Listening..." : "Mic"}
-  </button>
+              <div
+                style={{
+                  display: "flex",
+                  gap: "0.8rem",
+                  flexWrap: "wrap",
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={startListening}
+                  disabled={loading || listening}
+                  style={{
+                    padding: "0.85rem 1.1rem",
+                    borderRadius: "999px",
+                    border: "1px solid #d7d7cf",
+                    backgroundColor: listening ? "#111" : "#fff",
+                    color: listening ? "#fff" : "#111",
+                    fontSize: "0.95rem",
+                    fontWeight: 600,
+                    cursor: loading || listening ? "default" : "pointer",
+                    fontFamily: "inherit",
+                    opacity: loading ? 0.6 : 1,
+                  }}
+                >
+                  {listening ? "Listening..." : "Mic"}
+                </button>
 
-  <button
-    type="button"
-    onClick={handleClarify}
-    disabled={loading || !input.trim()}
-    style={{
-      padding: "0.85rem 1.25rem",
-      borderRadius: "999px",
-      border: "1px solid #111",
-      backgroundColor: loading || !input.trim() ? "#d4d4d4" : "#111",
-      color: "#fff",
-      fontSize: "0.95rem",
-      fontWeight: 600,
-      cursor: loading || !input.trim() ? "default" : "pointer",
-      fontFamily: "inherit",
-      opacity: loading || !input.trim() ? 0.85 : 1,
-    }}
-  >
-    {loading ? "Clarifying..." : "Clarify"}
-  </button>
-</div>
-
-          {error && (
-            <div
-              style={{
-                marginTop: "1.25rem",
-                padding: "1rem 1.1rem",
-                borderRadius: "14px",
-                backgroundColor: "#fff1f1",
-                border: "1px solid #f2caca",
-                color: "#c62828",
-                fontSize: "0.95rem",
-                lineHeight: 1.6,
-              }}
-            >
-              {error}
+                <button
+                  type="button"
+                  onClick={handleClarify}
+                  disabled={loading || !input.trim()}
+                  style={{
+                    padding: "0.85rem 1.25rem",
+                    borderRadius: "999px",
+                    border: "1px solid #111",
+                    backgroundColor:
+                      loading || !input.trim() ? "#d4d4d4" : "#111",
+                    color: "#fff",
+                    fontSize: "0.95rem",
+                    fontWeight: 600,
+                    cursor: loading || !input.trim() ? "default" : "pointer",
+                    fontFamily: "inherit",
+                    opacity: loading || !input.trim() ? 0.85 : 1,
+                  }}
+                >
+                  {loading ? "Clarifying..." : "Clarify"}
+                </button>
+              </div>
             </div>
-          )}
+            {/* END footer row */}
+
+            {error && (
+              <div
+                style={{
+                  marginTop: "1.25rem",
+                  padding: "1rem 1.1rem",
+                  borderRadius: "14px",
+                  backgroundColor: "#fff1f1",
+                  border: "1px solid #f2caca",
+                  color: "#c62828",
+                  fontSize: "0.95rem",
+                  lineHeight: 1.6,
+                }}
+              >
+                {error}
+              </div>
+            )}
+          </div>
+          {/* END white form card */}
 
           {result && (
             <div
@@ -428,7 +430,6 @@ function startListening(): void {
                 >
                   Orientation
                 </h3>
-
                 <p
                   style={{
                     color: "#333",
@@ -463,7 +464,6 @@ function startListening(): void {
                   >
                     Question
                   </h3>
-
                   <p
                     style={{
                       color: "#333",
@@ -478,7 +478,9 @@ function startListening(): void {
               )}
             </div>
           )}
+          {/* END result card */}
         </div>
+        {/* END maxWidth 760px centering div */}
       </main>
     </div>
   );

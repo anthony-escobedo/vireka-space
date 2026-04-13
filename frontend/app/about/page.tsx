@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function AboutPage() {
   return (
   <div
@@ -21,6 +23,19 @@ export default function AboutPage() {
         boxSizing: "border-box",
       }}
     >
+    <div style={{ marginBottom: "1.5rem" }}>
+      <Link
+        href="/"
+        style={{
+        color: "#444",
+        textDecoration: "none",
+        fontSize: "0.95rem",
+      }}
+    >
+        ← Back to home
+      </Link>
+    </div>
+      
       <h1
         style={{
           fontSize: "1.9rem",

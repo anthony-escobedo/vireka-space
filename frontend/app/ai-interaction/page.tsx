@@ -318,42 +318,7 @@ export default function AIInteractionPage() {
               what the actual problem is.
             </p>
 
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: "0.65rem",
-                marginBottom: "1.25rem",
-              }}
-            >
-              {[
-                "The problem feels unclear even though we have discussed it a lot.",
-                "The output looks reasonable, but something about the reasoning feels off.",
-                "I am not sure whether the issue is the prompt, the model, or the objective.",
-                "There are many variables and I cannot tell what actually matters.",
-              ].map((prompt) => (
-                <button
-                  key={prompt}
-                  type="button"
-                  onClick={() => insertPrompt(prompt)}
-                  style={{
-                    padding: "0.65rem 0.9rem",
-                    borderRadius: "999px",
-                    border: "1px solid #dfddd7",
-                    backgroundColor: "#fff",
-                    color: "#333",
-                    fontSize: "0.84rem",
-                    lineHeight: 1.35,
-                    cursor: "pointer",
-                    fontFamily: "inherit",
-                    textAlign: "left",
-                  }}
-                >
-                  {prompt}
-                </button>
-              ))}
-            </div>
-
+            
             <div
               style={{
                 display: "flex",

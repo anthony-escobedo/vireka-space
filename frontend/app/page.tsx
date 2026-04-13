@@ -58,24 +58,17 @@ export default function ClarifyPage() {
       <div style={{ marginBottom: "1.75rem" }}>
         <h3
           style={{
-            fontSize: "0.7rem",
+            fontSize: "0.68rem",
             fontWeight: 600,
             letterSpacing: "0.1em",
             textTransform: "uppercase",
             color: "#999",
-            marginBottom: "0.625rem",
             margin: "0 0 0.625rem 0",
           }}
         >
           {label}
         </h3>
-        <ul
-          style={{
-            paddingLeft: "1.125rem",
-            margin: 0,
-            listStyleType: "disc",
-          }}
-        >
+        <ul style={{ paddingLeft: "1.125rem", margin: 0, listStyleType: "disc" }}>
           {items.map((item, i) => (
             <li
               key={i}
@@ -133,14 +126,14 @@ export default function ClarifyPage() {
           <span
             style={{
               display: "inline-block",
-              fontSize: "0.7rem",
+              fontSize: "0.65rem",
               fontWeight: 600,
-              letterSpacing: "0.1em",
+              letterSpacing: "0.08em",
               textTransform: "uppercase",
-              color: "#111",
-              border: "1.5px solid #bbb",
+              color: "#555",
+              border: "1.5px solid #d6d3d1",
               borderRadius: "999px",
-              padding: "0.3rem 0.85rem",
+              padding: "6px 12px",
             }}
           >
             Clarify
@@ -162,48 +155,49 @@ export default function ClarifyPage() {
         </h1>
 
         {/* Intro text */}
-        <p
-          style={{
-            fontSize: "0.95rem",
-            color: "#444",
-            lineHeight: 1.6,
-            margin: "0 0 0.75rem 0",
-          }}
-        >
-          Describe a situation as you currently understand it.
-        </p>
-        <p
-          style={{
-            fontSize: "0.95rem",
-            color: "#444",
-            lineHeight: 1.65,
-            margin: "0 0 2.25rem 0",
-            maxWidth: "640px",
-          }}
-        >
-          VIREKA will help distinguish what appears to be happening, what may be
-          assumed, what may still be unclear, and what conditions may be shaping
-          the situation before a response is formed.
-        </p>
+        <div style={{ maxWidth: "640px" }}>
+          <p
+            style={{
+              fontSize: "0.95rem",
+              color: "#444",
+              lineHeight: 1.6,
+              margin: "0 0 0.75rem 0",
+            }}
+          >
+            Describe a situation as you currently understand it.
+          </p>
+          <p
+            style={{
+              fontSize: "0.95rem",
+              color: "#444",
+              lineHeight: 1.65,
+              margin: 0,
+            }}
+          >
+            VIREKA will help distinguish what appears to be happening, what may
+            be assumed, what may still be unclear, and what conditions may be
+            shaping the situation before a response is formed.
+          </p>
+        </div>
 
         {/* Divider */}
         <div
           style={{
-            borderTop: "1px solid #ddd",
-            marginBottom: "1.75rem",
+            borderTop: "1px solid #e7e5e4",
+            marginTop: "2.25rem",
+            marginBottom: "2.25rem",
           }}
         />
 
         {/* Form card */}
         <div
           style={{
-            backgroundColor: "#fff",
+            backgroundColor: "#ffffff",
             borderRadius: "16px",
-            border: "1px solid #e2e0db",
+            border: "1px solid #e7e5e4",
             padding: "1.75rem 1.75rem 1.5rem",
           }}
         >
-          {/* Situation label */}
           <label
             style={{
               display: "block",
@@ -216,7 +210,6 @@ export default function ClarifyPage() {
             Situation
           </label>
 
-          {/* Textarea */}
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -226,9 +219,9 @@ export default function ClarifyPage() {
               display: "block",
               width: "100%",
               boxSizing: "border-box",
-              backgroundColor: "#fafaf8",
+              backgroundColor: "#fafafa",
               color: "#111",
-              border: "1px solid #ddd",
+              border: "1px solid #e7e5e4",
               borderRadius: "10px",
               padding: "1rem 1.125rem",
               fontSize: "0.925rem",
@@ -242,11 +235,11 @@ export default function ClarifyPage() {
               e.currentTarget.style.borderColor = "#aaa";
             }}
             onBlur={(e) => {
-              e.currentTarget.style.borderColor = "#ddd";
+              e.currentTarget.style.borderColor = "#e7e5e4";
             }}
           />
 
-          {/* Footer row: helper text + button */}
+          {/* Footer row */}
           <div
             style={{
               display: "flex",
@@ -285,17 +278,15 @@ export default function ClarifyPage() {
                 fontSize: "0.9rem",
                 fontWeight: 600,
                 cursor: isDisabled ? "not-allowed" : "pointer",
-                transition: "background-color 0.15s, opacity 0.15s",
+                transition: "background-color 0.15s",
                 letterSpacing: "-0.01em",
                 whiteSpace: "nowrap",
               }}
               onMouseEnter={(e) => {
-                if (!isDisabled)
-                  e.currentTarget.style.backgroundColor = "#333";
+                if (!isDisabled) e.currentTarget.style.backgroundColor = "#333";
               }}
               onMouseLeave={(e) => {
-                if (!isDisabled)
-                  e.currentTarget.style.backgroundColor = "#111";
+                if (!isDisabled) e.currentTarget.style.backgroundColor = "#111";
               }}
             >
               {loading ? "Clarifying…" : "Clarify"}
@@ -326,8 +317,8 @@ export default function ClarifyPage() {
           <div
             style={{
               marginTop: "2rem",
-              backgroundColor: "#fff",
-              border: "1px solid #e2e0db",
+              backgroundColor: "#ffffff",
+              border: "1px solid #e7e5e4",
               borderRadius: "16px",
               padding: "2rem 1.75rem",
             }}
@@ -341,7 +332,7 @@ export default function ClarifyPage() {
               <div style={{ marginBottom: "1.75rem" }}>
                 <h3
                   style={{
-                    fontSize: "0.7rem",
+                    fontSize: "0.68rem",
                     fontWeight: 600,
                     letterSpacing: "0.1em",
                     textTransform: "uppercase",
@@ -369,14 +360,14 @@ export default function ClarifyPage() {
                 style={{
                   padding: "1.125rem 1.25rem",
                   backgroundColor: "#f9f8f5",
-                  border: "1px solid #e2e0db",
+                  border: "1px solid #e7e5e4",
                   borderLeft: "3px solid #111",
                   borderRadius: "0 10px 10px 0",
                 }}
               >
                 <h3
                   style={{
-                    fontSize: "0.7rem",
+                    fontSize: "0.68rem",
                     fontWeight: 600,
                     letterSpacing: "0.1em",
                     textTransform: "uppercase",

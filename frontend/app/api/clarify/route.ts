@@ -182,15 +182,15 @@ OUTPUT FORMAT
 
 You must respond with a valid JSON object only. No prose, no markdown, no text outside the JSON.
 
-Use exactly these keys:
+Return exactly this shape:
 
 {
-  "observable": ["string", ...],
-  "interpretive": ["string", ...],
-  "unknown": ["string", ...],
-  "structural": ["string", ...],
-  "orientation": "string",
-  "question": "string"
+  "observable": ["..."],
+  "interpretive": ["..."],
+  "unknown": ["..."],
+  "structural": ["..."],
+  "orientation": "...",
+  "question": "..."
 }
 
 Key definitions:
@@ -202,10 +202,12 @@ Key definitions:
 - question: the single most clarifying question to ask right now
 
 Rules:
-- All array values must be non-empty strings
-- orientation must be a non-empty string
-- question must be a non-empty string
-- Return nothing outside the JSON object. No markdown. No preamble. No trailing text.
+- All four array fields must contain at least one non-empty string
+- orientation must be a single non-empty string
+- question must be a single non-empty string
+- Do not nest objects inside arrays
+- Do not add extra keys
+- Return nothing outside the JSON object. No preamble. No trailing text.
 `;
 
 function isStringArray(val: unknown): val is string[] {

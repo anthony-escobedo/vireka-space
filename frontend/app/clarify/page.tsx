@@ -95,6 +95,34 @@ export default function ClarifyPage() {
       setLoading(false);
     }
   }
+      function cleanTranscript(text: string) {
+      let t = text.trim();
+
+      if (!t) return "";
+
+      // capitalize first letter
+      t = t.charAt(0).toUpperCase() + t.slice(1);
+
+      // light comma smoothing
+      t = t.replace(/\b(and|but|so|because)\b/gi, ", $1");
+
+      // remove duplicate commas
+      t = t.replace(/,\s*,/g, ",");
+
+      // prevent comma at start
+      t = t.replace(/^,\s*/, "");
+
+      // normalize spacing
+      t = t.replace(/\s+/g, " ");
+
+      // ensure ending punctuation
+      if (!/[.!?]$/.test(t)) {
+      t += ".";
+  }
+
+      return t;
+}
+  
 function startListening(): void {
   const SpeechRecognition =
     window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -116,12 +144,14 @@ function startListening(): void {
   };
 
   recognition.onresult = (event) => {
-    const transcript = event.results[0][0].transcript;
+  let transcript = event.results[0][0].transcript;
 
-    setInput((prev) =>
-      prev ? prev + " " + transcript : transcript
-    );
-  };
+  transcript = cleanTranscript(transcript);
+
+  setInput((prev) =>
+    prev ? prev + " " + transcript : transcript
+  );
+};
 
   recognition.onerror = (event) => {
     setError("Microphone error: " + event.error);

@@ -107,82 +107,13 @@ export default function AIInteractionPage() {
         overflowX: "hidden",
       }}
     >
-      <header
-        style={{
-          width: "100%",
-          padding: "20px 24px",
-          position: "sticky",
-          top: 0,
-          backgroundColor: "rgba(247,247,242,0.92)",
-          backdropFilter: "blur(8px)",
-          borderBottom: "1px solid rgba(0,0,0,0.05)",
-          zIndex: 10,
-        }}
-      >
-        <div
-          style={{
-            maxWidth: "1100px",
-            margin: "0 auto",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            gap: "12px",
-            flexWrap: "wrap",
-            width: "100%",
-            boxSizing: "border-box",
-          }}
-        >
-          <Link
-            href="/"
-            style={{
-              fontSize: "18px",
-              fontWeight: 650,
-              letterSpacing: "-0.015em",
-              color: "#000",
-              textDecoration: "none",
-              display: "inline-block",
-              whiteSpace: "nowrap",
-              flexShrink: 0,
-            }}
-          >
-            VIREKA Space
-          </Link>
-
-          <nav
-            style={{
-              display: "flex",
-              gap: "10px",
-              fontSize: "13px",
-              flexWrap: "wrap",
-              justifyContent: "flex-start",
-              width: "100%",
-              maxWidth: "100%",
-            }}
-          >
-            <Link href="/about" style={{ color: "#222", textDecoration: "none" }}>
-              About
-            </Link>
-
-            <Link href="/clarify" style={{ color: "#222", textDecoration: "none" }}>
-              Clarify
-            </Link>
-
-            <Link
-              href="/ai-interaction"
-              style={{ color: "#222", textDecoration: "none" }}
-            >
-              AI Interaction
-            </Link>
-          </nav>
-        </div>
-      </header>
 
       <main
         style={{
           width: "100%",
           maxWidth: "960px",
           margin: "0 auto",
-          padding: "2rem 1.25rem 3rem",
+          padding: "1,75rem 1.25rem 3rem",
           boxSizing: "border-box",
         }}
       >
@@ -224,11 +155,11 @@ export default function AIInteractionPage() {
 
           <h1
             style={{
-              fontSize: "clamp(2rem, 5vw, 3.25rem)",
-              lineHeight: 1.08,
-              letterSpacing: "-0.035em",
-              fontWeight: 600,
-              margin: "0 0 1rem 0",
+              fontSize: "clamp(2rem, 5vw, 2.85rem)",
+              fontWeight: 700,
+              lineHeight: 1.15,
+              letterSpacing: "-0.03em",
+              margin: "0 0 1.25rem 0",
               wordBreak: "break-word",
               overflowWrap: "anywhere",
             }}
@@ -331,12 +262,13 @@ export default function AIInteractionPage() {
             >
               <p
                 style={{
-                  fontSize: "0.8rem",
-                  color: "#777",
-                  margin: 0,
-                  lineHeight: 1.65,
-                  maxWidth: "540px",
-                }}
+              fontSize: "0.8rem",
+              color: "#888",
+              lineHeight: 1.55,
+              margin: 0,
+              maxWidth: "480px",
+              flex: "1 1 260px",
+            }}
               >
                 Clarifies what is known, assumed, and still unclear before prompting AI.
               </p>

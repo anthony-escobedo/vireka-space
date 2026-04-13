@@ -233,6 +233,7 @@ const userInput = input.trim();
 
     return NextResponse.json(validated, { status: 200 });
   } catch (err) {
+    console.error("clarify error", err);
     return NextResponse.json(
       {
         error: "Internal server error.",

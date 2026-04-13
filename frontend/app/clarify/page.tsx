@@ -214,6 +214,7 @@ export default function ClarifyPage() {
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
+            disabled={loading}
             placeholder={`Example: "A coworker stopped replying after I sent a detailed message, and now I'm assuming they may be upset or avoiding me."`}
             rows={8}
             style={{

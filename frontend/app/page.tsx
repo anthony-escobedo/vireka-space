@@ -76,9 +76,9 @@ export default function HomePage() {
         style={{
           minHeight: "calc(100vh - 80px)",
           display: "flex",
-          alignItems: "center",
+          alignItems: "flex-start",
           justifyContent: "center",
-          padding: "48px 24px 72px",
+          padding: "32px 24px 72px",
         }}
       >
         <div

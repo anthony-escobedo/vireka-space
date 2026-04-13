@@ -144,23 +144,24 @@ export default function HomePage() {
               marginBottom: "30px",
             }}
           >
-            <a
-              href="#clarify"
-              style={{
-                padding: "16px 26px",
-                fontSize: "16px",
-                fontWeight: 600,
-                borderRadius: "999px",
-                border: "1px solid #111",
-                backgroundColor: "#111",
-                color: "#fff",
-                textDecoration: "none",
-                minWidth: "210px",
-              }}
-            >
-              Clarify a situation
-            </a>
-
+            <Link
+  href="/clarify"
+  style={{
+    padding: "16px 26px",
+    fontSize: "16px",
+    fontWeight: 600,
+    borderRadius: "999px",
+    border: "1px solid #111",
+    backgroundColor: "#111",
+    color: "#fff",
+    textDecoration: "none",
+    minWidth: "210px",
+    display: "inline-block",
+    textAlign: "center",
+  }}
+>
+  Clarify a situation
+</Link>
             <a
               href="#ai-interaction"
               style={{

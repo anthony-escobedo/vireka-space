@@ -363,15 +363,18 @@ export default function AIInteractionPage() {
                   onClick={handleClarify}
                   disabled={loading || !input.trim()}
                   style={{
+                  flexShrink: 0,
                   padding: "0.7rem 1.75rem",
+                  backgroundColor: isDisabled ? "#ccc" : "#111",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "999px",
                   fontSize: "0.9rem",
                   fontWeight: 600,
-                  borderRadius: "999px",
-                  border: "1px solid #111",
+                  cursor: isDisabled ? "not-allowed" : "pointer",
+                  transition: "background-color 0.15s",
                   letterSpacing: "-0.01em",
                   whiteSpace: "nowrap",
-                  transition: "background-color 0.15s",
-                  opacity: loading || !input.trim() ? 0.85 : 1,
                   }}
                 >
                   {loading ? "Clarifying..." : "Clarify"}

@@ -1,399 +1,461 @@
-"use client";
-
-import { useState } from "react";
-import Link from "next/link";
-
-type ClarifyResult = {
-  observable: string[];
-  interpretive: string[];
-  unknown: string[];
-  structural: string[];
-  orientation: string;
-  question?: string;
-};
-
-export default function ClarifyPage() {
-  const [input, setInput] = useState<string>("");
-  const [result, setResult] = useState<ClarifyResult | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function handleClarify(): Promise<void> {
-    if (!input.trim()) return;
-    setLoading(true);
-    setError(null);
-    setResult(null);
-
-    try {
-      const res = await fetch("/api/clarify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ input: input.trim() }),
-      });
-
-      const data: unknown = await res.json().catch(() => null);
-
-      if (!res.ok) {
-        const errData = data as { error?: string } | null;
-        throw new Error(
-          errData?.error ?? `Request failed with status ${res.status}`
-        );
-      }
-
-      setResult(data as ClarifyResult);
-    } catch (err: unknown) {
-      setError(
-        err instanceof Error ? err.message : "An unexpected error occurred."
-      );
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  const isDisabled = loading || !input.trim();
-
-  function renderList(items: string[] | undefined, label: string) {
-    if (!items || items.length === 0) return null;
-    return (
-      <div style={{ marginBottom: "1.75rem" }}>
-        <h3
-          style={{
-            fontSize: "0.68rem",
-            fontWeight: 600,
-            letterSpacing: "0.1em",
-            textTransform: "uppercase",
-            color: "#999",
-            margin: "0 0 0.625rem 0",
-          }}
-        >
-          {label}
-        </h3>
-        <ul style={{ paddingLeft: "1.125rem", margin: 0, listStyleType: "disc" }}>
-          {items.map((item, i) => (
-            <li
-              key={i}
-              style={{
-                marginBottom: "0.4rem",
-                color: "#333",
-                fontSize: "0.95rem",
-                lineHeight: 1.6,
-              }}
-            >
-              {item}
-            </li>
-          ))}
-        </ul>
-      </div>
-    );
-  }
-
+export default function HomePage() {
   return (
     <main
       style={{
         minHeight: "100vh",
-        backgroundColor: "#f5f3ef",
+        backgroundColor: "#f7f7f2",
+        color: "#111111",
         fontFamily:
-          "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif",
-        color: "#111",
+          'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
       }}
     >
-      <div
+      <header
         style={{
-          maxWidth: "780px",
-          margin: "0 auto",
-          padding: "2.5rem 1.5rem 4rem",
+          width: "100%",
+          padding: "22px 24px",
+          position: "sticky",
+          top: 0,
+          backgroundColor: "rgba(247, 247, 242, 0.92)",
+          backdropFilter: "blur(10px)",
+          borderBottom: "1px solid rgba(0,0,0,0.05)",
+          zIndex: 10,
         }}
       >
-        {/* Back link */}
-        <div style={{ marginBottom: "2rem" }}>
-          <Link
-            href="/"
-            style={{
-              fontSize: "0.875rem",
-              color: "#555",
-              textDecoration: "none",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "0.25rem",
-            }}
-          >
-            ← Back to home
-          </Link>
-        </div>
-
-        {/* Pill label */}
-        <div style={{ marginBottom: "1.25rem" }}>
-          <span
-            style={{
-              display: "inline-block",
-              fontSize: "0.65rem",
-              fontWeight: 600,
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              color: "#555",
-              border: "1.5px solid #d6d3d1",
-              borderRadius: "999px",
-              padding: "6px 12px",
-            }}
-          >
-            Clarify
-          </span>
-        </div>
-
-        {/* Main heading */}
-        <h1
-          style={{
-            fontSize: "clamp(2rem, 5vw, 2.85rem)",
-            fontWeight: 700,
-            lineHeight: 1.15,
-            letterSpacing: "-0.03em",
-            color: "#111",
-            margin: "0 0 1.25rem 0",
-          }}
-        >
-          Clarify a situation
-        </h1>
-
-        {/* Intro text */}
-        <div style={{ maxWidth: "640px" }}>
-          <p
-            style={{
-              fontSize: "0.95rem",
-              color: "#444",
-              lineHeight: 1.6,
-              margin: "0 0 0.75rem 0",
-            }}
-          >
-            Describe a situation, decision, or AI-related question as it
-            currently appears.
-          </p>
-          <p
-            style={{
-              fontSize: "0.95rem",
-              color: "#444",
-              lineHeight: 1.65,
-              margin: 0,
-            }}
-          >
-            VIREKA helps distinguish what appears to be happening, what may be
-            assumed, and what may still be unclear, so responses begin from
-            clearer understanding.
-          </p>
-        </div>
-
-        {/* Divider */}
         <div
           style={{
-            borderTop: "1px solid #e7e5e4",
-            marginTop: "2.25rem",
-            marginBottom: "2.25rem",
-          }}
-        />
-
-        {/* Form card */}
-        <div
-          style={{
-            backgroundColor: "#ffffff",
-            borderRadius: "16px",
-            border: "1px solid #e7e5e4",
-            padding: "1.75rem 1.75rem 1.5rem",
+            maxWidth: "1100px",
+            margin: "0 auto",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "20px",
+            flexWrap: "wrap",
           }}
         >
-          <label
-            style={{
-              display: "block",
-              fontSize: "0.875rem",
-              fontWeight: 600,
-              color: "#111",
-              marginBottom: "0.875rem",
-            }}
-          >
-            Situation or question
-          </label>
-
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder={`Example: "A coworker stopped replying after I sent a detailed message, and now I'm assuming they may be upset or avoiding me."`}
-            rows={8}
-            style={{
-              display: "block",
-              width: "100%",
-              boxSizing: "border-box",
-              backgroundColor: "#fafafa",
-              color: "#111",
-              border: "1px solid #e7e5e4",
-              borderRadius: "10px",
-              padding: "1rem 1.125rem",
-              fontSize: "0.925rem",
-              lineHeight: 1.65,
-              resize: "vertical",
-              outline: "none",
-              fontFamily: "inherit",
-              transition: "border-color 0.15s",
-            }}
-            onFocus={(e) => {
-              e.currentTarget.style.borderColor = "#aaa";
-            }}
-            onBlur={(e) => {
-              e.currentTarget.style.borderColor = "#e7e5e4";
-            }}
-          />
-
-          {/* Footer row */}
           <div
             style={{
+              fontSize: "18px",
+              fontWeight: 700,
+              letterSpacing: "-0.02em",
+            }}
+          >
+            VIREKA Space
+          </div>
+
+          <nav
+            style={{
               display: "flex",
-              alignItems: "flex-end",
-              justifyContent: "space-between",
-              gap: "1.5rem",
-              marginTop: "1rem",
+              alignItems: "center",
+              gap: "22px",
               flexWrap: "wrap",
             }}
           >
-            <p
+            <a
+              href="#about"
               style={{
-                fontSize: "0.8rem",
-                color: "#888",
-                lineHeight: 1.55,
-                margin: 0,
-                maxWidth: "480px",
-                flex: "1 1 260px",
+                textDecoration: "none",
+                color: "#222222",
+                fontSize: "15px",
+                fontWeight: 500,
               }}
             >
-              Include the situation as you currently see it, even if
-              interpretation or uncertainty are present. The system helps
-              separate these elements before a response or prompt is formed.
-            </p>
+              About
+            </a>
+            <a
+              href="#clarify"
+              style={{
+                textDecoration: "none",
+                color: "#222222",
+                fontSize: "15px",
+                fontWeight: 500,
+              }}
+            >
+              Clarify
+            </a>
+            <a
+              href="#ai-interaction"
+              style={{
+                textDecoration: "none",
+                color: "#222222",
+                fontSize: "15px",
+                fontWeight: 500,
+              }}
+            >
+              AI Interaction
+            </a>
+          </nav>
+        </div>
+      </header>
 
-            <button
-              onClick={handleClarify}
-              disabled={isDisabled}
+      <section
+        style={{
+          minHeight: "calc(100vh - 82px)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "56px 24px 72px",
+        }}
+      >
+        <div
+          style={{
+            width: "100%",
+            maxWidth: "920px",
+            textAlign: "center",
+          }}
+        >
+          <div
+            style={{
+              display: "inline-block",
+              padding: "10px 16px",
+              borderRadius: "999px",
+              border: "1px solid #d8d8d1",
+              backgroundColor: "#ffffff",
+              fontSize: "14px",
+              fontWeight: 600,
+              letterSpacing: "0.03em",
+              marginBottom: "30px",
+            }}
+          >
+            VIREKA SPACE
+          </div>
+
+          <h1
+            style={{
+              fontSize: "clamp(2.5rem, 6vw, 4.8rem)",
+              lineHeight: 1.02,
+              letterSpacing: "-0.05em",
+              fontWeight: 700,
+              margin: "0 0 30px 0",
+            }}
+          >
+            CLARITY BEFORE DECISION.
+            <br />
+            CLARITY BEFORE USING AI.
+          </h1>
+
+          <p
+            style={{
+              maxWidth: "760px",
+              margin: "0 auto",
+              fontSize: "clamp(1.05rem, 1.8vw, 1.32rem)",
+              lineHeight: 1.7,
+              color: "#2b2b2b",
+            }}
+          >
+            VIREKA Space helps separate what is happening from what may be
+            assumed, so responses begin from clearer understanding.
+          </p>
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: "16px",
+              flexWrap: "wrap",
+              marginTop: "38px",
+            }}
+          >
+            <a
+              href="#clarify"
               style={{
-                flexShrink: 0,
-                padding: "0.7rem 1.75rem",
-                backgroundColor: isDisabled ? "#ccc" : "#111",
-                color: "#fff",
-                border: "none",
-                borderRadius: "999px",
-                fontSize: "0.9rem",
+                textDecoration: "none",
+                padding: "16px 26px",
+                fontSize: "16px",
                 fontWeight: 600,
-                cursor: isDisabled ? "not-allowed" : "pointer",
-                transition: "background-color 0.15s",
-                letterSpacing: "-0.01em",
-                whiteSpace: "nowrap",
-              }}
-              onMouseEnter={(e) => {
-                if (!isDisabled) e.currentTarget.style.backgroundColor = "#333";
-              }}
-              onMouseLeave={(e) => {
-                if (!isDisabled) e.currentTarget.style.backgroundColor = "#111";
+                borderRadius: "999px",
+                border: "1px solid #111111",
+                backgroundColor: "#111111",
+                color: "#ffffff",
+                minWidth: "210px",
+                textAlign: "center",
               }}
             >
-              {loading ? "Clarifying…" : "Clarify"}
-            </button>
+              Clarify a situation
+            </a>
+
+            <a
+              href="#ai-interaction"
+              style={{
+                textDecoration: "none",
+                padding: "16px 26px",
+                fontSize: "16px",
+                fontWeight: 600,
+                borderRadius: "999px",
+                border: "1px solid #d1d1ca",
+                backgroundColor: "#ffffff",
+                color: "#111111",
+                minWidth: "210px",
+                textAlign: "center",
+              }}
+            >
+              AI interaction
+            </a>
+          </div>
+
+          <div
+            style={{
+              marginTop: "34px",
+              fontSize: "14px",
+              lineHeight: 1.75,
+              color: "#606060",
+            }}
+          >
+            <div>Developed by Anthony Escobedo</div>
+            <div>
+              Based on <em>Beyond Thought: Awareness as Design Intelligence</em>
+            </div>
           </div>
         </div>
+      </section>
 
-        {/* Error state */}
-        {error && (
+      <section
+        id="about"
+        style={{
+          padding: "0 24px 100px",
+        }}
+      >
+        <div
+          style={{
+            width: "100%",
+            maxWidth: "960px",
+            margin: "0 auto",
+          }}
+        >
           <div
             style={{
-              marginTop: "1.5rem",
-              padding: "1rem 1.25rem",
-              backgroundColor: "#fff5f5",
-              border: "1px solid #fcc",
-              borderRadius: "12px",
-              color: "#c00",
-              fontSize: "0.9rem",
-              lineHeight: 1.5,
-            }}
-          >
-            {error}
-          </div>
-        )}
-
-        {/* Results */}
-        {result && (
-          <div
-            style={{
-              marginTop: "2rem",
               backgroundColor: "#ffffff",
-              border: "1px solid #e7e5e4",
-              borderRadius: "16px",
-              padding: "2rem 1.75rem",
+              border: "1px solid #e5e5de",
+              borderRadius: "28px",
+              padding: "42px 30px",
+              boxShadow: "0 1px 2px rgba(0,0,0,0.03)",
             }}
           >
-            {renderList(result.observable, "What can be observed")}
-            {renderList(result.interpretive, "What may be interpreted")}
-            {renderList(result.unknown, "What remains unknown")}
-            {renderList(result.structural, "Structural conditions")}
+            <h2
+              style={{
+                fontSize: "clamp(1.7rem, 4vw, 2.4rem)",
+                lineHeight: 1.15,
+                letterSpacing: "-0.035em",
+                margin: "0 0 22px 0",
+              }}
+            >
+              WHEN INTERPRETATION BECOMES CLEARER, DECISIONS BECOME SIMPLER.
+            </h2>
 
-            {result.orientation && (
-              <div style={{ marginBottom: "1.75rem" }}>
-                <h3
-                  style={{
-                    fontSize: "0.68rem",
-                    fontWeight: 600,
-                    letterSpacing: "0.1em",
-                    textTransform: "uppercase",
-                    color: "#999",
-                    margin: "0 0 0.625rem 0",
-                  }}
-                >
-                  Orientation
-                </h3>
-                <p
-                  style={{
-                    color: "#333",
-                    margin: 0,
-                    fontSize: "0.95rem",
-                    lineHeight: 1.65,
-                  }}
-                >
-                  {result.orientation}
-                </p>
-              </div>
-            )}
+            <p
+              style={{
+                fontSize: "18px",
+                lineHeight: 1.8,
+                color: "#2c2c2c",
+                margin: "0 0 22px 0",
+              }}
+            >
+              VIREKA Space helps clarify how situations are being understood
+              before conclusions form.
+            </p>
 
-            {result.question && (
+            <p
+              style={{
+                fontSize: "18px",
+                lineHeight: 1.8,
+                color: "#2c2c2c",
+                margin: "0 0 14px 0",
+              }}
+            >
+              The system helps distinguish between:
+            </p>
+
+            <ul
+              style={{
+                margin: "0 0 28px 0",
+                paddingLeft: "24px",
+                fontSize: "18px",
+                lineHeight: 1.95,
+                color: "#2c2c2c",
+              }}
+            >
+              <li>what can be directly observed</li>
+              <li>what may be interpreted</li>
+              <li>what remains unknown</li>
+            </ul>
+
+            <p
+              style={{
+                fontSize: "18px",
+                lineHeight: 1.8,
+                color: "#2c2c2c",
+                margin: "0 0 28px 0",
+              }}
+            >
+              When these are clearer, decisions, conversations, and AI prompts
+              begin from a more stable starting point.
+            </p>
+
+            <h3
+              style={{
+                fontSize: "14px",
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                color: "#6a6a6a",
+                margin: "0 0 12px 0",
+              }}
+            >
+              Useful when
+            </h3>
+
+            <ul
+              style={{
+                margin: "0 0 28px 0",
+                paddingLeft: "24px",
+                fontSize: "18px",
+                lineHeight: 1.95,
+                color: "#2c2c2c",
+              }}
+            >
+              <li>thinking through an important decision</li>
+              <li>preparing a complex AI prompt</li>
+              <li>navigating uncertainty</li>
+              <li>separating what is known from what is assumed</li>
+              <li>identifying what information may be missing</li>
+            </ul>
+
+            <p
+              style={{
+                fontSize: "18px",
+                lineHeight: 1.8,
+                color: "#2c2c2c",
+                margin: "0 0 22px 0",
+              }}
+            >
+              The system does not provide advice.
+              <br />
+              It helps clarify understanding before responding or deciding.
+            </p>
+
+            <div
+              style={{
+                borderTop: "1px solid #ecece5",
+                paddingTop: "22px",
+                display: "grid",
+                gap: "8px",
+              }}
+            >
               <div
                 style={{
-                  padding: "1.125rem 1.25rem",
-                  backgroundColor: "#f9f8f5",
-                  border: "1px solid #e7e5e4",
-                  borderLeft: "3px solid #111",
-                  borderRadius: "0 10px 10px 0",
+                  fontSize: "18px",
+                  fontWeight: 600,
+                  letterSpacing: "-0.01em",
                 }}
               >
-                <h3
-                  style={{
-                    fontSize: "0.68rem",
-                    fontWeight: 600,
-                    letterSpacing: "0.1em",
-                    textTransform: "uppercase",
-                    color: "#999",
-                    margin: "0 0 0.5rem 0",
-                  }}
-                >
-                  Clarifying question
-                </h3>
-                <p
-                  style={{
-                    color: "#111",
-                    margin: 0,
-                    fontSize: "0.95rem",
-                    lineHeight: 1.65,
-                    fontWeight: 500,
-                  }}
-                >
-                  {result.question}
-                </p>
+                Clarity before prompting.
               </div>
-            )}
+              <div
+                style={{
+                  fontSize: "18px",
+                  fontWeight: 600,
+                  letterSpacing: "-0.01em",
+                }}
+              >
+                Structure before response.
+              </div>
+              <div
+                style={{
+                  fontSize: "18px",
+                  fontWeight: 600,
+                  letterSpacing: "-0.01em",
+                }}
+              >
+                Understanding before decision.
+              </div>
+            </div>
           </div>
-        )}
-      </div>
+        </div>
+      </section>
+
+      <section
+        id="clarify"
+        style={{
+          padding: "0 24px 36px",
+        }}
+      >
+        <div
+          style={{
+            width: "100%",
+            maxWidth: "960px",
+            margin: "0 auto",
+          }}
+        >
+          <div
+            style={{
+              borderTop: "1px solid #e3e3db",
+              paddingTop: "28px",
+            }}
+          >
+            <h3
+              style={{
+                fontSize: "18px",
+                margin: "0 0 10px 0",
+              }}
+            >
+              Clarify
+            </h3>
+            <p
+              style={{
+                fontSize: "16px",
+                lineHeight: 1.75,
+                color: "#555555",
+                margin: 0,
+              }}
+            >
+              This path will help users examine a real situation by separating
+              observable facts, interpretations, and unknowns before deciding
+              how to respond.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section
+        id="ai-interaction"
+        style={{
+          padding: "0 24px 96px",
+        }}
+      >
+        <div
+          style={{
+            width: "100%",
+            maxWidth: "960px",
+            margin: "0 auto",
+          }}
+        >
+          <div
+            style={{
+              borderTop: "1px solid #e3e3db",
+              paddingTop: "28px",
+            }}
+          >
+            <h3
+              style={{
+                fontSize: "18px",
+                margin: "0 0 10px 0",
+              }}
+            >
+              AI Interaction
+            </h3>
+            <p
+              style={{
+                fontSize: "16px",
+                lineHeight: 1.75,
+                color: "#555555",
+                margin: 0,
+              }}
+            >
+              This path will help users shape prompts from clearer structure, so
+              interactions with AI begin from better framing rather than rushed
+              interpretation.
+            </p>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }

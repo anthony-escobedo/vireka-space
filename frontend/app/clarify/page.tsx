@@ -822,7 +822,64 @@ export default function ClarifyPage() {
         )}
 
         {result && !isDone && renderResult(result)}
-        {result && isDone && <DoneState />}
+        {result && isDone && (
+  <div
+    ref={resultRef}
+    style={{
+      marginTop: "2rem",
+      backgroundColor: "#ffffff",
+      border: "1px solid #e7e5e4",
+      borderRadius: "16px",
+      padding: "2rem 1.75rem",
+    }}
+  >
+    <h3
+      style={{
+        fontSize: "1.1rem",
+        fontWeight: 600,
+        color: "#111",
+        margin: "0 0 0.75rem 0",
+      }}
+    >
+      Thank you.
+    </h3>
+
+    <p
+      style={{
+        color: "#444",
+        margin: "0 0 1.25rem 0",
+        fontSize: "0.95rem",
+        lineHeight: 1.65,
+      }}
+    >
+      Clarity improves interaction quality.
+    </p>
+
+    <button
+      type="button"
+      onClick={() => {
+        setInput("");
+        setResult(null);
+        setLastClarifyResult(null);
+        setHistory([]);
+        setError(null);
+        setIsDone(false);
+      }}
+      style={{
+        padding: "0.7rem 1rem",
+        borderRadius: "999px",
+        border: "1px solid #d6d3d1",
+        backgroundColor: "#fff",
+        color: "#111",
+        fontSize: "0.9rem",
+        fontWeight: 600,
+        cursor: "pointer",
+      }}
+    >
+      Start a new situation
+    </button>
+  </div>
+)}
       </div>
     </main>
   );

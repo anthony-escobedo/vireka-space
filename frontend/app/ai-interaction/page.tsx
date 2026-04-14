@@ -893,92 +893,37 @@ export default function AIInteractionPage() {
   panel: ClarificationPanel,
   isLastPanel: boolean
 ) {
-    const open = isPanelOpen(panel.id);
-    const isLatest = panel.id === latestPanelId;
-    const showYourInput =
-      panel.kind === "refinement" ? panel.iteration.submittedInput : undefined;
+  const open = isPanelOpen(panel.id);
+  const isLatest = panel.id === latestPanelId;
+  const showYourInput =
+    panel.kind === "refinement" ? panel.iteration.submittedInput : undefined;
 
-    return (
-      <div
-        key={panel.id}
-        ref={isLatest ? resultRef : null}
-        style={{
-          marginTop: "1rem",
-          borderTop: "1px solid #ece9e4",
-          paddingTop: "0.2rem",
-        }}
+  return (
+    <div
+      key={panel.id}
+      ref={isLatest ? resultRef : null}
+      style={{
+        marginTop: "1rem",
+      }}
+    >
+      <CollapsibleLayer
+        title={panel.title}
+        summary={panel.summary}
+        isOpen={open}
+        onToggle={() => togglePanel(panel.id)}
+        contentClassName=""
       >
-        <button
-          type="button"
-          onClick={() => togglePanel(panel.id)}
-          aria-expanded={open}
+        <div
           style={{
-            width: "100%",
-            display: "flex",
-            alignItems: "flex-start",
-            gap: "0.85rem",
-            padding: "0.9rem 0.25rem 0.85rem 0.1rem",
-            border: "none",
-            background: "transparent",
-            cursor: "pointer",
-            textAlign: "left",
+            paddingBottom: isLastPanel ? "0.25rem" : "0.1rem",
           }}
         >
-          <span
-            style={{
-              display: "inline-flex",
-              width: "18px",
-              minWidth: "18px",
-              justifyContent: "center",
-              alignItems: "center",
-              color: "#8e8a84",
-              fontSize: "0.88rem",
-              lineHeight: 1,
-              transform: open ? "rotate(90deg)" : "rotate(0deg)",
-              transition: "transform 0.14s ease",
-              marginTop: "0.1rem",
-            }}
-          >
-            ▸
-          </span>
-
-          <span style={{ display: "block", flex: 1, minWidth: 0 }}>
-            <span
-              style={{
-                display: "block",
-                fontSize: "0.92rem",
-                fontWeight: 600,
-                color: "#111",
-                marginBottom: "0.18rem",
-              }}
-            >
-              {panel.title}
-            </span>
-            <span
-              style={{
-                display: "block",
-                fontSize: "0.84rem",
-                color: "#7a756f",
-                lineHeight: 1.5,
-              }}
-            >
-              {panel.summary}
-            </span>
-          </span>
-        </button>
-
-        {open && (
-          <div
-            style={{
-              paddingBottom: isLastPanel ? "0.25rem" : "0.1rem",
-            }}
-          >
-            {renderClarifyContent(panel, showYourInput)}
-          </div>
-        )}
-      </div>
-    );
-  }
+          {renderClarifyContent(panel, showYourInput)}
+        </div>
+      </CollapsibleLayer>
+    </div>
+  );
+}
 
   function renderClarificationPath() {
     if (panels.length === 0 && !initialSituation) return null;

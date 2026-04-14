@@ -1,0 +1,25 @@
+/* Global layout safety */
+
+html, body {
+  margin: 0;
+  padding: 0;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Prevent components from expanding layout width */
+* {
+  box-sizing: border-box;
+}
+
+/* Ensure media never causes overflow */
+img, video, canvas, svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Prevent long AI text from breaking layout */
+p, li, span, div {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}

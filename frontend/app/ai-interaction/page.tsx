@@ -1,8 +1,11 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import CollapsibleLayer from "../../components/CollapsibleLayer";
+
+import { useRouter } from "next/navigation";
 
 declare global {
   interface Window {
@@ -110,11 +113,18 @@ export default function AIInteractionPage() {
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const resultRef = useRef<HTMLDivElement | null>(null);
 
+  const router = useRouter();
+  const redirectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
-    return () => {
-      recognitionRef.current?.stop?.();
-    };
-  }, []);
+  return () => {
+    if (redirectTimeoutRef.current) {
+      clearTimeout(redirectTimeoutRef.current);
+    }
+
+    recognitionRef.current?.stop?.();
+  };
+}, []);
 
   function cleanTranscript(text: string): string {
     let t = text.trim();
@@ -488,16 +498,26 @@ export default function AIInteractionPage() {
     void submitToClarify("plain_language", "followup");
   }
 
-  function handleDone(): void {
+   function handleDone(): void {
     if (loading || !result) return;
+
     setIsDone(true);
-    setTimeout(() => {
-      resultRef.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-    }, 100);
+
+    if (redirectTimeoutRef.current) {
+      clearTimeout(redirectTimeoutRef.current);
   }
+
+  setTimeout(() => {
+    resultRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  }, 100);
+
+  redirectTimeoutRef.current = setTimeout(() => {
+    router.push("/");
+  }, 1800);
+}
 
   const panels = getPanels();
 
@@ -1471,7 +1491,7 @@ export default function AIInteractionPage() {
           <div style={{ marginTop: "1.5rem" }}>
             <button
               type="button"
-              onClick={resetSession}
+              onClick={() => router.push("/")}
               disabled={loading}
               style={{
                 padding: "0.72rem 1.1rem",
@@ -1485,7 +1505,7 @@ export default function AIInteractionPage() {
                 opacity: loading ? 0.6 : 1,
               }}
             >
-              Start over
+              Start new situation
             </button>
           </div>
         )}

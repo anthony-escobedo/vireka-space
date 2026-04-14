@@ -528,13 +528,7 @@ export async function POST(req: NextRequest) {
     }
 
     const validated = validateResponse(parsed);
-
-if (containsSecondPersonInResponse(validated)) {
-  const rewritten = await requestNeutralRewrite(validated, action);
-  return NextResponse.json(rewritten);
-}
-
-return NextResponse.json(validated);
+    return NextResponse.json(validated);
   } catch {
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }

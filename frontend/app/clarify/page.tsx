@@ -1002,7 +1002,7 @@ function renderClarifyContent(
           backgroundColor: "#ffffff",
           border: "1px solid #e7e5e4",
           borderRadius: "16px",
-          padding: "2rem 1.75rem",
+          padding: "1.6rem 1.25rem",
         }}
       >
         <div style={{ marginBottom: "0.25rem" }}>
@@ -1108,7 +1108,7 @@ function renderClarifyContent(
           backgroundColor: "#ffffff",
           borderRadius: "16px",
           border: "1px solid #e7e5e4",
-          padding: "1.75rem 1.75rem 1.5rem",
+          padding: "1.6rem 1.25rem 1.35rem",
         }}
       >
         <label
@@ -1386,7 +1386,7 @@ function renderClarifyContent(
             backgroundColor: "#ffffff",
             borderRadius: "16px",
             border: "1px solid #e7e5e4",
-            padding: "1.75rem 1.75rem 1.5rem",
+            padding: "1.6rem 1.25rem 1.35rem",
           }}
         >
           <label
@@ -1491,7 +1491,7 @@ function renderClarifyContent(
               backgroundColor: "#ffffff",
               border: "1px solid #e7e5e4",
               borderRadius: "16px",
-              padding: "2rem 1.75rem",
+              padding: "1.6rem 1.25rem",
             }}
           >
             <h3

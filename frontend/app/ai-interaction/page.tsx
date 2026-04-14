@@ -315,7 +315,7 @@ export default function AIInteractionPage() {
     const sections = [
       `What appears to be happening:\n${response.observable.join("\n")}`,
       `What may be assumed:\n${response.interpretive.join("\n")}`,
-      `What may still be unclear:\n${response.unknown.join("\n")}`,
+      `What may remain unclear:\n${response.unknown.join("\n")}`,
       `What may be influencing the AI interaction:\n${response.structural.join(
         "\n"
       )}`,

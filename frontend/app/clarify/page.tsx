@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import DoneState from "@/components/DoneState";
 
 declare global {
   interface Window {
@@ -69,11 +70,13 @@ type VirekaResponse = ClarifyResponse | SimplifyResponse | CloseResponse;
 export default function ClarifyPage() {
   const [input, setInput] = useState<string>("");
   const [result, setResult] = useState<VirekaResponse | null>(null);
-  const [lastClarifyResult, setLastClarifyResult] = useState<ClarifyResponse | null>(null);
+  const [lastClarifyResult, setLastClarifyResult] =
+    useState<ClarifyResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [listening, setListening] = useState<boolean>(false);
   const [history, setHistory] = useState<ConversationTurn[]>([]);
+  const [isDone, setIsDone] = useState<boolean>(false);
 
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const resultRef = useRef<HTMLDivElement | null>(null);
@@ -171,7 +174,8 @@ export default function ClarifyPage() {
     action: RequestAction,
     overrideInput?: string
   ): Promise<void> {
-    const effectiveInput = typeof overrideInput === "string" ? overrideInput : input;
+    const effectiveInput =
+      typeof overrideInput === "string" ? overrideInput : input;
     const trimmed = effectiveInput.trim();
 
     if (action === "clarify" && !trimmed) {
@@ -186,6 +190,7 @@ export default function ClarifyPage() {
 
     setLoading(true);
     setError(null);
+    setIsDone(false);
 
     try {
       const payload =
@@ -276,14 +281,20 @@ export default function ClarifyPage() {
   }
 
   function handleDone(): void {
-    if (loading) return;
-    void submitToClarify("clarify", "done");
+    if (loading || !result) return;
+    setIsDone(true);
+    setTimeout(() => {
+      resultRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 100);
   }
 
   const isClarifyDisabled = loading || !input.trim();
-  const isPlainLanguageDisabled = loading || !lastClarifyResult;
+  const isPlainLanguageDisabled = loading || !lastClarifyResult || isDone;
   const isMicDisabled = loading || listening;
-  const isDoneDisabled = loading || !result;
+  const isDoneDisabled = loading || !result || isDone;
 
   function renderList(items: string[] | undefined, label: string) {
     if (!items || items.length === 0) return null;
@@ -657,7 +668,7 @@ export default function ClarifyPage() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             disabled={loading}
-            placeholder="Continue the situation or introduce a new one..."
+            placeholder='Example: "The situation appears to call for action, but I do not yet see clearly which factors are driving the outcome or how they relate to each other."'
             rows={8}
             style={{
               display: "block",
@@ -704,9 +715,9 @@ export default function ClarifyPage() {
                 flex: "1 1 260px",
               }}
             >
-              Continue the same situation, respond to a clarifying question, or
-              introduce a new one. The system helps separate these elements
-              before a response or prompt is formed.
+              Include the situation as you currently see it, even if
+              interpretation or uncertainty are present. The system helps
+              separate these elements before a response or prompt is formed.
             </p>
 
             <div
@@ -811,7 +822,8 @@ export default function ClarifyPage() {
           </div>
         )}
 
-        {result && renderResult(result)}
+        {result && !isDone && renderResult(result)}
+        {result && isDone && <DoneState />}
       </div>
     </main>
   );

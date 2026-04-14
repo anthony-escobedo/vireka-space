@@ -67,6 +67,14 @@ type CloseResponse = {
 
 type VirekaResponse = ClarifyResponse | PlainLanguageResponse | CloseResponse;
 
+type ClarificationIteration = {
+  id: string;
+  step: number;
+  submittedInput: string;
+  source: "top" | "followup";
+  response: ClarifyResponse;
+};
+
 export default function ClarifyPage() {
   const [topInput, setTopInput] = useState<string>("");
   const [followupInput, setFollowupInput] = useState<string>("");
@@ -75,9 +83,13 @@ export default function ClarifyPage() {
     useState<ClarifyResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [listeningTarget, setListeningTarget] = useState<"top" | "followup" | null>(null);
+  const [listeningTarget, setListeningTarget] = useState<
+    "top" | "followup" | null
+  >(null);
   const [history, setHistory] = useState<ConversationTurn[]>([]);
   const [isDone, setIsDone] = useState<boolean>(false);
+  const [initialSituation, setInitialSituation] = useState<string>("");
+  const [iterations, setIterations] = useState<ClarificationIteration[]>([]);
 
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const resultRef = useRef<HTMLDivElement | null>(null);
@@ -137,7 +149,9 @@ export default function ClarifyPage() {
       transcript = cleanTranscript(transcript);
 
       if (target === "top") {
-        setTopInput((prev) => (prev.trim() ? `${prev.trim()} ${transcript}` : transcript));
+        setTopInput((prev) =>
+          prev.trim() ? `${prev.trim()} ${transcript}` : transcript
+        );
       } else {
         setFollowupInput((prev) =>
           prev.trim() ? `${prev.trim()} ${transcript}` : transcript
@@ -261,6 +275,20 @@ export default function ClarifyPage() {
 
         if (typedData.mode === "clarify") {
           setLastClarifyResult(typedData);
+
+          const newIteration: ClarificationIteration = {
+            id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+            step: iterations.length + 1,
+            submittedInput: trimmed,
+            source,
+            response: typedData,
+          };
+
+          setIterations((prev) => [...prev, newIteration]);
+
+          if (source === "top" && !initialSituation) {
+            setInitialSituation(trimmed);
+          }
         } else {
           setLastClarifyResult(null);
         }
@@ -345,15 +373,15 @@ export default function ClarifyPage() {
     if (!items || items.length === 0) return null;
 
     return (
-      <div style={{ marginBottom: "1.75rem" }}>
+      <div style={{ marginBottom: "1.9rem" }}>
         <h3
           style={{
-            fontSize: "0.68rem",
-            fontWeight: 600,
+            fontSize: "0.72rem",
+            fontWeight: 700,
             letterSpacing: "0.1em",
             textTransform: "uppercase",
-            color: "#999",
-            margin: "0 0 0.625rem 0",
+            color: "#8e8a84",
+            margin: "0 0 0.7rem 0",
           }}
         >
           {label}
@@ -369,10 +397,10 @@ export default function ClarifyPage() {
             <li
               key={i}
               style={{
-                marginBottom: "0.4rem",
+                marginBottom: "0.55rem",
                 color: "#333",
                 fontSize: "0.95rem",
-                lineHeight: 1.6,
+                lineHeight: 1.65,
               }}
             >
               {item}
@@ -383,13 +411,15 @@ export default function ClarifyPage() {
     );
   }
 
-  function renderPlainLanguageButton() {
+  function renderPlainLanguageButton(show: boolean) {
+    if (!show) return null;
+
     return (
       <div
         style={{
           display: "flex",
           justifyContent: "flex-start",
-          marginBottom: "1.5rem",
+          marginBottom: "1.65rem",
         }}
       >
         <button
@@ -423,116 +453,122 @@ export default function ClarifyPage() {
     );
   }
 
-  function renderResult(response: VirekaResponse) {
-    if (response.mode === "close") {
-      return (
-        <div
-          ref={resultRef}
-          style={{
-            marginTop: "2rem",
-            backgroundColor: "#ffffff",
-            border: "1px solid #e7e5e4",
-            borderRadius: "16px",
-            padding: "2rem 1.75rem",
-          }}
-        >
-          <div style={{ marginBottom: "1rem" }}>
-            <h3
-              style={{
-                fontSize: "0.68rem",
-                fontWeight: 600,
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                color: "#999",
-                margin: "0 0 0.625rem 0",
-              }}
-            >
-              Response
-            </h3>
-            <p
-              style={{
-                color: "#333",
-                margin: 0,
-                fontSize: "0.95rem",
-                lineHeight: 1.65,
-              }}
-            >
-              {response.message}
-            </p>
-          </div>
-        </div>
-      );
-    }
-
-    if (response.mode === "plain_language") {
-      return (
-        <div
-          ref={resultRef}
-          style={{
-            marginTop: "2rem",
-            backgroundColor: "#ffffff",
-            border: "1px solid #e7e5e4",
-            borderRadius: "16px",
-            padding: "2rem 1.75rem",
-          }}
-        >
-          {renderPlainLanguageButton()}
-
-          <div style={{ marginBottom: "1rem" }}>
-            <h3
-              style={{
-                fontSize: "0.68rem",
-                fontWeight: 600,
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                color: "#999",
-                margin: "0 0 0.625rem 0",
-              }}
-            >
-              Plain language
-            </h3>
-            <p
-              style={{
-                color: "#333",
-                margin: 0,
-                fontSize: "0.95rem",
-                lineHeight: 1.65,
-              }}
-            >
-              {response.message}
-            </p>
-          </div>
-        </div>
-      );
-    }
+  function renderInitialSituationCard() {
+    if (!initialSituation) return null;
 
     return (
       <div
-        ref={resultRef}
         style={{
-          marginTop: "2rem",
+          backgroundColor: "#fcfbf8",
+          border: "1px solid #e7e5e4",
+          borderRadius: "16px",
+          padding: "1.4rem 1.5rem",
+          marginTop: "1rem",
+        }}
+      >
+        <h3
+          style={{
+            fontSize: "0.72rem",
+            fontWeight: 700,
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+            color: "#8e8a84",
+            margin: "0 0 0.7rem 0",
+          }}
+        >
+          Initial situation
+        </h3>
+        <p
+          style={{
+            margin: 0,
+            color: "#333",
+            fontSize: "0.95rem",
+            lineHeight: 1.65,
+          }}
+        >
+          {initialSituation}
+        </p>
+      </div>
+    );
+  }
+
+  function renderRefinementCard(
+    iteration: ClarificationIteration,
+    isLatest: boolean
+  ) {
+    const response = iteration.response;
+    const refinementQuestions = isLatest
+      ? possibleClarifyingQuestions
+      : response.suggestedQuestions?.slice(0, 2) ?? [];
+
+    return (
+      <div
+        key={iteration.id}
+        ref={isLatest ? resultRef : null}
+        style={{
+          marginTop: "1.5rem",
           backgroundColor: "#ffffff",
           border: "1px solid #e7e5e4",
           borderRadius: "16px",
           padding: "2rem 1.75rem",
         }}
       >
-        {renderPlainLanguageButton()}
+        <div style={{ marginBottom: "1.25rem" }}>
+          <div
+            style={{
+              fontSize: "0.72rem",
+              fontWeight: 700,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              color: "#8e8a84",
+              marginBottom: "0.6rem",
+            }}
+          >
+            Refinement {iteration.step}
+          </div>
+
+          {iteration.source === "followup" && (
+            <div
+              style={{
+                backgroundColor: "#fafafa",
+                border: "1px solid #eceae7",
+                borderRadius: "10px",
+                padding: "0.9rem 1rem",
+              }}
+            >
+              <p
+                style={{
+                  margin: 0,
+                  color: "#444",
+                  fontSize: "0.9rem",
+                  lineHeight: 1.6,
+                }}
+              >
+                {iteration.submittedInput}
+              </p>
+            </div>
+          )}
+        </div>
+
+        {renderPlainLanguageButton(isLatest)}
 
         {renderList(response.observable, "What appears to be happening")}
         {renderList(response.interpretive, "What may be assumed")}
         {renderList(response.unknown, "What may still be unclear")}
-        {renderList(response.structural, "What may be influencing the situation")}
+        {renderList(
+          response.structural,
+          "What may be influencing the situation"
+        )}
 
         <div style={{ marginBottom: response.question ? "1.75rem" : 0 }}>
           <h3
             style={{
-              fontSize: "0.68rem",
-              fontWeight: 600,
+              fontSize: "0.72rem",
+              fontWeight: 700,
               letterSpacing: "0.1em",
               textTransform: "uppercase",
-              color: "#999",
-              margin: "0 0 0.625rem 0",
+              color: "#8e8a84",
+              margin: "0 0 0.7rem 0",
             }}
           >
             Orientation
@@ -566,18 +602,19 @@ export default function ClarifyPage() {
               border: "1px solid #e7e5e4",
               borderLeft: "3px solid #111",
               borderRadius: "0 10px 10px 0",
-              marginBottom: possibleClarifyingQuestions.length > 0 ? "1.25rem" : 0,
+              marginBottom:
+                refinementQuestions.length > 0 ? "1.25rem" : 0,
               cursor: "pointer",
             }}
           >
             <h3
               style={{
-                fontSize: "0.68rem",
-                fontWeight: 600,
+                fontSize: "0.72rem",
+                fontWeight: 700,
                 letterSpacing: "0.1em",
                 textTransform: "uppercase",
-                color: "#999",
-                margin: "0 0 0.5rem 0",
+                color: "#8e8a84",
+                margin: "0 0 0.55rem 0",
               }}
             >
               Clarifying question
@@ -596,16 +633,16 @@ export default function ClarifyPage() {
           </div>
         )}
 
-        {possibleClarifyingQuestions.length > 0 && (
-          <div style={{ marginTop: "1.5rem" }}>
+        {refinementQuestions.length > 0 && (
+          <div style={{ marginTop: "1.65rem" }}>
             <h3
               style={{
-                fontSize: "0.68rem",
-                fontWeight: 600,
+                fontSize: "0.72rem",
+                fontWeight: 700,
                 letterSpacing: "0.1em",
                 textTransform: "uppercase",
-                color: "#999",
-                margin: "0 0 0.8rem 0",
+                color: "#8e8a84",
+                margin: "0 0 0.85rem 0",
               }}
             >
               Possible clarifying questions
@@ -618,9 +655,9 @@ export default function ClarifyPage() {
                 gap: "0.6rem",
               }}
             >
-              {possibleClarifyingQuestions.map((item, index) => (
+              {refinementQuestions.map((item, index) => (
                 <button
-                  key={`${item}-${index}`}
+                  key={`${iteration.id}-${item}-${index}`}
                   type="button"
                   onClick={() => insertSuggestedQuestion(item)}
                   style={{
@@ -641,6 +678,125 @@ export default function ClarifyPage() {
             </div>
           </div>
         )}
+      </div>
+    );
+  }
+
+  function renderClarificationPath() {
+    if (iterations.length === 0 && !initialSituation) return null;
+
+    return (
+      <div style={{ marginTop: "2rem" }}>
+        <h2
+          style={{
+            fontSize: "0.9rem",
+            fontWeight: 600,
+            color: "#111",
+            margin: "0 0 0.25rem 0",
+          }}
+        >
+          Clarification path
+        </h2>
+
+        <p
+          style={{
+            fontSize: "0.84rem",
+            color: "#7a756f",
+            lineHeight: 1.55,
+            margin: 0,
+          }}
+        >
+          View the initial situation and each refinement as assumptions,
+          interpretations, and unknowns become clearer.
+        </p>
+
+        {renderInitialSituationCard()}
+
+        {iterations.map((iteration, index) =>
+          renderRefinementCard(iteration, index === iterations.length - 1)
+        )}
+      </div>
+    );
+  }
+
+  function renderSupplementaryResult(response: VirekaResponse) {
+    if (response.mode === "clarify") return null;
+
+    if (response.mode === "close") {
+      return (
+        <div
+          ref={resultRef}
+          style={{
+            marginTop: "1.5rem",
+            backgroundColor: "#ffffff",
+            border: "1px solid #e7e5e4",
+            borderRadius: "16px",
+            padding: "2rem 1.75rem",
+          }}
+        >
+          <div style={{ marginBottom: "0.25rem" }}>
+            <h3
+              style={{
+                fontSize: "0.72rem",
+                fontWeight: 700,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                color: "#8e8a84",
+                margin: "0 0 0.7rem 0",
+              }}
+            >
+              Response
+            </h3>
+            <p
+              style={{
+                color: "#333",
+                margin: 0,
+                fontSize: "0.95rem",
+                lineHeight: 1.65,
+              }}
+            >
+              {response.message}
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div
+        ref={resultRef}
+        style={{
+          marginTop: "1.5rem",
+          backgroundColor: "#ffffff",
+          border: "1px solid #e7e5e4",
+          borderRadius: "16px",
+          padding: "2rem 1.75rem",
+        }}
+      >
+        <div style={{ marginBottom: "0.25rem" }}>
+          <h3
+            style={{
+              fontSize: "0.72rem",
+              fontWeight: 700,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              color: "#8e8a84",
+              margin: "0 0 0.7rem 0",
+            }}
+          >
+            Plain language
+          </h3>
+          <p
+            style={{
+              color: "#333",
+              margin: 0,
+              fontSize: "0.95rem",
+              lineHeight: 1.65,
+            }}
+          >
+            {response.message}
+          </p>
+        </div>
       </div>
     );
   }
@@ -712,12 +868,12 @@ export default function ClarifyPage() {
   }
 
   function renderFollowupBox() {
-    if (!result || isDone) return null;
+    if (!result || isDone || iterations.length === 0) return null;
 
     return (
       <div
         style={{
-          marginTop: "1.5rem",
+          marginTop: "1.75rem",
           backgroundColor: "#ffffff",
           borderRadius: "16px",
           border: "1px solid #e7e5e4",
@@ -789,8 +945,8 @@ export default function ClarifyPage() {
               flex: "1 1 260px",
             }}
           >
-            Add anything that may help separate what is happening, what may be
-            assumed, and what may still be unclear.
+            Add anything that may help separate what is happening, what may
+            be assumed, and what may still be unclear.
           </p>
 
           <div
@@ -880,6 +1036,18 @@ export default function ClarifyPage() {
     );
   }
 
+  function resetSession(): void {
+    setTopInput("");
+    setFollowupInput("");
+    setResult(null);
+    setLastClarifyResult(null);
+    setHistory([]);
+    setError(null);
+    setIsDone(false);
+    setInitialSituation("");
+    setIterations([]);
+  }
+
   return (
     <main
       style={{
@@ -964,9 +1132,9 @@ export default function ClarifyPage() {
               margin: 0,
             }}
           >
-            VIREKA helps distinguish what appears to be happening, what may be
-            assumed, and what may still be unclear, so responses begin from
-            clearer understanding.
+            VIREKA helps distinguish what appears to be happening, what may
+            be assumed, and what may still be unclear, so responses begin
+            from clearer understanding.
           </p>
         </div>
 
@@ -1077,7 +1245,8 @@ export default function ClarifyPage() {
           </div>
         )}
 
-        {result && !isDone && renderResult(result)}
+        {!isDone && renderClarificationPath()}
+        {!isDone && result && renderSupplementaryResult(result)}
         {renderFollowupBox()}
 
         {result && isDone && (
@@ -1115,15 +1284,7 @@ export default function ClarifyPage() {
 
             <button
               type="button"
-              onClick={() => {
-                setTopInput("");
-                setFollowupInput("");
-                setResult(null);
-                setLastClarifyResult(null);
-                setHistory([]);
-                setError(null);
-                setIsDone(false);
-              }}
+              onClick={resetSession}
               style={{
                 padding: "0.7rem 1rem",
                 borderRadius: "999px",

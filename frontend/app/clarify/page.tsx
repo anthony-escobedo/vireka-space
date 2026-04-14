@@ -680,214 +680,210 @@ export default function ClarifyPage() {
     );
   }
 
-  function renderClarifyContent(
-    panel: ClarificationPanel,
-    showYourInput?: string
-  ) {
-    const response = panel.iteration.response;
-    const refinementQuestions = getDistinctSuggestedQuestions(response);
-    const shouldShowPlainLanguageButton =
-      panel.id === latestPanelId &&
-      response === lastClarifyResult &&
-      !plainLanguageByPanelId[panel.id];
+function renderClarifyContent(
+  panel: ClarificationPanel,
+  showYourInput?: string
+) {
+  const response = panel.iteration.response;
+  const refinementQuestions = getDistinctSuggestedQuestions(response);
+  const shouldShowPlainLanguageButton =
+    panel.id === latestPanelId &&
+    response === lastClarifyResult &&
+    !plainLanguageByPanelId[panel.id];
 
-    const plainLanguageMessage = plainLanguageByPanelId[panel.id];
+  const plainLanguageMessage = plainLanguageByPanelId[panel.id];
 
-    return (
-      <div style={{ padding: "0 0.25rem 0.1rem 1.7rem" }}>
-        {renderInitialSituationReferenceBar(panel)}
+  return (
+    <div style={{ padding: "0 0.25rem 0.1rem 1.7rem" }}>
+      {renderInitialSituationReferenceBar(panel)}
 
-        {showYourInput && (
-          <div
+      {showYourInput && (
+        <div
+          style={{
+            backgroundColor: "#fafafa",
+            border: "1px solid #eceae7",
+            borderRadius: "10px",
+            padding: "0.9rem 1rem",
+            marginBottom: "1.5rem",
+          }}
+        >
+          <h3
             style={{
-              backgroundColor: "#fafafa",
-              border: "1px solid #eceae7",
-              borderRadius: "10px",
-              padding: "0.9rem 1rem",
-              marginBottom: "1.5rem",
+              fontSize: "0.72rem",
+              fontWeight: 700,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              color: "#8e8a84",
+              margin: "0 0 0.55rem 0",
             }}
           >
-            <h3
-              style={{
-                fontSize: "0.72rem",
-                fontWeight: 700,
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                color: "#8e8a84",
-                margin: "0 0 0.55rem 0",
-              }}
-            >
-              Your input
-            </h3>
-            <p
-              style={{
-                margin: 0,
-                color: "#444",
-                fontSize: "0.9rem",
-                lineHeight: 1.6,
-              }}
-            >
-              {showYourInput}
-            </p>
-          </div>
-        )}
-
-        {renderPlainLanguageButton(shouldShowPlainLanguageButton)}
-
-        {plainLanguageMessage ? (
-          <div
+            Your input
+          </h3>
+          <p
             style={{
-              marginBottom: 0,
+              margin: 0,
+              color: "#444",
+              fontSize: "0.9rem",
+              lineHeight: 1.6,
             }}
           >
-            <h3
-              style={{
-                fontSize: "0.72rem",
-                fontWeight: 700,
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                color: "#8e8a84",
-                margin: "0 0 0.7rem 0",
-              }}
-            >
-              Plain language
-            </h3>
-            <p
-              style={{
-                color: "#333",
-                margin: 0,
-                fontSize: "0.95rem",
-                lineHeight: 1.7,
-              }}
-            >
-              {plainLanguageMessage}
-            </p>
-          </div>
-        ) : (
-          <>
-            {renderList(response.observable, "What appears to be happening")}
-            {renderList(response.interpretive, "What may be assumed")}
-            {renderList(response.unknown, "What may remain unclear")}
-            {renderList(
-              response.structural,
-              "What may be influencing the situation"
-            )}
+            {showYourInput}
+          </p>
+        </div>
+      )}
 
-            <div style={{ marginBottom: response.question ? "1.75rem" : 0 }}>
-              <h3
-                style={{
-                  fontSize: "0.72rem",
-                  fontWeight: 700,
-                  letterSpacing: "0.1em",
-                  textTransform: "uppercase",
-                  color: "#8e8a84",
-                  margin: "0 0 0.7rem 0",
-                }}
-              >
-                Orientation
-              </h3>
-              <p
-                style={{
-                  color: "#333",
-                  margin: 0,
-                  fontSize: "0.95rem",
-                  lineHeight: 1.65,
-                }}
-              >
-                {response.orientation}
-              </p>
-            </div>
+      {renderPlainLanguageButton(shouldShowPlainLanguageButton)}
 
-            {response.question && (
+      {plainLanguageMessage ? (
+        <div style={{ marginBottom: "1.9rem" }}>
+          <h3
+            style={{
+              fontSize: "0.72rem",
+              fontWeight: 700,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              color: "#8e8a84",
+              margin: "0 0 0.7rem 0",
+            }}
+          >
+            Plain language
+          </h3>
+          <p
+            style={{
+              color: "#333",
+              margin: 0,
+              fontSize: "0.95rem",
+              lineHeight: 1.7,
+            }}
+          >
+            {plainLanguageMessage}
+          </p>
+        </div>
+      ) : (
+        <>
+          {renderList(response.observable, "What appears to be happening")}
+          {renderList(response.interpretive, "What may be assumed")}
+          {renderList(response.unknown, "What may remain unclear")}
+          {renderList(
+            response.structural,
+            "What may be influencing the situation"
+          )}
+        </>
+      )}
+
+      <div style={{ marginBottom: response.question ? "1.75rem" : 0 }}>
+        <h3
+          style={{
+            fontSize: "0.72rem",
+            fontWeight: 700,
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+            color: "#8e8a84",
+            margin: "0 0 0.7rem 0",
+          }}
+        >
+          Orientation
+        </h3>
+        <p
+          style={{
+            color: "#333",
+            margin: 0,
+            fontSize: "0.95rem",
+            lineHeight: 1.65,
+          }}
+        >
+          {response.orientation}
+        </p>
+      </div>
+
+      {response.question && (
+        <div
+          style={{
+            padding: "1.125rem 1.25rem",
+            backgroundColor: "#f9f8f5",
+            border: "1px solid #e7e5e4",
+            borderLeft: "3px solid #111",
+            borderRadius: "0 10px 10px 0",
+            marginBottom: refinementQuestions.length > 0 ? "1.25rem" : 0,
+          }}
+        >
+          <h3
+            style={{
+              fontSize: "0.72rem",
+              fontWeight: 700,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              color: "#8e8a84",
+              margin: "0 0 0.55rem 0",
+            }}
+          >
+            Clarifying question
+          </h3>
+          <p
+            style={{
+              color: "#111",
+              margin: 0,
+              fontSize: "0.95rem",
+              lineHeight: 1.65,
+              fontWeight: 500,
+            }}
+          >
+            {response.question}
+          </p>
+        </div>
+      )}
+
+      {refinementQuestions.length > 0 && (
+        <div style={{ marginTop: "1.65rem" }}>
+          <h3
+            style={{
+              fontSize: "0.72rem",
+              fontWeight: 700,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              color: "#8e8a84",
+              margin: "0 0 0.85rem 0",
+            }}
+          >
+            Suggested questions
+          </h3>
+
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "0.7rem",
+            }}
+          >
+            {refinementQuestions.map((item, index) => (
               <div
+                key={`${panel.id}-${item}-${index}`}
                 style={{
-                  padding: "1.125rem 1.25rem",
-                  backgroundColor: "#f9f8f5",
+                  padding: "0.9rem 1rem",
+                  borderRadius: "10px",
                   border: "1px solid #e7e5e4",
-                  borderLeft: "3px solid #111",
-                  borderRadius: "0 10px 10px 0",
-                  marginBottom: refinementQuestions.length > 0 ? "1.25rem" : 0,
+                  backgroundColor: "#fff",
                 }}
               >
-                <h3
-                  style={{
-                    fontSize: "0.72rem",
-                    fontWeight: 700,
-                    letterSpacing: "0.1em",
-                    textTransform: "uppercase",
-                    color: "#8e8a84",
-                    margin: "0 0 0.55rem 0",
-                  }}
-                >
-                  Clarifying question
-                </h3>
                 <p
                   style={{
-                    color: "#111",
                     margin: 0,
-                    fontSize: "0.95rem",
-                    lineHeight: 1.65,
-                    fontWeight: 500,
+                    color: "#333",
+                    fontSize: "0.92rem",
+                    lineHeight: 1.55,
                   }}
                 >
-                  {response.question}
+                  {item}
                 </p>
               </div>
-            )}
-
-            {refinementQuestions.length > 0 && (
-              <div style={{ marginTop: "1.65rem" }}>
-                <h3
-                  style={{
-                    fontSize: "0.72rem",
-                    fontWeight: 700,
-                    letterSpacing: "0.1em",
-                    textTransform: "uppercase",
-                    color: "#8e8a84",
-                    margin: "0 0 0.85rem 0",
-                  }}
-                >
-                  Suggested questions
-                </h3>
-
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "0.7rem",
-                  }}
-                >
-                  {refinementQuestions.map((item, index) => (
-                    <div
-                      key={`${panel.id}-${item}-${index}`}
-                      style={{
-                        padding: "0.9rem 1rem",
-                        borderRadius: "10px",
-                        border: "1px solid #e7e5e4",
-                        backgroundColor: "#fff",
-                      }}
-                    >
-                      <p
-                        style={{
-                          margin: 0,
-                          color: "#333",
-                          fontSize: "0.92rem",
-                          lineHeight: 1.55,
-                        }}
-                      >
-                        {item}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </>
-        )}
-      </div>
-    );
-  }
-
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+  
   function renderCollapsiblePanel(
     panel: ClarificationPanel,
     isLastPanel: boolean

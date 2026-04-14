@@ -24,10 +24,10 @@ export default function CollapsibleLayer({
   return (
     <div
       className={[
-        "rounded-2xl border border-neutral-200/70 bg-white/80",
-        "transition-all duration-200",
-        "shadow-[0_1px_2px_rgba(0,0,0,0.03)]",
-        isOpen ? "ring-1 ring-neutral-200/70" : "",
+        "rounded-2xl border border-stone-200/80 bg-white",
+        "transition-[border-color,background-color,box-shadow] duration-200",
+        "shadow-[0_1px_2px_rgba(0,0,0,0.02)]",
+        isOpen ? "border-stone-300/80" : "hover:border-stone-300/70",
         className,
       ].join(" ")}
     >
@@ -38,9 +38,9 @@ export default function CollapsibleLayer({
         className={[
           "w-full rounded-2xl bg-transparent text-left",
           "flex items-start justify-between gap-4",
-          "px-4 py-3 sm:px-5 sm:py-4",
+          "px-4 py-3.5 sm:px-5 sm:py-4",
           "transition-colors duration-200",
-          "hover:bg-black/[0.02]",
+          "hover:bg-stone-50/70",
           "focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10",
         ].join(" ")}
       >
@@ -50,7 +50,7 @@ export default function CollapsibleLayer({
           </div>
 
           {summary ? (
-            <div className="mt-1 text-[0.84rem] leading-6 text-neutral-500">
+            <div className="mt-1.5 text-[0.84rem] leading-5.5 text-stone-500">
               {summary}
             </div>
           ) : null}
@@ -59,8 +59,8 @@ export default function CollapsibleLayer({
         <span
           aria-hidden="true"
           className={[
-            "mt-[2px] inline-flex h-5 w-5 shrink-0 items-center justify-center",
-            "text-neutral-500 transition-transform duration-200 ease-out",
+            "mt-[1px] inline-flex h-5 w-5 shrink-0 items-center justify-center",
+            "text-stone-400 transition-transform duration-200 ease-out",
             isOpen ? "rotate-90" : "rotate-0",
           ].join(" ")}
         >
@@ -74,7 +74,7 @@ export default function CollapsibleLayer({
             <path
               d="M7.5 5.5L12 10L7.5 14.5"
               stroke="currentColor"
-              strokeWidth="1.75"
+              strokeWidth="1.5"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
@@ -96,7 +96,7 @@ export default function CollapsibleLayer({
               contentClassName,
             ].join(" ")}
           >
-            <div className="border-t border-neutral-200/70 pt-4">
+            <div className="border-t border-stone-200/70 pt-4">
               {children}
             </div>
           </div>

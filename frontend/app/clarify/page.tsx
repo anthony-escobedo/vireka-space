@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import CollapsibleLayer from "../../components/CollapsibleLayer";
 
+import { useRouter } from "next/navigation";
+
 declare global {
   interface Window {
     SpeechRecognition?: new () => SpeechRecognition;
@@ -105,16 +107,27 @@ export default function ClarifyPage() {
   const [latestPanelId, setLatestPanelId] = useState<string | null>(null);
   const [plainLanguageByPanelId, setPlainLanguageByPanelId] = useState<
     Record<string, string>
-  >({});
+     >({});
 
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const resultRef = useRef<HTMLDivElement | null>(null);
+  
+  const router = useRouter();
+  const redirectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     return () => {
-      recognitionRef.current?.stop?.();
-    };
-  }, []);
+
+      if (redirectTimeoutRef.current) {
+      clearTimeout(redirectTimeoutRef.current);
+    }
+
+      if (recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
+
+  };
+}, []);
 
   function cleanTranscript(text: string): string {
     let t = text.trim();
@@ -487,12 +500,20 @@ export default function ClarifyPage() {
   function handleDone(): void {
     if (loading || !result) return;
     setIsDone(true);
+    if (redirectTimeoutRef.current) {
+    clearTimeout(redirectTimeoutRef.current);
+  }
+    
     setTimeout(() => {
       resultRef.current?.scrollIntoView({
         behavior: "smooth",
         block: "start",
       });
     }, 100);
+
+     redirectTimeoutRef.current = setTimeout(() => {
+    router.push("/");
+  }, 1800);
   }
 
   const panels = getPanels();
@@ -1495,7 +1516,7 @@ function renderClarifyContent(
 
             <button
               type="button"
-              onClick={resetSession}
+              onClick={() => router.push("/")}
               style={{
                 padding: "0.7rem 1rem",
                 borderRadius: "999px",

@@ -5,6 +5,7 @@ export const dynamic = "force-dynamic";
 
 type ResponseMode = "clarify" | "plain_language" | "close";
 type RequestAction = "clarify" | "plain_language";
+type RequestContext = "clarify" | "ai-interaction";
 
 type ConversationTurn = {
   role: "user" | "assistant";
@@ -42,6 +43,7 @@ type VirekaRequest = {
   action?: RequestAction;
   history?: ConversationTurn[];
   latestResult?: ClarifyResponse;
+  context?: RequestContext;
 };
 
 type ChatCompletionResponse = {
@@ -291,7 +293,9 @@ function sanitizeLatestResult(value: unknown): ClarifyResponse | null {
         : undefined,
     suggestedQuestions: Array.isArray(value.suggestedQuestions)
       ? value.suggestedQuestions
-          .filter((q): q is string => typeof q === "string" && q.trim().length > 0)
+          .filter(
+            (q): q is string => typeof q === "string" && q.trim().length > 0
+          )
           .slice(0, 2)
           .map(normalizeWhitespace)
       : undefined,
@@ -405,24 +409,40 @@ function validateResponse(data: unknown): VirekaResponse {
   throw new Error("Invalid mode");
 }
 
-function buildClarifyUserMessage(input: string): string {
+function buildClarifyUserMessage(
+  input: string,
+  context: RequestContext
+): string {
+  const contextLine =
+    context === "ai-interaction"
+      ? `Context: This situation concerns an AI interaction. When relevant, distinguish among the prompt, the objective, the output, and any mismatch between them.`
+      : `Context: This is a general clarification situation.`;
+
   return `Clarify the following situation using the required response structure.
 
 Important:
 - avoid second-person language such as "you" or "your"
+- avoid referring to "the user"
 - keep the wording neutral and structural
 - focus on the situation rather than the person
+
+${contextLine}
 
 Situation:
 ${input}`;
 }
 
-function buildPlainLanguageUserMessage(latestResult: ClarifyResponse): string {
+function buildPlainLanguageUserMessage(
+  latestResult: ClarifyResponse,
+  context: RequestContext
+): string {
   const sections = [
     `What can be observed:\n${latestResult.observable.join("\n")}`,
     `What may be interpreted:\n${latestResult.interpretive.join("\n")}`,
     `What remains unclear:\n${latestResult.unknown.join("\n")}`,
-    `What may be influencing the situation:\n${latestResult.structural.join("\n")}`,
+    `What may be influencing the situation:\n${latestResult.structural.join(
+      "\n"
+    )}`,
     `Orientation:\n${latestResult.orientation}`,
   ];
 
@@ -436,6 +456,11 @@ function buildPlainLanguageUserMessage(latestResult: ClarifyResponse): string {
     );
   }
 
+  const contextLine =
+    context === "ai-interaction"
+      ? `Context: This clarification concerns an AI interaction. Keep distinctions around the prompt, objective, output, and mismatch only if they were already present.`
+      : `Context: This clarification concerns a general situation.`;
+
   return `Restate the following clarification in plain language.
 
 Important:
@@ -445,10 +470,188 @@ Important:
 - do not remove important distinctions
 - make the wording easier to understand
 - avoid second-person language such as "you" or "your"
+- avoid referring to "the user"
 - keep the wording neutral and directed toward the situation
+
+${contextLine}
 
 Original clarification:
 ${sections.join("\n\n")}`;
+}
+
+type ClarifySection =
+  | "observable"
+  | "interpretive"
+  | "unknown"
+  | "structural"
+  | "orientation"
+  | "question"
+  | "suggested_question"
+  | "plain_language"
+  | "close";
+
+function containsDisallowedFraming(text: string): boolean {
+  return /\b(you|your|you're|youre|the user)\b/i.test(text);
+}
+
+function applyNeutralReplacements(text: string): string {
+  let result = normalizeWhitespace(text);
+
+  const replacements: Array<[RegExp, string]> = [
+    [/\bthe user\b/gi, "the situation"],
+    [/\bthe user feels\b/gi, "there appears to be a sense that"],
+    [/\bthe user assumes\b/gi, "there may be an assumption that"],
+    [/\bthe user interprets\b/gi, "there may be an interpretation that"],
+    [/\bthe user believes\b/gi, "there may be a belief that"],
+    [/\bthe user thinks\b/gi, "there may be a view that"],
+    [/\byou are\b/gi, "there appears to be"],
+    [/\byou(?:'re|re)\b/gi, "there appears to be"],
+    [/\byou may be\b/gi, "there may be"],
+    [/\byou might be\b/gi, "there may be"],
+    [/\byou seem to\b/gi, "it may seem that"],
+    [/\byou appear to\b/gi, "it appears that"],
+    [/\byou have\b/gi, "there appears to be"],
+    [/\byou need\b/gi, "further clarity may be needed around"],
+    [/\byour prompt\b/gi, "the prompt"],
+    [/\byour objective\b/gi, "the objective"],
+    [/\byour output\b/gi, "the output"],
+    [/\byour input\b/gi, "the input"],
+    [/\byour message\b/gi, "the message"],
+    [/\byour response\b/gi, "the response"],
+    [/\byour request\b/gi, "the request"],
+    [/\byour interaction\b/gi, "the interaction"],
+    [/\byour situation\b/gi, "the situation"],
+    [/\byour concern\b/gi, "the concern described"],
+    [/\byour description\b/gi, "the description"],
+    [/\byour context\b/gi, "the context"],
+    [/\byour expectations\b/gi, "the expectations present"],
+    [/\byour role\b/gi, "the role described"],
+    [/\byour\b/gi, "the"],
+    [/\byou\b/gi, "the situation"],
+  ];
+
+  for (const [pattern, replacement] of replacements) {
+    result = result.replace(pattern, replacement);
+  }
+
+  result = result
+    .replace(/\bthere appears to be a sense that there appears to be\b/gi, "there appears to be")
+    .replace(/\bthere appears to be there appears to be\b/gi, "there appears to be")
+    .replace(/\bthere may be there may be\b/gi, "there may be")
+    .replace(/\bthe the\b/gi, "the")
+    .replace(/\s+([,.;:!?])/g, "$1")
+    .replace(/\(\s+/g, "(")
+    .replace(/\s+\)/g, ")");
+
+  return normalizeWhitespace(result);
+}
+
+function fallbackForSection(section: ClarifySection): string {
+  switch (section) {
+    case "observable":
+      return "A situation is described in which several elements may still need clearer separation.";
+    case "interpretive":
+      return "There may be assumptions present that have not yet been confirmed.";
+    case "unknown":
+      return "It is not yet clear which parts are established and which remain uncertain.";
+    case "structural":
+      return "Timing, expectations, roles, or constraints may be shaping the situation.";
+    case "orientation":
+      return "Further differentiation may help clarify what is established, what is assumed, and what remains uncertain.";
+    case "question":
+      return "Which specific part of the situation remains least established?";
+    case "suggested_question":
+      return "Which part of the situation is directly observable?";
+    case "plain_language":
+      return "The situation may become easier to follow by separating what appears to be happening, what may be assumed, what remains uncertain, and what may be shaping the situation.";
+    case "close":
+      return "Acknowledged. A new situation can be started whenever needed.";
+    default:
+      return "Further clarification may still be helpful.";
+  }
+}
+
+function neutralizeTextBySection(
+  text: string,
+  section: ClarifySection
+): string {
+  const cleaned = applyNeutralReplacements(text);
+
+  if (!containsDisallowedFraming(cleaned)) {
+    return cleaned;
+  }
+
+  return fallbackForSection(section);
+}
+
+function enforceNeutralResponse(response: VirekaResponse): VirekaResponse {
+  if (response.mode === "clarify") {
+    const observable = response.observable
+      .map((item) => neutralizeTextBySection(item, "observable"))
+      .filter(Boolean);
+
+    const interpretive = response.interpretive
+      .map((item) => neutralizeTextBySection(item, "interpretive"))
+      .filter(Boolean);
+
+    const unknown = response.unknown
+      .map((item) => neutralizeTextBySection(item, "unknown"))
+      .filter(Boolean);
+
+    const structural = response.structural
+      .map((item) => neutralizeTextBySection(item, "structural"))
+      .filter(Boolean);
+
+    const orientation = neutralizeTextBySection(
+      response.orientation,
+      "orientation"
+    );
+
+    const question = response.question
+      ? neutralizeTextBySection(response.question, "question")
+      : undefined;
+
+    const suggestedQuestions = response.suggestedQuestions
+      ?.map((item) => neutralizeTextBySection(item, "suggested_question"))
+      .filter(Boolean)
+      .slice(0, 2);
+
+    return {
+      mode: "clarify",
+      observable:
+        observable.length > 0
+          ? observable
+          : [fallbackForSection("observable")],
+      interpretive:
+        interpretive.length > 0
+          ? interpretive
+          : [fallbackForSection("interpretive")],
+      unknown:
+        unknown.length > 0 ? unknown : [fallbackForSection("unknown")],
+      structural:
+        structural.length > 0
+          ? structural
+          : [fallbackForSection("structural")],
+      orientation,
+      question,
+      suggestedQuestions:
+        suggestedQuestions && suggestedQuestions.length > 0
+          ? suggestedQuestions
+          : undefined,
+    };
+  }
+
+  if (response.mode === "plain_language") {
+    return {
+      mode: "plain_language",
+      message: neutralizeTextBySection(response.message, "plain_language"),
+    };
+  }
+
+  return {
+    mode: "close",
+    message: neutralizeTextBySection(response.message, "close"),
+  };
 }
 
 export async function POST(req: NextRequest) {
@@ -457,6 +660,9 @@ export async function POST(req: NextRequest) {
 
     const action: RequestAction =
       body.action === "plain_language" ? "plain_language" : "clarify";
+
+    const context: RequestContext =
+      body.context === "ai-interaction" ? "ai-interaction" : "clarify";
 
     const history = sanitizeHistory(body.history);
     const input = normalizeWhitespace(body.input ?? "");
@@ -476,15 +682,17 @@ export async function POST(req: NextRequest) {
     if (action === "clarify" && detectClosureSignal(input)) {
       return NextResponse.json({
         mode: "close",
-        message:
-          "Acknowledged. A new situation can be started whenever needed.",
+        message: "Acknowledged. A new situation can be started whenever needed.",
       } satisfies CloseResponse);
     }
 
     const userMessage =
       action === "plain_language"
-        ? buildPlainLanguageUserMessage(latestResult as ClarifyResponse)
-        : buildClarifyUserMessage(input);
+        ? buildPlainLanguageUserMessage(
+            latestResult as ClarifyResponse,
+            context
+          )
+        : buildClarifyUserMessage(input, context);
 
     const messages = [
       { role: "system", content: SYSTEM_PROMPT },
@@ -509,7 +717,11 @@ export async function POST(req: NextRequest) {
     if (!response.ok) {
       const errorText = await response.text().catch(() => "");
       return NextResponse.json(
-        { error: `Upstream model request failed: ${errorText || response.status}` },
+        {
+          error: `Upstream model request failed: ${
+            errorText || response.status
+          }`,
+        },
         { status: 500 }
       );
     }
@@ -528,7 +740,9 @@ export async function POST(req: NextRequest) {
     }
 
     const validated = validateResponse(parsed);
-    return NextResponse.json(validated);
+    const neutralized = enforceNeutralResponse(validated);
+
+    return NextResponse.json(neutralized);
   } catch {
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }

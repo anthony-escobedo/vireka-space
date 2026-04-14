@@ -1160,11 +1160,10 @@ function renderClarifyContent(
         <div
           style={{
             display: "flex",
-            alignItems: "flex-end",
-            justifyContent: "space-between",
-            gap: "1.5rem",
+            flexDirection: "column",
+            alignItems: "stretch",
+            gap: "1rem",
             marginTop: "1rem",
-            flexWrap: "wrap",
           }}
         >
           <p
@@ -1173,10 +1172,9 @@ function renderClarifyContent(
               color: "#888",
               lineHeight: 1.55,
               margin: 0,
-              maxWidth: "480px",
-              flex: "1 1 260px",
-            }}
-          >
+              maxWidth: "100%",
+          }}
+        >
             Additional detail may help separate observation from interpretation.
           </p>
 

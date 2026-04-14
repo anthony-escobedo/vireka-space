@@ -1479,34 +1479,65 @@ export default function AIInteractionPage() {
           </div>
         )}
 
-        {renderClarificationPath()}
+        {!isDone && renderClarificationPath()}
 
-        {result && renderSupplementaryResult(result)}
+        {!isDone && result && renderSupplementaryResult(result)}
 
-        {renderFollowupBox()}
+        {!isDone && renderFollowupBox()}
 
-        {(result || initialSituation || iterations.length > 0 || isDone) && (
-          <div style={{ marginTop: "1.5rem" }}>
-            <button
-              type="button"
-              onClick={() => router.push("/")}
-              disabled={loading}
-              style={{
-                padding: "0.72rem 1.1rem",
-                backgroundColor: "#fff",
-                color: "#111",
-                border: "1px solid #d6d3d1",
-                borderRadius: "999px",
-                fontSize: "0.9rem",
-                fontWeight: 600,
-                cursor: loading ? "not-allowed" : "pointer",
-                opacity: loading ? 0.6 : 1,
-              }}
-            >
-              Start new situation
-            </button>
-          </div>
-        )}
+        {isDone && (
+  <div
+    ref={resultRef}
+    style={{
+      marginTop: "1.5rem",
+      backgroundColor: "#ffffff",
+      border: "1px solid #e7e5e4",
+      borderRadius: "16px",
+      padding: "2rem 1.75rem",
+    }}
+  >
+    <h3
+      style={{
+        fontSize: "1.05rem",
+        fontWeight: 600,
+        color: "#111",
+        margin: "0 0 0.5rem 0",
+      }}
+    >
+      Clarity established
+    </h3>
+
+    <p
+      style={{
+        color: "#555",
+        margin: "0 0 1.25rem 0",
+        fontSize: "0.95rem",
+        lineHeight: 1.65,
+      }}
+    >
+      Clear structure supports better interaction.
+    </p>
+
+    <button
+      type="button"
+      onClick={() => router.push("/")}
+      disabled={loading}
+      style={{
+        padding: "0.72rem 1.1rem",
+        backgroundColor: "#fff",
+        color: "#111",
+        border: "1px solid #d6d3d1",
+        borderRadius: "999px",
+        fontSize: "0.9rem",
+        fontWeight: 600,
+        cursor: loading ? "not-allowed" : "pointer",
+        opacity: loading ? 0.6 : 1,
+      }}
+    >
+      Start new situation
+    </button>
+  </div>
+)}
       </div>
     </main>
   );

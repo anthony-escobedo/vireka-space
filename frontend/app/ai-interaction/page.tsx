@@ -767,7 +767,7 @@ export default function AIInteractionPage() {
           <>
             {renderList(response.observable, "What appears to be happening")}
             {renderList(response.interpretive, "What may be assumed")}
-            {renderList(response.unknown, "What may still be unclear")}
+            {renderList(response.unknown, "What may remain unclear")}
             {renderList(
               response.structural,
               "What may be influencing the AI interaction"

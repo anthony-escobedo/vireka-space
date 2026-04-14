@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import DoneState from "@/components/DoneState";
 
 declare global {
   interface Window {

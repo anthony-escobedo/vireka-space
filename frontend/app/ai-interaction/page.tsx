@@ -75,6 +75,16 @@ type ClarificationIteration = {
   response: ClarifyResponse;
 };
 
+type PanelKind = "initial_response" | "refinement";
+
+type ClarificationPanel = {
+  id: string;
+  kind: PanelKind;
+  title: string;
+  summary: string;
+  iteration: ClarificationIteration;
+};
+
 export default function AIInteractionPage() {
   const [topInput, setTopInput] = useState<string>("");
   const [followupInput, setFollowupInput] = useState<string>("");
@@ -90,6 +100,11 @@ export default function AIInteractionPage() {
   const [isDone, setIsDone] = useState<boolean>(false);
   const [initialSituation, setInitialSituation] = useState<string>("");
   const [iterations, setIterations] = useState<ClarificationIteration[]>([]);
+  const [openPanelIds, setOpenPanelIds] = useState<string[]>([]);
+  const [latestPanelId, setLatestPanelId] = useState<string | null>(null);
+  const [plainLanguageByPanelId, setPlainLanguageByPanelId] = useState<
+    Record<string, string>
+  >({});
 
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const resultRef = useRef<HTMLDivElement | null>(null);
@@ -126,6 +141,16 @@ export default function AIInteractionPage() {
       .replace(/\s+/g, " ");
   }
 
+  function truncateText(text: string, maxLength = 78): string {
+    const trimmed = text.trim();
+    if (trimmed.length <= maxLength) return trimmed;
+    return `${trimmed.slice(0, maxLength).trimEnd()}…`;
+  }
+
+  function truncateSentence(text: string, maxLength = 120): string {
+    return truncateText(text, maxLength);
+  }
+
   function getDistinctSuggestedQuestions(response: ClarifyResponse): string[] {
     const mainQuestionNormalized = response.question
       ? normalizeQuestion(response.question)
@@ -154,6 +179,77 @@ export default function AIInteractionPage() {
     }
 
     return distinct;
+  }
+
+  function getPanelSummary(iteration: ClarificationIteration): string {
+    const { response, source, submittedInput } = iteration;
+
+    if (response.question?.trim()) {
+      return truncateText(response.question);
+    }
+
+    if (source === "top") {
+      const firstUnknown = response.unknown?.[0];
+      if (firstUnknown) {
+        return truncateText(firstUnknown);
+      }
+
+      return truncateText(response.orientation);
+    }
+
+    const firstSuggestion = getDistinctSuggestedQuestions(response)[0];
+    if (firstSuggestion) {
+      return truncateText(firstSuggestion);
+    }
+
+    if (submittedInput.trim()) {
+      return truncateText(submittedInput);
+    }
+
+    return truncateText(response.orientation);
+  }
+
+  function getPanels(): ClarificationPanel[] {
+    const topIteration = iterations.find((iteration) => iteration.source === "top");
+    const followupIterations = iterations.filter(
+      (iteration) => iteration.source === "followup"
+    );
+
+    const panels: ClarificationPanel[] = [];
+
+    if (topIteration) {
+      panels.push({
+        id: `panel-${topIteration.id}`,
+        kind: "initial_response",
+        title: "Initial reflection",
+        summary: getPanelSummary(topIteration),
+        iteration: topIteration,
+      });
+    }
+
+    for (const iteration of followupIterations) {
+      panels.push({
+        id: `panel-${iteration.id}`,
+        kind: "refinement",
+        title: `Refinement ${iteration.step - 1}`,
+        summary: getPanelSummary(iteration),
+        iteration,
+      });
+    }
+
+    return panels;
+  }
+
+  function isPanelOpen(panelId: string): boolean {
+    return openPanelIds.includes(panelId);
+  }
+
+  function togglePanel(panelId: string): void {
+    setOpenPanelIds((prev) =>
+      prev.includes(panelId)
+        ? prev.filter((id) => id !== panelId)
+        : [...prev, panelId]
+    );
   }
 
   function startListening(target: "top" | "followup"): void {
@@ -328,7 +424,11 @@ export default function AIInteractionPage() {
             response: typedData,
           };
 
+          const panelId = `panel-${newIteration.id}`;
+
           setIterations((prev) => [...prev, newIteration]);
+          setLatestPanelId(panelId);
+          setOpenPanelIds([panelId]);
 
           if (source === "top" && !initialSituation) {
             setInitialSituation(trimmed);
@@ -345,6 +445,21 @@ export default function AIInteractionPage() {
         };
 
         setHistory((prev) => [...prev, assistantTurn]);
+
+        if (
+          typedData.mode === "plain_language" &&
+          latestPanelId &&
+          latestPanelId.trim()
+        ) {
+          setPlainLanguageByPanelId((prev) => ({
+            ...prev,
+            [latestPanelId]: typedData.message,
+          }));
+
+          setOpenPanelIds((prev) =>
+            prev.includes(latestPanelId) ? prev : [...prev, latestPanelId]
+          );
+        }
       }
 
       setResult(typedData);
@@ -383,6 +498,8 @@ export default function AIInteractionPage() {
     }, 100);
   }
 
+  const panels = getPanels();
+
   const isTopClarifyDisabled = loading || !topInput.trim();
   const isFollowupClarifyDisabled = loading || !followupInput.trim();
   const isPlainLanguageDisabled = loading || !lastClarifyResult || isDone;
@@ -392,34 +509,40 @@ export default function AIInteractionPage() {
     loading || listeningTarget === "top" || listeningTarget === "followup";
   const isDoneDisabled = loading || !result || isDone;
 
-  function renderList(items: string[] | undefined, heading: string) {
-    if (!items?.length) return null;
+  function renderList(items: string[] | undefined, label: string) {
+    if (!items || items.length === 0) return null;
 
     return (
-      <div style={{ marginBottom: "1.75rem" }}>
+      <div style={{ marginBottom: "1.9rem" }}>
         <h3
           style={{
-            fontSize: "0.68rem",
+            fontSize: "0.72rem",
             fontWeight: 700,
             letterSpacing: "0.1em",
             textTransform: "uppercase",
-            color: "#888",
+            color: "#8e8a84",
             margin: "0 0 0.7rem 0",
           }}
         >
-          {heading}
+          {label}
         </h3>
         <ul
           style={{
+            paddingLeft: "1.125rem",
             margin: 0,
-            paddingLeft: "1.1rem",
-            color: "#333",
-            fontSize: "0.95rem",
-            lineHeight: 1.65,
+            listStyleType: "disc",
           }}
         >
-          {items.map((item, index) => (
-            <li key={`${heading}-${index}`} style={{ marginBottom: "0.45rem" }}>
+          {items.map((item, i) => (
+            <li
+              key={i}
+              style={{
+                marginBottom: "0.55rem",
+                color: "#333",
+                fontSize: "0.95rem",
+                lineHeight: 1.65,
+              }}
+            >
               {item}
             </li>
           ))}
@@ -436,7 +559,7 @@ export default function AIInteractionPage() {
         style={{
           display: "flex",
           justifyContent: "flex-start",
-          marginBottom: "1.5rem",
+          marginBottom: "1.65rem",
         }}
       >
         <button
@@ -478,6 +601,471 @@ export default function AIInteractionPage() {
           <span>Plain</span>
           <span>Language</span>
         </button>
+      </div>
+    );
+  }
+
+  function renderInitialSituationCard() {
+    if (!initialSituation) return null;
+
+    return (
+      <div
+        style={{
+          backgroundColor: "#fcfbf8",
+          border: "1px solid #e7e5e4",
+          borderRadius: "16px",
+          padding: "1.4rem 1.5rem",
+          marginTop: "1rem",
+        }}
+      >
+        <h3
+          style={{
+            fontSize: "0.72rem",
+            fontWeight: 700,
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+            color: "#8e8a84",
+            margin: "0 0 0.7rem 0",
+          }}
+        >
+          Initial AI issue
+        </h3>
+        <p
+          style={{
+            margin: 0,
+            color: "#333",
+            fontSize: "0.95rem",
+            lineHeight: 1.65,
+          }}
+        >
+          {initialSituation}
+        </p>
+      </div>
+    );
+  }
+
+  function renderInitialSituationReferenceBar(panel: ClarificationPanel) {
+    const isRefinement = panel.kind === "refinement";
+    const refinementNumber = panel.iteration.step - 1;
+
+    if (!isRefinement || refinementNumber < 2 || !initialSituation) return null;
+
+    return (
+      <div
+        style={{
+          margin: "0 0 1.25rem 1.7rem",
+          padding: "0.7rem 0 0.85rem 0",
+          borderBottom: "1px solid #eeeae5",
+        }}
+      >
+        <div
+          style={{
+            fontSize: "0.69rem",
+            fontWeight: 700,
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+            color: "#9a948d",
+            marginBottom: "0.35rem",
+          }}
+        >
+          Initial AI issue
+        </div>
+        <p
+          style={{
+            margin: 0,
+            color: "#6f6a64",
+            fontSize: "0.86rem",
+            lineHeight: 1.55,
+          }}
+        >
+          {truncateSentence(initialSituation, 150)}
+        </p>
+      </div>
+    );
+  }
+
+  function renderClarifyContent(
+    panel: ClarificationPanel,
+    showYourInput?: string
+  ) {
+    const response = panel.iteration.response;
+    const refinementQuestions = getDistinctSuggestedQuestions(response);
+    const shouldShowPlainLanguageButton =
+      panel.id === latestPanelId &&
+      response === lastClarifyResult &&
+      !plainLanguageByPanelId[panel.id];
+
+    const plainLanguageMessage = plainLanguageByPanelId[panel.id];
+
+    return (
+      <div style={{ padding: "0 0.25rem 0.1rem 1.7rem" }}>
+        {renderInitialSituationReferenceBar(panel)}
+
+        {showYourInput && (
+          <div
+            style={{
+              backgroundColor: "#fafafa",
+              border: "1px solid #eceae7",
+              borderRadius: "10px",
+              padding: "0.9rem 1rem",
+              marginBottom: "1.5rem",
+            }}
+          >
+            <h3
+              style={{
+                fontSize: "0.72rem",
+                fontWeight: 700,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                color: "#8e8a84",
+                margin: "0 0 0.55rem 0",
+              }}
+            >
+              Your input
+            </h3>
+            <p
+              style={{
+                margin: 0,
+                color: "#444",
+                fontSize: "0.9rem",
+                lineHeight: 1.6,
+              }}
+            >
+              {showYourInput}
+            </p>
+          </div>
+        )}
+
+        {renderPlainLanguageButton(shouldShowPlainLanguageButton)}
+
+        {plainLanguageMessage ? (
+          <div style={{ marginBottom: 0 }}>
+            <h3
+              style={{
+                fontSize: "0.72rem",
+                fontWeight: 700,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                color: "#8e8a84",
+                margin: "0 0 0.7rem 0",
+              }}
+            >
+              Plain language
+            </h3>
+            <p
+              style={{
+                color: "#333",
+                margin: 0,
+                fontSize: "0.95rem",
+                lineHeight: 1.7,
+              }}
+            >
+              {plainLanguageMessage}
+            </p>
+          </div>
+        ) : (
+          <>
+            {renderList(response.observable, "What appears to be happening")}
+            {renderList(response.interpretive, "What may be assumed")}
+            {renderList(response.unknown, "What may still be unclear")}
+            {renderList(
+              response.structural,
+              "What may be influencing the AI interaction"
+            )}
+
+            <div style={{ marginBottom: response.question ? "1.75rem" : 0 }}>
+              <h3
+                style={{
+                  fontSize: "0.72rem",
+                  fontWeight: 700,
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                  color: "#8e8a84",
+                  margin: "0 0 0.7rem 0",
+                }}
+              >
+                Orientation
+              </h3>
+              <p
+                style={{
+                  color: "#333",
+                  margin: 0,
+                  fontSize: "0.95rem",
+                  lineHeight: 1.65,
+                }}
+              >
+                {response.orientation}
+              </p>
+            </div>
+
+            {response.question && (
+              <div
+                style={{
+                  padding: "1.125rem 1.25rem",
+                  backgroundColor: "#f9f8f5",
+                  border: "1px solid #e7e5e4",
+                  borderLeft: "3px solid #111",
+                  borderRadius: "0 10px 10px 0",
+                  marginBottom: refinementQuestions.length > 0 ? "1.25rem" : 0,
+                }}
+              >
+                <h3
+                  style={{
+                    fontSize: "0.72rem",
+                    fontWeight: 700,
+                    letterSpacing: "0.1em",
+                    textTransform: "uppercase",
+                    color: "#8e8a84",
+                    margin: "0 0 0.55rem 0",
+                  }}
+                >
+                  Clarifying question
+                </h3>
+                <p
+                  style={{
+                    color: "#111",
+                    margin: 0,
+                    fontSize: "0.95rem",
+                    lineHeight: 1.65,
+                    fontWeight: 500,
+                  }}
+                >
+                  {response.question}
+                </p>
+              </div>
+            )}
+
+            {refinementQuestions.length > 0 && (
+              <div style={{ marginTop: "1.65rem" }}>
+                <h3
+                  style={{
+                    fontSize: "0.72rem",
+                    fontWeight: 700,
+                    letterSpacing: "0.1em",
+                    textTransform: "uppercase",
+                    color: "#8e8a84",
+                    margin: "0 0 0.85rem 0",
+                  }}
+                >
+                  Suggested questions
+                </h3>
+
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "0.7rem",
+                  }}
+                >
+                  {refinementQuestions.map((item, index) => (
+                    <div
+                      key={`${panel.id}-${item}-${index}`}
+                      style={{
+                        padding: "0.9rem 1rem",
+                        borderRadius: "10px",
+                        border: "1px solid #e7e5e4",
+                        backgroundColor: "#fff",
+                      }}
+                    >
+                      <p
+                        style={{
+                          margin: 0,
+                          color: "#333",
+                          fontSize: "0.92rem",
+                          lineHeight: 1.55,
+                        }}
+                      >
+                        {item}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    );
+  }
+
+  function renderCollapsiblePanel(
+    panel: ClarificationPanel,
+    isLastPanel: boolean
+  ) {
+    const open = isPanelOpen(panel.id);
+    const isLatest = panel.id === latestPanelId;
+    const showYourInput =
+      panel.kind === "refinement" ? panel.iteration.submittedInput : undefined;
+
+    return (
+      <div
+        key={panel.id}
+        ref={isLatest ? resultRef : null}
+        style={{
+          marginTop: "1rem",
+          borderTop: "1px solid #ece9e4",
+          paddingTop: "0.2rem",
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => togglePanel(panel.id)}
+          aria-expanded={open}
+          style={{
+            width: "100%",
+            display: "flex",
+            alignItems: "flex-start",
+            gap: "0.85rem",
+            padding: "0.9rem 0.25rem 0.85rem 0.1rem",
+            border: "none",
+            background: "transparent",
+            cursor: "pointer",
+            textAlign: "left",
+          }}
+        >
+          <span
+            style={{
+              display: "inline-flex",
+              width: "18px",
+              minWidth: "18px",
+              justifyContent: "center",
+              alignItems: "center",
+              color: "#8e8a84",
+              fontSize: "0.88rem",
+              lineHeight: 1,
+              transform: open ? "rotate(90deg)" : "rotate(0deg)",
+              transition: "transform 0.14s ease",
+              marginTop: "0.1rem",
+            }}
+          >
+            ▸
+          </span>
+
+          <span style={{ display: "block", flex: 1, minWidth: 0 }}>
+            <span
+              style={{
+                display: "block",
+                fontSize: "0.92rem",
+                fontWeight: 600,
+                color: "#111",
+                marginBottom: "0.18rem",
+              }}
+            >
+              {panel.title}
+            </span>
+            <span
+              style={{
+                display: "block",
+                fontSize: "0.84rem",
+                color: "#7a756f",
+                lineHeight: 1.5,
+              }}
+            >
+              {panel.summary}
+            </span>
+          </span>
+        </button>
+
+        {open && (
+          <div
+            style={{
+              paddingBottom: isLastPanel ? "0.25rem" : "0.1rem",
+            }}
+          >
+            {renderClarifyContent(panel, showYourInput)}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  function renderClarificationPath() {
+    if (panels.length === 0 && !initialSituation) return null;
+
+    return (
+      <div style={{ marginTop: "2rem" }}>
+        <h2
+          style={{
+            fontSize: "0.9rem",
+            fontWeight: 600,
+            color: "#111",
+            margin: "0 0 0.25rem 0",
+          }}
+        >
+          Clarification path
+        </h2>
+
+        <p
+          style={{
+            fontSize: "0.84rem",
+            color: "#7a756f",
+            lineHeight: 1.55,
+            margin: 0,
+          }}
+        >
+          The initial AI issue remains visible. Each refinement can be expanded
+          when needed.
+        </p>
+
+        {renderInitialSituationCard()}
+
+        <div
+          style={{
+            marginTop: "1rem",
+            backgroundColor: "#ffffff",
+            border: "1px solid #e7e5e4",
+            borderRadius: "16px",
+            padding: "0.35rem 1.25rem 1rem",
+          }}
+        >
+          {panels.map((panel, index) =>
+            renderCollapsiblePanel(panel, index === panels.length - 1)
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  function renderSupplementaryResult(response: VirekaResponse) {
+    if (response.mode === "clarify" || response.mode === "plain_language") {
+      return null;
+    }
+
+    return (
+      <div
+        ref={resultRef}
+        style={{
+          marginTop: "1.5rem",
+          backgroundColor: "#ffffff",
+          border: "1px solid #e7e5e4",
+          borderRadius: "16px",
+          padding: "2rem 1.75rem",
+        }}
+      >
+        <div style={{ marginBottom: "0.25rem" }}>
+          <h3
+            style={{
+              fontSize: "0.72rem",
+              fontWeight: 700,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              color: "#8e8a84",
+              margin: "0 0 0.7rem 0",
+            }}
+          >
+            Response
+          </h3>
+          <p
+            style={{
+              color: "#333",
+              margin: 0,
+              fontSize: "0.95rem",
+              lineHeight: 1.65,
+            }}
+          >
+            {response.message}
+          </p>
+        </div>
       </div>
     );
   }
@@ -544,438 +1132,6 @@ export default function AIInteractionPage() {
         >
           {loading ? "Clarifying…" : "Clarify"}
         </button>
-      </div>
-    );
-  }
-
-  function renderFollowupActionRow() {
-    return (
-      <div
-        style={{
-          display: "flex",
-          gap: "0.75rem",
-          alignItems: "center",
-          flexShrink: 0,
-          flexWrap: "wrap",
-        }}
-      >
-        <button
-          type="button"
-          onClick={() => startListening("followup")}
-          disabled={isFollowupMicDisabled}
-          style={{
-            padding: "0.7rem 1rem",
-            backgroundColor: "#fff",
-            color: "#111",
-            border: "1px solid #d6d3d1",
-            borderRadius: "999px",
-            fontSize: "0.9rem",
-            fontWeight: 600,
-            cursor: isFollowupMicDisabled ? "not-allowed" : "pointer",
-            whiteSpace: "nowrap",
-            opacity: isFollowupMicDisabled ? 0.6 : 1,
-          }}
-        >
-          {listeningTarget === "followup" ? "Listening…" : "Mic"}
-        </button>
-
-        <button
-          type="button"
-          onClick={() => handleClarify("followup")}
-          disabled={isFollowupClarifyDisabled}
-          style={{
-            flexShrink: 0,
-            padding: "0.7rem 1.75rem",
-            backgroundColor: isFollowupClarifyDisabled ? "#ccc" : "#111",
-            color: "#fff",
-            border: "none",
-            borderRadius: "999px",
-            fontSize: "0.9rem",
-            fontWeight: 600,
-            cursor: isFollowupClarifyDisabled ? "not-allowed" : "pointer",
-            transition: "background-color 0.15s",
-            letterSpacing: "-0.01em",
-            whiteSpace: "nowrap",
-          }}
-          onMouseEnter={(e) => {
-            if (!isFollowupClarifyDisabled) {
-              e.currentTarget.style.backgroundColor = "#333";
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!isFollowupClarifyDisabled) {
-              e.currentTarget.style.backgroundColor = "#111";
-            }
-          }}
-        >
-          {loading ? "Clarifying…" : "Clarify"}
-        </button>
-
-        <button
-          type="button"
-          onClick={handleDone}
-          disabled={isDoneDisabled}
-          style={{
-            flexShrink: 0,
-            padding: "0.7rem 1.15rem",
-            backgroundColor: "#fff",
-            color: "#111",
-            border: "1px solid #d6d3d1",
-            borderRadius: "999px",
-            fontSize: "0.9rem",
-            fontWeight: 600,
-            cursor: isDoneDisabled ? "not-allowed" : "pointer",
-            whiteSpace: "nowrap",
-            opacity: isDoneDisabled ? 0.6 : 1,
-          }}
-        >
-          Done
-        </button>
-      </div>
-    );
-  }
-
-  function renderInitialSituationCard() {
-    if (!initialSituation) return null;
-
-    return (
-      <div
-        style={{
-          backgroundColor: "#fcfbf8",
-          border: "1px solid #e7e5e4",
-          borderRadius: "16px",
-          padding: "1.4rem 1.5rem",
-          marginTop: "1rem",
-        }}
-      >
-        <h3
-          style={{
-            fontSize: "0.72rem",
-            fontWeight: 700,
-            letterSpacing: "0.1em",
-            textTransform: "uppercase",
-            color: "#8e8a84",
-            margin: "0 0 0.7rem 0",
-          }}
-        >
-          Initial AI issue
-        </h3>
-        <p
-          style={{
-            margin: 0,
-            color: "#333",
-            fontSize: "0.95rem",
-            lineHeight: 1.65,
-          }}
-        >
-          {initialSituation}
-        </p>
-      </div>
-    );
-  }
-
-  function renderRefinementCard(
-    iteration: ClarificationIteration,
-    isLatest: boolean
-  ) {
-    const response = iteration.response;
-    const suggestedQuestions = getDistinctSuggestedQuestions(response);
-
-    return (
-      <div
-        key={iteration.id}
-        ref={isLatest ? resultRef : null}
-        style={{
-          marginTop: "1.5rem",
-          backgroundColor: "#ffffff",
-          border: "1px solid #e7e5e4",
-          borderRadius: "16px",
-          padding: "2rem 1.75rem",
-        }}
-      >
-        <div style={{ marginBottom: "1.25rem" }}>
-          <div
-            style={{
-              fontSize: "0.72rem",
-              fontWeight: 700,
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              color: "#8e8a84",
-              marginBottom: "0.6rem",
-            }}
-          >
-            Refinement {iteration.step}
-          </div>
-
-          {iteration.source === "followup" && (
-            <div
-              style={{
-                backgroundColor: "#fafafa",
-                border: "1px solid #eceae7",
-                borderRadius: "10px",
-                padding: "0.9rem 1rem",
-              }}
-            >
-              <h3
-                style={{
-                  fontSize: "0.72rem",
-                  fontWeight: 700,
-                  letterSpacing: "0.1em",
-                  textTransform: "uppercase",
-                  color: "#8e8a84",
-                  margin: "0 0 0.55rem 0",
-                }}
-              >
-                Your input
-              </h3>
-              <p
-                style={{
-                  margin: 0,
-                  color: "#444",
-                  fontSize: "0.9rem",
-                  lineHeight: 1.6,
-                }}
-              >
-                {iteration.submittedInput}
-              </p>
-            </div>
-          )}
-        </div>
-
-        {renderPlainLanguageButton(isLatest)}
-
-        {renderList(response.observable, "What appears to be happening")}
-        {renderList(response.interpretive, "What may be assumed")}
-        {renderList(response.unknown, "What may still be unclear")}
-        {renderList(
-          response.structural,
-          "What may be influencing the AI interaction"
-        )}
-
-        <div style={{ marginBottom: response.question ? "1.75rem" : 0 }}>
-          <h3
-            style={{
-              fontSize: "0.72rem",
-              fontWeight: 700,
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              color: "#8e8a84",
-              margin: "0 0 0.7rem 0",
-            }}
-          >
-            Orientation
-          </h3>
-          <p
-            style={{
-              color: "#333",
-              margin: 0,
-              fontSize: "0.95rem",
-              lineHeight: 1.65,
-            }}
-          >
-            {response.orientation}
-          </p>
-        </div>
-
-        {response.question && (
-          <div
-            style={{
-              padding: "1.125rem 1.25rem",
-              backgroundColor: "#f9f8f5",
-              border: "1px solid #e7e5e4",
-              borderLeft: "3px solid #111",
-              borderRadius: "0 10px 10px 0",
-              marginBottom: suggestedQuestions.length > 0 ? "1.25rem" : 0,
-            }}
-          >
-            <h3
-              style={{
-                fontSize: "0.72rem",
-                fontWeight: 700,
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                color: "#8e8a84",
-                margin: "0 0 0.55rem 0",
-              }}
-            >
-              Clarifying question
-            </h3>
-            <p
-              style={{
-                color: "#111",
-                margin: 0,
-                fontSize: "0.95rem",
-                lineHeight: 1.65,
-                fontWeight: 500,
-              }}
-            >
-              {response.question}
-            </p>
-          </div>
-        )}
-
-        {suggestedQuestions.length > 0 && (
-          <div style={{ marginTop: "1.65rem" }}>
-            <h3
-              style={{
-                fontSize: "0.72rem",
-                fontWeight: 700,
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                color: "#8e8a84",
-                margin: "0 0 0.85rem 0",
-              }}
-            >
-              Suggested questions
-            </h3>
-
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "0.7rem",
-              }}
-            >
-              {suggestedQuestions.map((item, index) => (
-                <div
-                  key={`${iteration.id}-${item}-${index}`}
-                  style={{
-                    padding: "0.9rem 1rem",
-                    borderRadius: "10px",
-                    border: "1px solid #e7e5e4",
-                    backgroundColor: "#fff",
-                  }}
-                >
-                  <p
-                    style={{
-                      margin: 0,
-                      color: "#333",
-                      fontSize: "0.92rem",
-                      lineHeight: 1.55,
-                    }}
-                  >
-                    {item}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  function renderClarificationPath() {
-    if (iterations.length === 0 && !initialSituation) return null;
-
-    return (
-      <div style={{ marginTop: "2rem" }}>
-        <h2
-          style={{
-            fontSize: "0.9rem",
-            fontWeight: 600,
-            color: "#111",
-            margin: "0 0 0.25rem 0",
-          }}
-        >
-          Clarification path
-        </h2>
-
-        <p
-          style={{
-            fontSize: "0.84rem",
-            color: "#7a756f",
-            lineHeight: 1.55,
-            margin: 0,
-          }}
-        >
-          View the initial AI issue and each refinement as assumptions,
-          interpretations, and unknowns become clearer.
-        </p>
-
-        {renderInitialSituationCard()}
-
-        {iterations.map((iteration, index) =>
-          renderRefinementCard(iteration, index === iterations.length - 1)
-        )}
-      </div>
-    );
-  }
-
-  function renderSupplementaryResult(response: VirekaResponse) {
-    if (response.mode === "clarify") return null;
-
-    if (response.mode === "close") {
-      return (
-        <div
-          ref={resultRef}
-          style={{
-            marginTop: "1.5rem",
-            backgroundColor: "#ffffff",
-            border: "1px solid #e7e5e4",
-            borderRadius: "16px",
-            padding: "2rem 1.75rem",
-          }}
-        >
-          <h3
-            style={{
-              fontSize: "0.72rem",
-              fontWeight: 700,
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              color: "#8e8a84",
-              margin: "0 0 0.7rem 0",
-            }}
-          >
-            Response
-          </h3>
-          <p
-            style={{
-              color: "#333",
-              margin: 0,
-              fontSize: "0.95rem",
-              lineHeight: 1.65,
-            }}
-          >
-            {response.message}
-          </p>
-        </div>
-      );
-    }
-
-    return (
-      <div
-        ref={resultRef}
-        style={{
-          marginTop: "1.5rem",
-          backgroundColor: "#ffffff",
-          border: "1px solid #e7e5e4",
-          borderRadius: "16px",
-          padding: "2rem 1.75rem",
-        }}
-      >
-        <h3
-          style={{
-            fontSize: "0.72rem",
-            fontWeight: 700,
-            letterSpacing: "0.1em",
-            textTransform: "uppercase",
-            color: "#8e8a84",
-            margin: "0 0 0.7rem 0",
-          }}
-        >
-          Plain language
-        </h3>
-        <p
-          style={{
-            color: "#333",
-            margin: 0,
-            fontSize: "0.95rem",
-            lineHeight: 1.65,
-          }}
-        >
-          {response.message}
-        </p>
       </div>
     );
   }
@@ -1063,7 +1219,88 @@ export default function AIInteractionPage() {
             output.
           </p>
 
-          {renderFollowupActionRow()}
+          <div
+            style={{
+              display: "flex",
+              gap: "0.75rem",
+              alignItems: "center",
+              flexShrink: 0,
+              flexWrap: "wrap",
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => startListening("followup")}
+              disabled={isFollowupMicDisabled}
+              style={{
+                padding: "0.7rem 1rem",
+                backgroundColor: "#fff",
+                color: "#111",
+                border: "1px solid #d6d3d1",
+                borderRadius: "999px",
+                fontSize: "0.9rem",
+                fontWeight: 600,
+                cursor: isFollowupMicDisabled ? "not-allowed" : "pointer",
+                whiteSpace: "nowrap",
+                opacity: isFollowupMicDisabled ? 0.6 : 1,
+              }}
+            >
+              {listeningTarget === "followup" ? "Listening…" : "Mic"}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleClarify("followup")}
+              disabled={isFollowupClarifyDisabled}
+              style={{
+                flexShrink: 0,
+                padding: "0.7rem 1.75rem",
+                backgroundColor: isFollowupClarifyDisabled ? "#ccc" : "#111",
+                color: "#fff",
+                border: "none",
+                borderRadius: "999px",
+                fontSize: "0.9rem",
+                fontWeight: 600,
+                cursor: isFollowupClarifyDisabled ? "not-allowed" : "pointer",
+                transition: "background-color 0.15s",
+                letterSpacing: "-0.01em",
+                whiteSpace: "nowrap",
+              }}
+              onMouseEnter={(e) => {
+                if (!isFollowupClarifyDisabled) {
+                  e.currentTarget.style.backgroundColor = "#333";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isFollowupClarifyDisabled) {
+                  e.currentTarget.style.backgroundColor = "#111";
+                }
+              }}
+            >
+              {loading ? "Clarifying…" : "Clarify"}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleDone}
+              disabled={isDoneDisabled}
+              style={{
+                flexShrink: 0,
+                padding: "0.7rem 1.15rem",
+                backgroundColor: "#fff",
+                color: "#111",
+                border: "1px solid #d6d3d1",
+                borderRadius: "999px",
+                fontSize: "0.9rem",
+                fontWeight: 600,
+                cursor: isDoneDisabled ? "not-allowed" : "pointer",
+                whiteSpace: "nowrap",
+                opacity: isDoneDisabled ? 0.6 : 1,
+              }}
+            >
+              Done
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -1079,6 +1316,9 @@ export default function AIInteractionPage() {
     setIsDone(false);
     setInitialSituation("");
     setIterations([]);
+    setOpenPanelIds([]);
+    setLatestPanelId(null);
+    setPlainLanguageByPanelId({});
   }
 
   return (
@@ -1196,7 +1436,7 @@ export default function AIInteractionPage() {
               marginBottom: "0.875rem",
             }}
           >
-            Problem, prompt, or AI issue
+            What is happening in the AI interaction?
           </label>
 
           <textarea
@@ -1204,8 +1444,8 @@ export default function AIInteractionPage() {
             value={topInput}
             onChange={(e) => setTopInput(e.target.value)}
             disabled={loading}
-            placeholder='Example: "The output looks reasonable, but something about the reasoning feels off. I am not sure whether the issue is the prompt, the model, or the objective."'
-            rows={8}
+            placeholder="Describe the prompt, the output, what seems off, or what is making the interaction unclear."
+            rows={7}
             style={{
               display: "block",
               width: "100%",
@@ -1251,8 +1491,8 @@ export default function AIInteractionPage() {
                 flex: "1 1 260px",
               }}
             >
-              Clarifies what is known, assumed, and still unclear before
-              prompting AI.
+              Include the prompt, the objective, the output, or anything that
+              may help clarify where the interaction feels off.
             </p>
 
             {renderTopActionRow()}
@@ -1262,72 +1502,44 @@ export default function AIInteractionPage() {
         {error && (
           <div
             style={{
-              marginTop: "1.5rem",
-              padding: "1rem 1.25rem",
-              backgroundColor: "#fff5f5",
-              border: "1px solid #fcc",
-              borderRadius: "12px",
-              color: "#c00",
+              marginTop: "1rem",
+              padding: "0.9rem 1rem",
+              backgroundColor: "#fff4f4",
+              border: "1px solid #f0caca",
+              borderRadius: "10px",
+              color: "#8a2d2d",
               fontSize: "0.9rem",
-              lineHeight: 1.5,
             }}
           >
             {error}
           </div>
         )}
 
-        {!isDone && renderClarificationPath()}
-        {!isDone && result && renderSupplementaryResult(result)}
+        {renderClarificationPath()}
+
+        {result && renderSupplementaryResult(result)}
+
         {renderFollowupBox()}
 
-        {result && isDone && (
-          <div
-            ref={resultRef}
-            style={{
-              marginTop: "2rem",
-              backgroundColor: "#ffffff",
-              border: "1px solid #e7e5e4",
-              borderRadius: "16px",
-              padding: "2rem 1.75rem",
-            }}
-          >
-            <h3
-              style={{
-                fontSize: "1.1rem",
-                fontWeight: 600,
-                color: "#111",
-                margin: "0 0 0.75rem 0",
-              }}
-            >
-              Thank you.
-            </h3>
-
-            <p
-              style={{
-                color: "#444",
-                margin: "0 0 1.25rem 0",
-                fontSize: "0.95rem",
-                lineHeight: 1.65,
-              }}
-            >
-              Clearer interaction improves output quality.
-            </p>
-
+        {(result || initialSituation || iterations.length > 0 || isDone) && (
+          <div style={{ marginTop: "1.5rem" }}>
             <button
               type="button"
               onClick={resetSession}
+              disabled={loading}
               style={{
-                padding: "0.7rem 1rem",
-                borderRadius: "999px",
-                border: "1px solid #d6d3d1",
+                padding: "0.72rem 1.1rem",
                 backgroundColor: "#fff",
                 color: "#111",
+                border: "1px solid #d6d3d1",
+                borderRadius: "999px",
                 fontSize: "0.9rem",
                 fontWeight: 600,
-                cursor: "pointer",
+                cursor: loading ? "not-allowed" : "pointer",
+                opacity: loading ? 0.6 : 1,
               }}
             >
-              Start a new AI interaction
+              Start over
             </button>
           </div>
         )}

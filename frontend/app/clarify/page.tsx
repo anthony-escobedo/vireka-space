@@ -1036,14 +1036,13 @@ function renderClarifyContent(
   function renderTopActionRow() {
     return (
       <div
-        style={{
-          display: "flex",
-          gap: "0.75rem",
-          alignItems: "center",
-          flexShrink: 0,
-          flexWrap: "wrap",
-        }}
-      >
+  style={{
+    display: "flex",
+    gap: "0.75rem",
+    alignItems: "center",
+    flexWrap: "wrap",
+  }}
+>
         <button
           type="button"
           onClick={() => startListening("top")}

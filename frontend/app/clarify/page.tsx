@@ -118,6 +118,44 @@ export default function ClarifyPage() {
     return t;
   }
 
+  function normalizeQuestion(text: string): string {
+    return text
+      .trim()
+      .toLowerCase()
+      .replace(/[^\w\s]/g, "")
+      .replace(/\s+/g, " ");
+  }
+
+  function getDistinctSuggestedQuestions(response: ClarifyResponse): string[] {
+    const mainQuestionNormalized = response.question
+      ? normalizeQuestion(response.question)
+      : "";
+
+    const seen = new Set<string>();
+    const rawSuggestions = response.suggestedQuestions ?? [];
+    const distinct: string[] = [];
+
+    for (const item of rawSuggestions) {
+      const trimmed = item.trim();
+      if (!trimmed) continue;
+
+      const normalized = normalizeQuestion(trimmed);
+
+      if (!normalized) continue;
+      if (mainQuestionNormalized && normalized === mainQuestionNormalized) {
+        continue;
+      }
+      if (seen.has(normalized)) continue;
+
+      seen.add(normalized);
+      distinct.push(trimmed);
+
+      if (distinct.length === 2) break;
+    }
+
+    return distinct;
+  }
+
   function startListening(target: "top" | "followup"): void {
     const SpeechRecognitionCtor =
       window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -176,6 +214,8 @@ export default function ClarifyPage() {
       return response.message;
     }
 
+    const distinctSuggestedQuestions = getDistinctSuggestedQuestions(response);
+
     const sections = [
       `What appears to be happening:\n${response.observable.join("\n")}`,
       `What may be assumed:\n${response.interpretive.join("\n")}`,
@@ -188,9 +228,9 @@ export default function ClarifyPage() {
       sections.push(`Clarifying question:\n${response.question}`);
     }
 
-    if (response.suggestedQuestions?.length) {
+    if (distinctSuggestedQuestions.length) {
       sections.push(
-        `Suggested questions:\n${response.suggestedQuestions.join("\n")}`
+        `Suggested questions:\n${distinctSuggestedQuestions.join("\n")}`
       );
     }
 
@@ -347,19 +387,6 @@ export default function ClarifyPage() {
     }, 50);
   }
 
-  function insertMainClarifyingQuestion(question: string): void {
-    setFollowupInput(question);
-    setTimeout(() => {
-      const el = document.getElementById("clarify-followup-input");
-      el?.scrollIntoView({ behavior: "smooth", block: "center" });
-    }, 50);
-  }
-
-  const possibleClarifyingQuestions =
-    lastClarifyResult?.suggestedQuestions?.length
-      ? lastClarifyResult.suggestedQuestions.slice(0, 2)
-      : [];
-
   const isTopClarifyDisabled = loading || !topInput.trim();
   const isFollowupClarifyDisabled = loading || !followupInput.trim();
   const isPlainLanguageDisabled = loading || !lastClarifyResult || isDone;
@@ -434,9 +461,9 @@ export default function ClarifyPage() {
             minWidth: "96px",
             minHeight: "56px",
             padding: "0.55rem 0.85rem",
-            backgroundColor: "#fff",
-            color: "#111",
-            border: "1px solid #d6d3d1",
+            backgroundColor: isPlainLanguageDisabled ? "#ccc" : "#111",
+            color: "#fff",
+            border: "none",
             borderRadius: "14px",
             fontSize: "0.76rem",
             fontWeight: 600,
@@ -444,6 +471,18 @@ export default function ClarifyPage() {
             textAlign: "center",
             cursor: isPlainLanguageDisabled ? "not-allowed" : "pointer",
             opacity: isPlainLanguageDisabled ? 0.6 : 1,
+            transition: "background-color 0.15s",
+            letterSpacing: "-0.01em",
+          }}
+          onMouseEnter={(e) => {
+            if (!isPlainLanguageDisabled) {
+              e.currentTarget.style.backgroundColor = "#333";
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!isPlainLanguageDisabled) {
+              e.currentTarget.style.backgroundColor = "#111";
+            }
           }}
         >
           <span>Plain</span>
@@ -497,9 +536,7 @@ export default function ClarifyPage() {
     isLatest: boolean
   ) {
     const response = iteration.response;
-    const refinementQuestions = isLatest
-      ? possibleClarifyingQuestions
-      : response.suggestedQuestions?.slice(0, 2) ?? [];
+    const refinementQuestions = getDistinctSuggestedQuestions(response);
 
     return (
       <div
@@ -536,6 +573,18 @@ export default function ClarifyPage() {
                 padding: "0.9rem 1rem",
               }}
             >
+              <h3
+                style={{
+                  fontSize: "0.72rem",
+                  fontWeight: 700,
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                  color: "#8e8a84",
+                  margin: "0 0 0.55rem 0",
+                }}
+              >
+                Your input
+              </h3>
               <p
                 style={{
                   margin: 0,
@@ -587,24 +636,13 @@ export default function ClarifyPage() {
 
         {response.question && (
           <div
-            role="button"
-            tabIndex={0}
-            onClick={() => insertMainClarifyingQuestion(response.question!)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                insertMainClarifyingQuestion(response.question!);
-              }
-            }}
             style={{
               padding: "1.125rem 1.25rem",
               backgroundColor: "#f9f8f5",
               border: "1px solid #e7e5e4",
               borderLeft: "3px solid #111",
               borderRadius: "0 10px 10px 0",
-              marginBottom:
-                refinementQuestions.length > 0 ? "1.25rem" : 0,
-              cursor: "pointer",
+              marginBottom: refinementQuestions.length > 0 ? "1.25rem" : 0,
             }}
           >
             <h3
@@ -645,7 +683,7 @@ export default function ClarifyPage() {
                 margin: "0 0 0.85rem 0",
               }}
             >
-              Possible clarifying questions
+              Suggested questions
             </h3>
 
             <div
@@ -712,9 +750,14 @@ export default function ClarifyPage() {
 
         {renderInitialSituationCard()}
 
-        {iterations.map((iteration, index) =>
-          renderRefinementCard(iteration, index === iterations.length - 1)
-        )}
+        {iterations
+          .filter((iteration) => iteration.source === "followup")
+          .map((iteration, index, filteredIterations) =>
+            renderRefinementCard(
+              iteration,
+              index === filteredIterations.length - 1
+            )
+          )}
       </div>
     );
   }
@@ -868,7 +911,7 @@ export default function ClarifyPage() {
   }
 
   function renderFollowupBox() {
-    if (!result || isDone || iterations.length === 0) return null;
+    if (!result || isDone || !lastClarifyResult) return null;
 
     return (
       <div

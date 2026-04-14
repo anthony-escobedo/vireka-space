@@ -1284,21 +1284,26 @@ function renderClarifyContent(
 
   return (
     <main
-      style={{
-        minHeight: "100vh",
-        backgroundColor: "#f5f3ef",
-        fontFamily:
-          "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif",
-        color: "#111",
-      }}
-    >
+  style={{
+    minHeight: "100vh",
+    backgroundColor: "#f5f3ef",
+    fontFamily:
+      "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif",
+    color: "#111",
+    width: "100%",
+    overflowX: "hidden",
+  }}
+>
       <div
-        style={{
-          maxWidth: "780px",
-          margin: "0 auto",
-          padding: "1.5rem 1.5rem 4rem",
-        }}
-      >
+  style={{
+    maxWidth: "780px",
+    width: "100%",
+    boxSizing: "border-box",
+    margin: "0 auto",
+    padding: "1.5rem 1.25rem 4rem",
+    overflowX: "hidden",
+  }}
+>
         <div style={{ marginBottom: "2rem" }}>
           <Link
             href="/"

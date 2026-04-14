@@ -37,7 +37,7 @@ declare global {
   }
 }
 
-type RequestAction = "clarify" | "simplify";
+type RequestAction = "clarify" | "plain_language";
 
 type ConversationTurn = {
   role: "user" | "assistant";
@@ -52,10 +52,11 @@ type ClarifyResponse = {
   structural: string[];
   orientation: string;
   question?: string;
+  suggestedQuestions?: string[];
 };
 
-type SimplifyResponse = {
-  mode: "simplify";
+type PlainLanguageResponse = {
+  mode: "plain_language";
   message: string;
 };
 
@@ -64,16 +65,17 @@ type CloseResponse = {
   message: string;
 };
 
-type VirekaResponse = ClarifyResponse | SimplifyResponse | CloseResponse;
+type VirekaResponse = ClarifyResponse | PlainLanguageResponse | CloseResponse;
 
 export default function ClarifyPage() {
-  const [input, setInput] = useState<string>("");
+  const [topInput, setTopInput] = useState<string>("");
+  const [followupInput, setFollowupInput] = useState<string>("");
   const [result, setResult] = useState<VirekaResponse | null>(null);
   const [lastClarifyResult, setLastClarifyResult] =
     useState<ClarifyResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [listening, setListening] = useState<boolean>(false);
+  const [listeningTarget, setListeningTarget] = useState<"top" | "followup" | null>(null);
   const [history, setHistory] = useState<ConversationTurn[]>([]);
   const [isDone, setIsDone] = useState<boolean>(false);
 
@@ -104,7 +106,7 @@ export default function ClarifyPage() {
     return t;
   }
 
-  function startListening(): void {
+  function startListening(target: "top" | "followup"): void {
     const SpeechRecognitionCtor =
       window.SpeechRecognition || window.webkitSpeechRecognition;
 
@@ -126,7 +128,7 @@ export default function ClarifyPage() {
     recognition.lang = "en-US";
 
     recognition.onstart = () => {
-      setListening(true);
+      setListeningTarget(target);
       setError(null);
     };
 
@@ -134,7 +136,13 @@ export default function ClarifyPage() {
       let transcript = event.results[0][0].transcript;
       transcript = cleanTranscript(transcript);
 
-      setInput((prev) => (prev ? `${prev} ${transcript}` : transcript));
+      if (target === "top") {
+        setTopInput((prev) => (prev.trim() ? `${prev.trim()} ${transcript}` : transcript));
+      } else {
+        setFollowupInput((prev) =>
+          prev.trim() ? `${prev.trim()} ${transcript}` : transcript
+        );
+      }
     };
 
     recognition.onerror = (event) => {
@@ -142,7 +150,7 @@ export default function ClarifyPage() {
     };
 
     recognition.onend = () => {
-      setListening(false);
+      setListeningTarget(null);
       recognitionRef.current = null;
     };
 
@@ -150,7 +158,7 @@ export default function ClarifyPage() {
   }
 
   function formatResponseForHistory(response: VirekaResponse): string {
-    if (response.mode === "close" || response.mode === "simplify") {
+    if (response.mode === "close" || response.mode === "plain_language") {
       return response.message;
     }
 
@@ -158,7 +166,7 @@ export default function ClarifyPage() {
       `What appears to be happening:\n${response.observable.join("\n")}`,
       `What may be assumed:\n${response.interpretive.join("\n")}`,
       `What may still be unclear:\n${response.unknown.join("\n")}`,
-      `Structural considerations:\n${response.structural.join("\n")}`,
+      `What may be influencing the situation:\n${response.structural.join("\n")}`,
       `Orientation:\n${response.orientation}`,
     ];
 
@@ -166,15 +174,23 @@ export default function ClarifyPage() {
       sections.push(`Clarifying question:\n${response.question}`);
     }
 
+    if (response.suggestedQuestions?.length) {
+      sections.push(
+        `Suggested questions:\n${response.suggestedQuestions.join("\n")}`
+      );
+    }
+
     return sections.join("\n\n");
   }
 
   async function submitToClarify(
     action: RequestAction,
+    source: "top" | "followup",
     overrideInput?: string
   ): Promise<void> {
+    const sourceValue = source === "top" ? topInput : followupInput;
     const effectiveInput =
-      typeof overrideInput === "string" ? overrideInput : input;
+      typeof overrideInput === "string" ? overrideInput : sourceValue;
     const trimmed = effectiveInput.trim();
 
     if (action === "clarify" && !trimmed) {
@@ -182,8 +198,8 @@ export default function ClarifyPage() {
       return;
     }
 
-    if (action === "simplify" && !lastClarifyResult) {
-      setError("There is nothing to simplify yet.");
+    if (action === "plain_language" && !lastClarifyResult) {
+      setError("There is nothing to restate in plain language yet.");
       return;
     }
 
@@ -193,7 +209,7 @@ export default function ClarifyPage() {
 
     try {
       const payload =
-        action === "simplify"
+        action === "plain_language"
           ? {
               action,
               history,
@@ -236,7 +252,12 @@ export default function ClarifyPage() {
         };
 
         setHistory((prev) => [...prev, userTurn, assistantTurn]);
-        setInput("");
+
+        if (source === "top") {
+          setTopInput("");
+        } else {
+          setFollowupInput("");
+        }
 
         if (typedData.mode === "clarify") {
           setLastClarifyResult(typedData);
@@ -245,7 +266,7 @@ export default function ClarifyPage() {
         }
       }
 
-      if (action === "simplify") {
+      if (action === "plain_language") {
         const assistantTurn: ConversationTurn = {
           role: "assistant",
           content: formatResponseForHistory(typedData),
@@ -271,12 +292,12 @@ export default function ClarifyPage() {
     }
   }
 
-  function handleClarify(): void {
-    void submitToClarify("clarify");
+  function handleClarify(source: "top" | "followup"): void {
+    void submitToClarify("clarify", source);
   }
 
   function handlePlainLanguage(): void {
-    void submitToClarify("simplify");
+    void submitToClarify("plain_language", "followup");
   }
 
   function handleDone(): void {
@@ -290,9 +311,26 @@ export default function ClarifyPage() {
     }, 100);
   }
 
-  const isClarifyDisabled = loading || !input.trim();
+  function insertSuggestedQuestion(question: string): void {
+    setFollowupInput(question);
+    setTimeout(() => {
+      const el = document.getElementById("clarify-followup-input");
+      el?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 50);
+  }
+
+  const possibleClarifyingQuestions =
+    lastClarifyResult?.suggestedQuestions?.length
+      ? lastClarifyResult.suggestedQuestions.slice(0, 2)
+      : [];
+
+  const isTopClarifyDisabled = loading || !topInput.trim();
+  const isFollowupClarifyDisabled = loading || !followupInput.trim();
   const isPlainLanguageDisabled = loading || !lastClarifyResult || isDone;
-  const isMicDisabled = loading || listening;
+  const isTopMicDisabled =
+    loading || listeningTarget === "top" || listeningTarget === "followup";
+  const isFollowupMicDisabled =
+    loading || listeningTarget === "top" || listeningTarget === "followup";
   const isDoneDisabled = loading || !result || isDone;
 
   function renderList(items: string[] | undefined, label: string) {
@@ -418,7 +456,7 @@ export default function ClarifyPage() {
       );
     }
 
-    if (response.mode === "simplify") {
+    if (response.mode === "plain_language") {
       return (
         <div
           ref={resultRef}
@@ -476,7 +514,7 @@ export default function ClarifyPage() {
         {renderList(response.observable, "What appears to be happening")}
         {renderList(response.interpretive, "What may be assumed")}
         {renderList(response.unknown, "What may still be unclear")}
-        {renderList(response.structural, "Structural considerations")}
+        {renderList(response.structural, "What may be influencing the situation")}
 
         <div style={{ marginBottom: response.question ? "1.75rem" : 0 }}>
           <h3
@@ -511,7 +549,7 @@ export default function ClarifyPage() {
               border: "1px solid #e7e5e4",
               borderLeft: "3px solid #111",
               borderRadius: "0 10px 10px 0",
-              marginBottom: "1.25rem",
+              marginBottom: possibleClarifyingQuestions.length > 0 ? "1.25rem" : 0,
             }}
           >
             <h3
@@ -539,6 +577,287 @@ export default function ClarifyPage() {
             </p>
           </div>
         )}
+
+        {possibleClarifyingQuestions.length > 0 && (
+          <div style={{ marginTop: "1.5rem" }}>
+            <h3
+              style={{
+                fontSize: "0.68rem",
+                fontWeight: 600,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                color: "#999",
+                margin: "0 0 0.8rem 0",
+              }}
+            >
+              Possible clarifying questions
+            </h3>
+
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: "0.6rem",
+              }}
+            >
+              {possibleClarifyingQuestions.map((item, index) => (
+                <button
+                  key={`${item}-${index}`}
+                  type="button"
+                  onClick={() => insertSuggestedQuestion(item)}
+                  style={{
+                    padding: "0.62rem 0.9rem",
+                    borderRadius: "999px",
+                    border: "1px solid #d6d3d1",
+                    backgroundColor: "#fff",
+                    color: "#111",
+                    fontSize: "0.88rem",
+                    lineHeight: 1.4,
+                    cursor: "pointer",
+                    textAlign: "left",
+                  }}
+                >
+                  {item}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  function renderTopActionRow() {
+    return (
+      <div
+        style={{
+          display: "flex",
+          gap: "0.75rem",
+          alignItems: "center",
+          flexShrink: 0,
+          flexWrap: "wrap",
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => startListening("top")}
+          disabled={isTopMicDisabled}
+          style={{
+            padding: "0.7rem 1rem",
+            backgroundColor: "#fff",
+            color: "#111",
+            border: "1px solid #d6d3d1",
+            borderRadius: "999px",
+            fontSize: "0.9rem",
+            fontWeight: 600,
+            cursor: isTopMicDisabled ? "not-allowed" : "pointer",
+            whiteSpace: "nowrap",
+            opacity: isTopMicDisabled ? 0.6 : 1,
+          }}
+        >
+          {listeningTarget === "top" ? "Listening…" : "Mic"}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => handleClarify("top")}
+          disabled={isTopClarifyDisabled}
+          style={{
+            flexShrink: 0,
+            padding: "0.7rem 1.75rem",
+            backgroundColor: isTopClarifyDisabled ? "#ccc" : "#111",
+            color: "#fff",
+            border: "none",
+            borderRadius: "999px",
+            fontSize: "0.9rem",
+            fontWeight: 600,
+            cursor: isTopClarifyDisabled ? "not-allowed" : "pointer",
+            transition: "background-color 0.15s",
+            letterSpacing: "-0.01em",
+            whiteSpace: "nowrap",
+          }}
+          onMouseEnter={(e) => {
+            if (!isTopClarifyDisabled) {
+              e.currentTarget.style.backgroundColor = "#333";
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!isTopClarifyDisabled) {
+              e.currentTarget.style.backgroundColor = "#111";
+            }
+          }}
+        >
+          {loading ? "Clarifying…" : "Clarify"}
+        </button>
+      </div>
+    );
+  }
+
+  function renderFollowupBox() {
+    if (!result || isDone) return null;
+
+    return (
+      <div
+        style={{
+          marginTop: "1.5rem",
+          backgroundColor: "#ffffff",
+          borderRadius: "16px",
+          border: "1px solid #e7e5e4",
+          padding: "1.75rem 1.75rem 1.5rem",
+        }}
+      >
+        <label
+          htmlFor="clarify-followup-input"
+          style={{
+            display: "block",
+            fontSize: "0.875rem",
+            fontWeight: 600,
+            color: "#111",
+            marginBottom: "0.875rem",
+          }}
+        >
+          Continue clarifying (optional)
+        </label>
+
+        <textarea
+          id="clarify-followup-input"
+          value={followupInput}
+          onChange={(e) => setFollowupInput(e.target.value)}
+          disabled={loading}
+          placeholder="Add any details that may help clarify the situation, your assumptions, or what remains unclear."
+          rows={6}
+          style={{
+            display: "block",
+            width: "100%",
+            boxSizing: "border-box",
+            backgroundColor: "#fafafa",
+            color: "#111",
+            border: "1px solid #e7e5e4",
+            borderRadius: "10px",
+            padding: "1rem 1.125rem",
+            fontSize: "0.925rem",
+            lineHeight: 1.65,
+            resize: "vertical",
+            outline: "none",
+            fontFamily: "inherit",
+            transition: "border-color 0.15s",
+            opacity: loading ? 0.6 : 1,
+          }}
+          onFocus={(e) => {
+            e.currentTarget.style.borderColor = "#aaa";
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.borderColor = "#e7e5e4";
+          }}
+        />
+
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-end",
+            justifyContent: "space-between",
+            gap: "1.5rem",
+            marginTop: "1rem",
+            flexWrap: "wrap",
+          }}
+        >
+          <p
+            style={{
+              fontSize: "0.8rem",
+              color: "#888",
+              lineHeight: 1.55,
+              margin: 0,
+              maxWidth: "480px",
+              flex: "1 1 260px",
+            }}
+          >
+            Add anything that may help separate what is happening, what may be
+            assumed, and what may still be unclear.
+          </p>
+
+          <div
+            style={{
+              display: "flex",
+              gap: "0.75rem",
+              alignItems: "center",
+              flexShrink: 0,
+              flexWrap: "wrap",
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => startListening("followup")}
+              disabled={isFollowupMicDisabled}
+              style={{
+                padding: "0.7rem 1rem",
+                backgroundColor: "#fff",
+                color: "#111",
+                border: "1px solid #d6d3d1",
+                borderRadius: "999px",
+                fontSize: "0.9rem",
+                fontWeight: 600,
+                cursor: isFollowupMicDisabled ? "not-allowed" : "pointer",
+                whiteSpace: "nowrap",
+                opacity: isFollowupMicDisabled ? 0.6 : 1,
+              }}
+            >
+              {listeningTarget === "followup" ? "Listening…" : "Mic"}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleClarify("followup")}
+              disabled={isFollowupClarifyDisabled}
+              style={{
+                flexShrink: 0,
+                padding: "0.7rem 1.75rem",
+                backgroundColor: isFollowupClarifyDisabled ? "#ccc" : "#111",
+                color: "#fff",
+                border: "none",
+                borderRadius: "999px",
+                fontSize: "0.9rem",
+                fontWeight: 600,
+                cursor: isFollowupClarifyDisabled ? "not-allowed" : "pointer",
+                transition: "background-color 0.15s",
+                letterSpacing: "-0.01em",
+                whiteSpace: "nowrap",
+              }}
+              onMouseEnter={(e) => {
+                if (!isFollowupClarifyDisabled) {
+                  e.currentTarget.style.backgroundColor = "#333";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isFollowupClarifyDisabled) {
+                  e.currentTarget.style.backgroundColor = "#111";
+                }
+              }}
+            >
+              {loading ? "Clarifying…" : "Clarify"}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleDone}
+              disabled={isDoneDisabled}
+              style={{
+                flexShrink: 0,
+                padding: "0.7rem 1.15rem",
+                backgroundColor: "#fff",
+                color: "#111",
+                border: "1px solid #d6d3d1",
+                borderRadius: "999px",
+                fontSize: "0.9rem",
+                fontWeight: 600,
+                cursor: isDoneDisabled ? "not-allowed" : "pointer",
+                whiteSpace: "nowrap",
+                opacity: isDoneDisabled ? 0.6 : 1,
+              }}
+            >
+              Done
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
@@ -664,10 +983,10 @@ export default function ClarifyPage() {
 
           <textarea
             id="clarify-input"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
+            value={topInput}
+            onChange={(e) => setTopInput(e.target.value)}
             disabled={loading}
-            placeholder='Example: "The situation appears to call for action, but I do not yet see clearly which factors are driving the outcome or how they relate to each other."'
+            placeholder='Example: "The situation suggests a need for action, but it is not yet clear which factors are driving the outcome."'
             rows={8}
             style={{
               display: "block",
@@ -716,91 +1035,10 @@ export default function ClarifyPage() {
             >
               Include the situation as you currently see it, even if
               interpretation or uncertainty are present. The system helps
-              separate these elements before a response or prompt is formed.
+              separate these elements before a response is formed.
             </p>
 
-            <div
-              style={{
-                display: "flex",
-                gap: "0.75rem",
-                alignItems: "center",
-                flexShrink: 0,
-                flexWrap: "wrap",
-              }}
-            >
-              <button
-                type="button"
-                onClick={startListening}
-                disabled={isMicDisabled}
-                style={{
-                  padding: "0.7rem 1rem",
-                  backgroundColor: "#fff",
-                  color: "#111",
-                  border: "1px solid #d6d3d1",
-                  borderRadius: "999px",
-                  fontSize: "0.9rem",
-                  fontWeight: 600,
-                  cursor: isMicDisabled ? "not-allowed" : "pointer",
-                  whiteSpace: "nowrap",
-                  opacity: isMicDisabled ? 0.6 : 1,
-                }}
-              >
-                {listening ? "Listening…" : "Mic"}
-              </button>
-
-              <button
-                type="button"
-                onClick={handleClarify}
-                disabled={isClarifyDisabled}
-                style={{
-                  flexShrink: 0,
-                  padding: "0.7rem 1.75rem",
-                  backgroundColor: isClarifyDisabled ? "#ccc" : "#111",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "999px",
-                  fontSize: "0.9rem",
-                  fontWeight: 600,
-                  cursor: isClarifyDisabled ? "not-allowed" : "pointer",
-                  transition: "background-color 0.15s",
-                  letterSpacing: "-0.01em",
-                  whiteSpace: "nowrap",
-                }}
-                onMouseEnter={(e) => {
-                  if (!isClarifyDisabled) {
-                    e.currentTarget.style.backgroundColor = "#333";
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isClarifyDisabled) {
-                    e.currentTarget.style.backgroundColor = "#111";
-                  }
-                }}
-              >
-                {loading ? "Clarifying…" : "Clarify"}
-              </button>
-
-              <button
-                type="button"
-                onClick={handleDone}
-                disabled={isDoneDisabled}
-                style={{
-                  flexShrink: 0,
-                  padding: "0.7rem 1.15rem",
-                  backgroundColor: "#fff",
-                  color: "#111",
-                  border: "1px solid #d6d3d1",
-                  borderRadius: "999px",
-                  fontSize: "0.9rem",
-                  fontWeight: 600,
-                  cursor: isDoneDisabled ? "not-allowed" : "pointer",
-                  whiteSpace: "nowrap",
-                  opacity: isDoneDisabled ? 0.6 : 1,
-                }}
-              >
-                Done
-              </button>
-            </div>
+            {renderTopActionRow()}
           </div>
         </div>
 
@@ -822,64 +1060,67 @@ export default function ClarifyPage() {
         )}
 
         {result && !isDone && renderResult(result)}
+        {renderFollowupBox()}
+
         {result && isDone && (
-  <div
-    ref={resultRef}
-    style={{
-      marginTop: "2rem",
-      backgroundColor: "#ffffff",
-      border: "1px solid #e7e5e4",
-      borderRadius: "16px",
-      padding: "2rem 1.75rem",
-    }}
-  >
-    <h3
-      style={{
-        fontSize: "1.1rem",
-        fontWeight: 600,
-        color: "#111",
-        margin: "0 0 0.75rem 0",
-      }}
-    >
-      Thank you.
-    </h3>
+          <div
+            ref={resultRef}
+            style={{
+              marginTop: "2rem",
+              backgroundColor: "#ffffff",
+              border: "1px solid #e7e5e4",
+              borderRadius: "16px",
+              padding: "2rem 1.75rem",
+            }}
+          >
+            <h3
+              style={{
+                fontSize: "1.1rem",
+                fontWeight: 600,
+                color: "#111",
+                margin: "0 0 0.75rem 0",
+              }}
+            >
+              Thank you.
+            </h3>
 
-    <p
-      style={{
-        color: "#444",
-        margin: "0 0 1.25rem 0",
-        fontSize: "0.95rem",
-        lineHeight: 1.65,
-      }}
-    >
-      Clarity improves interaction quality.
-    </p>
+            <p
+              style={{
+                color: "#444",
+                margin: "0 0 1.25rem 0",
+                fontSize: "0.95rem",
+                lineHeight: 1.65,
+              }}
+            >
+              Clarity improves interaction quality.
+            </p>
 
-    <button
-      type="button"
-      onClick={() => {
-        setInput("");
-        setResult(null);
-        setLastClarifyResult(null);
-        setHistory([]);
-        setError(null);
-        setIsDone(false);
-      }}
-      style={{
-        padding: "0.7rem 1rem",
-        borderRadius: "999px",
-        border: "1px solid #d6d3d1",
-        backgroundColor: "#fff",
-        color: "#111",
-        fontSize: "0.9rem",
-        fontWeight: 600,
-        cursor: "pointer",
-      }}
-    >
-      Start a new situation
-    </button>
-  </div>
-)}
+            <button
+              type="button"
+              onClick={() => {
+                setTopInput("");
+                setFollowupInput("");
+                setResult(null);
+                setLastClarifyResult(null);
+                setHistory([]);
+                setError(null);
+                setIsDone(false);
+              }}
+              style={{
+                padding: "0.7rem 1rem",
+                borderRadius: "999px",
+                border: "1px solid #d6d3d1",
+                backgroundColor: "#fff",
+                color: "#111",
+                fontSize: "0.9rem",
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+            >
+              Start a new situation
+            </button>
+          </div>
+        )}
       </div>
     </main>
   );

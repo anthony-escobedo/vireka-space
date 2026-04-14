@@ -85,7 +85,7 @@ type ClarificationPanel = {
   iteration: ClarificationIteration;
 };
 
-export default function AIInteractionPage() {
+export default function ClarifyPage() {
   const [topInput, setTopInput] = useState<string>("");
   const [followupInput, setFollowupInput] = useState<string>("");
   const [result, setResult] = useState<VirekaResponse | null>(null);
@@ -315,10 +315,8 @@ export default function AIInteractionPage() {
     const sections = [
       `What appears to be happening:\n${response.observable.join("\n")}`,
       `What may be assumed:\n${response.interpretive.join("\n")}`,
-      `What may still be unclear:\n${response.unknown.join("\n")}`,
-      `What may be influencing the AI interaction:\n${response.structural.join(
-        "\n"
-      )}`,
+      `What may remain unclear:\n${response.unknown.join("\n")}`,
+      `What may be influencing the situation:\n${response.structural.join("\n")}`,
       `Orientation:\n${response.orientation}`,
     ];
 
@@ -366,13 +364,11 @@ export default function AIInteractionPage() {
               action,
               history,
               latestResult: lastClarifyResult,
-              context: "ai-interaction",
             }
           : {
               input: trimmed,
               action,
               history,
-              context: "ai-interaction",
             };
 
       const res = await fetch("/api/clarify", {
@@ -628,7 +624,7 @@ export default function AIInteractionPage() {
             margin: "0 0 0.7rem 0",
           }}
         >
-          Initial AI issue
+          Initial situation
         </h3>
         <p
           style={{
@@ -668,7 +664,7 @@ export default function AIInteractionPage() {
             marginBottom: "0.35rem",
           }}
         >
-          Initial AI issue
+          Initial situation
         </div>
         <p
           style={{
@@ -739,7 +735,11 @@ export default function AIInteractionPage() {
         {renderPlainLanguageButton(shouldShowPlainLanguageButton)}
 
         {plainLanguageMessage ? (
-          <div style={{ marginBottom: 0 }}>
+          <div
+            style={{
+              marginBottom: 0,
+            }}
+          >
             <h3
               style={{
                 fontSize: "0.72rem",
@@ -767,10 +767,10 @@ export default function AIInteractionPage() {
           <>
             {renderList(response.observable, "What appears to be happening")}
             {renderList(response.interpretive, "What may be assumed")}
-            {renderList(response.unknown, "What may still be unclear")}
+            {renderList(response.unknown, "What may remain unclear")}
             {renderList(
               response.structural,
-              "What may be influencing the AI interaction"
+              "What may be influencing the situation"
             )}
 
             <div style={{ marginBottom: response.question ? "1.75rem" : 0 }}>
@@ -1003,7 +1003,7 @@ export default function AIInteractionPage() {
             margin: 0,
           }}
         >
-          The initial AI issue remains visible. Each refinement can be expanded
+          The initial situation remains visible. Each refinement can be expanded
           when needed.
         </p>
 
@@ -1150,7 +1150,7 @@ export default function AIInteractionPage() {
         }}
       >
         <label
-          htmlFor="ai-followup-input"
+          htmlFor="clarify-followup-input"
           style={{
             display: "block",
             fontSize: "0.875rem",
@@ -1159,15 +1159,15 @@ export default function AIInteractionPage() {
             marginBottom: "0.875rem",
           }}
         >
-          Continue the AI interaction
+          Refine further (optional)
         </label>
 
         <textarea
-          id="ai-followup-input"
+          id="clarify-followup-input"
           value={followupInput}
           onChange={(e) => setFollowupInput(e.target.value)}
           disabled={loading}
-          placeholder="Add any detail that may help clarify the prompt, the objective, or the output."
+          placeholder="Add any detail that may help distinguish what appears to be happening, what may be assumed, or what may remain unclear."
           rows={6}
           style={{
             display: "block",
@@ -1214,9 +1214,7 @@ export default function AIInteractionPage() {
               flex: "1 1 260px",
             }}
           >
-            Continue the same AI issue, respond to the clarifying question, or
-            add what may help distinguish the prompt, the objective, and the
-            output.
+            Additional detail may help separate observation from interpretation.
           </p>
 
           <div
@@ -1368,7 +1366,7 @@ export default function AIInteractionPage() {
               padding: "6px 12px",
             }}
           >
-            AI Interaction
+            Clarify
           </span>
         </div>
 
@@ -1382,20 +1380,19 @@ export default function AIInteractionPage() {
             margin: "0 0 1.25rem 0",
           }}
         >
-          See clearly before deciding what to ask AI to do.
+          Clarify a situation
         </h1>
 
-        <div style={{ maxWidth: "680px" }}>
+        <div style={{ maxWidth: "640px" }}>
           <p
             style={{
               fontSize: "0.95rem",
               color: "#444",
-              lineHeight: 1.65,
+              lineHeight: 1.6,
               margin: "0 0 0.75rem 0",
             }}
           >
-            Describe the prompt, output issue, or AI-related situation as it
-            currently appears.
+            Describe the situation as it currently appears.
           </p>
           <p
             style={{
@@ -1405,8 +1402,9 @@ export default function AIInteractionPage() {
               margin: 0,
             }}
           >
-            VIREKA Space helps separate what is happening from what may be
-            assumed, improving the quality of interaction with AI.
+            Vireka distinguishes what appears to be happening, what may be
+            assumed, and what may remain unclear so response can begin from
+            clearer structure.
           </p>
         </div>
 
@@ -1427,7 +1425,7 @@ export default function AIInteractionPage() {
           }}
         >
           <label
-            htmlFor="ai-input"
+            htmlFor="clarify-input"
             style={{
               display: "block",
               fontSize: "0.875rem",
@@ -1436,16 +1434,16 @@ export default function AIInteractionPage() {
               marginBottom: "0.875rem",
             }}
           >
-            What is happening in the AI interaction?
+            Situation
           </label>
 
           <textarea
-            id="ai-input"
+            id="clarify-input"
             value={topInput}
             onChange={(e) => setTopInput(e.target.value)}
             disabled={loading}
-            placeholder="Describe the prompt, the output, what seems off, or what is making the interaction unclear."
-            rows={7}
+            placeholder="Example: The situation suggests a need for action, but the factors shaping the outcome are not yet fully clear."
+            rows={8}
             style={{
               display: "block",
               width: "100%",
@@ -1491,8 +1489,8 @@ export default function AIInteractionPage() {
                 flex: "1 1 260px",
               }}
             >
-              Include the prompt, the objective, the output, or anything that
-              may help clarify where the interaction feels off.
+              Include the situation as it currently appears, even if
+              interpretation or uncertainty are present.
             </p>
 
             {renderTopActionRow()}
@@ -1502,44 +1500,72 @@ export default function AIInteractionPage() {
         {error && (
           <div
             style={{
-              marginTop: "1rem",
-              padding: "0.9rem 1rem",
-              backgroundColor: "#fff4f4",
-              border: "1px solid #f0caca",
-              borderRadius: "10px",
-              color: "#8a2d2d",
+              marginTop: "1.5rem",
+              padding: "1rem 1.25rem",
+              backgroundColor: "#fff5f5",
+              border: "1px solid #fcc",
+              borderRadius: "12px",
+              color: "#c00",
               fontSize: "0.9rem",
+              lineHeight: 1.5,
             }}
           >
             {error}
           </div>
         )}
 
-        {renderClarificationPath()}
-
-        {result && renderSupplementaryResult(result)}
-
+        {!isDone && renderClarificationPath()}
+        {!isDone && result && renderSupplementaryResult(result)}
         {renderFollowupBox()}
 
-        {(result || initialSituation || iterations.length > 0 || isDone) && (
-          <div style={{ marginTop: "1.5rem" }}>
+        {result && isDone && (
+          <div
+            ref={resultRef}
+            style={{
+              marginTop: "2rem",
+              backgroundColor: "#ffffff",
+              border: "1px solid #e7e5e4",
+              borderRadius: "16px",
+              padding: "2rem 1.75rem",
+            }}
+          >
+            <h3
+              style={{
+                fontSize: "1.1rem",
+                fontWeight: 600,
+                color: "#111",
+                margin: "0 0 0.75rem 0",
+              }}
+            >
+              Clarity established
+            </h3>
+
+            <p
+              style={{
+                color: "#444",
+                margin: "0 0 1.25rem 0",
+                fontSize: "0.95rem",
+                lineHeight: 1.65,
+              }}
+            >
+              Clear structure supports better interaction.
+            </p>
+
             <button
               type="button"
               onClick={resetSession}
-              disabled={loading}
               style={{
-                padding: "0.72rem 1.1rem",
+                padding: "0.7rem 1rem",
+                borderRadius: "999px",
+                border: "1px solid #d6d3d1",
                 backgroundColor: "#fff",
                 color: "#111",
-                border: "1px solid #d6d3d1",
-                borderRadius: "999px",
                 fontSize: "0.9rem",
                 fontWeight: 600,
-                cursor: loading ? "not-allowed" : "pointer",
-                opacity: loading ? 0.6 : 1,
+                cursor: "pointer",
               }}
             >
-              Start over
+              Start new situation
             </button>
           </div>
         )}

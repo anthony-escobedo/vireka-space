@@ -379,14 +379,6 @@ export default function ClarifyPage() {
     }, 100);
   }
 
-  function insertSuggestedQuestion(question: string): void {
-    setFollowupInput(question);
-    setTimeout(() => {
-      const el = document.getElementById("clarify-followup-input");
-      el?.scrollIntoView({ behavior: "smooth", block: "center" });
-    }, 50);
-  }
-
   const isTopClarifyDisabled = loading || !topInput.trim();
   const isFollowupClarifyDisabled = loading || !followupInput.trim();
   const isPlainLanguageDisabled = loading || !lastClarifyResult || isDone;
@@ -671,51 +663,53 @@ export default function ClarifyPage() {
           </div>
         )}
 
-        {refinementQuestions.length > 0 && (
-          <div style={{ marginTop: "1.65rem" }}>
-            <h3
-              style={{
-                fontSize: "0.72rem",
-                fontWeight: 700,
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                color: "#8e8a84",
-                margin: "0 0 0.85rem 0",
-              }}
-            >
-              Suggested questions
-            </h3>
+{refinementQuestions.length > 0 && (
+  <div style={{ marginTop: "1.65rem" }}>
+    <h3
+      style={{
+        fontSize: "0.72rem",
+        fontWeight: 700,
+        letterSpacing: "0.1em",
+        textTransform: "uppercase",
+        color: "#8e8a84",
+        margin: "0 0 0.85rem 0",
+      }}
+    >
+      Suggested questions
+    </h3>
 
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: "0.6rem",
-              }}
-            >
-              {refinementQuestions.map((item, index) => (
-                <button
-                  key={`${iteration.id}-${item}-${index}`}
-                  type="button"
-                  onClick={() => insertSuggestedQuestion(item)}
-                  style={{
-                    padding: "0.62rem 0.9rem",
-                    borderRadius: "999px",
-                    border: "1px solid #d6d3d1",
-                    backgroundColor: "#fff",
-                    color: "#111",
-                    fontSize: "0.88rem",
-                    lineHeight: 1.4,
-                    cursor: "pointer",
-                    textAlign: "left",
-                  }}
-                >
-                  {item}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "0.7rem",
+      }}
+    >
+      {refinementQuestions.map((item, index) => (
+        <div
+          key={`${iteration.id}-${item}-${index}`}
+          style={{
+            padding: "0.9rem 1rem",
+            borderRadius: "10px",
+            border: "1px solid #e7e5e4",
+            backgroundColor: "#fff",
+          }}
+        >
+          <p
+            style={{
+              margin: 0,
+              color: "#333",
+              fontSize: "0.92rem",
+              lineHeight: 1.55,
+            }}
+          >
+            {item}
+          </p>
+        </div>
+      ))}
+    </div>
+  </div>
+)}
       </div>
     );
   }

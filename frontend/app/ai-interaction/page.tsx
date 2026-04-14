@@ -37,7 +37,7 @@ declare global {
   }
 }
 
-type RequestAction = "clarify" | "simplify";
+type RequestAction = "clarify" | "plain_language";
 
 type ConversationTurn = {
   role: "user" | "assistant";
@@ -55,8 +55,8 @@ type ClarifyResponse = {
   suggestedQuestions?: string[];
 };
 
-type SimplifyResponse = {
-  mode: "simplify";
+type PlainLanguageResponse = {
+  mode: "plain_language";
   message: string;
 };
 
@@ -65,7 +65,7 @@ type CloseResponse = {
   message: string;
 };
 
-type VirekaResponse = ClarifyResponse | SimplifyResponse | CloseResponse;
+type VirekaResponse = ClarifyResponse | PlainLanguageResponse | CloseResponse;
 
 type ClarificationIteration = {
   id: string;
@@ -79,11 +79,15 @@ export default function AIInteractionPage() {
   const [topInput, setTopInput] = useState<string>("");
   const [followupInput, setFollowupInput] = useState<string>("");
   const [result, setResult] = useState<VirekaResponse | null>(null);
-  const [lastClarifyResult, setLastClarifyResult] = useState<ClarifyResponse | null>(null);
+  const [lastClarifyResult, setLastClarifyResult] =
+    useState<ClarifyResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [listeningTarget, setListeningTarget] = useState<"top" | "followup" | null>(null);
+  const [listeningTarget, setListeningTarget] = useState<
+    "top" | "followup" | null
+  >(null);
   const [history, setHistory] = useState<ConversationTurn[]>([]);
+  const [isDone, setIsDone] = useState<boolean>(false);
   const [initialSituation, setInitialSituation] = useState<string>("");
   const [iterations, setIterations] = useState<ClarificationIteration[]>([]);
 
@@ -98,16 +102,58 @@ export default function AIInteractionPage() {
 
   function cleanTranscript(text: string): string {
     let t = text.trim();
+
     if (!t) return "";
+
     t = t.charAt(0).toUpperCase() + t.slice(1);
     t = t.replace(/\b(and|but|so|because)\b/gi, ", $1");
     t = t.replace(/,\s*,/g, ",");
     t = t.replace(/^,\s*/, "");
     t = t.replace(/\s+/g, " ");
+
     if (!/[.!?]$/.test(t)) {
       t += ".";
     }
+
     return t;
+  }
+
+  function normalizeQuestion(text: string): string {
+    return text
+      .trim()
+      .toLowerCase()
+      .replace(/[^\w\s]/g, "")
+      .replace(/\s+/g, " ");
+  }
+
+  function getDistinctSuggestedQuestions(response: ClarifyResponse): string[] {
+    const mainQuestionNormalized = response.question
+      ? normalizeQuestion(response.question)
+      : "";
+
+    const seen = new Set<string>();
+    const rawSuggestions = response.suggestedQuestions ?? [];
+    const distinct: string[] = [];
+
+    for (const item of rawSuggestions) {
+      const trimmed = item.trim();
+      if (!trimmed) continue;
+
+      const normalized = normalizeQuestion(trimmed);
+
+      if (!normalized) continue;
+      if (mainQuestionNormalized && normalized === mainQuestionNormalized) {
+        continue;
+      }
+      if (seen.has(normalized)) continue;
+
+      seen.add(normalized);
+      distinct.push(trimmed);
+
+      if (distinct.length === 2) break;
+    }
+
+    return distinct;
   }
 
   function startListening(target: "top" | "followup"): void {
@@ -139,8 +185,11 @@ export default function AIInteractionPage() {
     recognition.onresult = (event) => {
       let transcript = event.results[0][0].transcript;
       transcript = cleanTranscript(transcript);
+
       if (target === "top") {
-        setTopInput((prev) => (prev.trim() ? `${prev.trim()} ${transcript}` : transcript));
+        setTopInput((prev) =>
+          prev.trim() ? `${prev.trim()} ${transcript}` : transcript
+        );
       } else {
         setFollowupInput((prev) =>
           prev.trim() ? `${prev.trim()} ${transcript}` : transcript
@@ -161,15 +210,19 @@ export default function AIInteractionPage() {
   }
 
   function formatResponseForHistory(response: VirekaResponse): string {
-    if (response.mode === "close" || response.mode === "simplify") {
+    if (response.mode === "close" || response.mode === "plain_language") {
       return response.message;
     }
+
+    const distinctSuggestedQuestions = getDistinctSuggestedQuestions(response);
 
     const sections = [
       `What appears to be happening:\n${response.observable.join("\n")}`,
       `What may be assumed:\n${response.interpretive.join("\n")}`,
       `What may still be unclear:\n${response.unknown.join("\n")}`,
-      `Structural considerations:\n${response.structural.join("\n")}`,
+      `What may be influencing the AI interaction:\n${response.structural.join(
+        "\n"
+      )}`,
       `Orientation:\n${response.orientation}`,
     ];
 
@@ -177,9 +230,9 @@ export default function AIInteractionPage() {
       sections.push(`Clarifying question:\n${response.question}`);
     }
 
-    if (response.suggestedQuestions?.length) {
+    if (distinctSuggestedQuestions.length) {
       sections.push(
-        `Possible clarifying questions:\n${response.suggestedQuestions.join("\n")}`
+        `Suggested questions:\n${distinctSuggestedQuestions.join("\n")}`
       );
     }
 
@@ -192,7 +245,8 @@ export default function AIInteractionPage() {
     overrideInput?: string
   ): Promise<void> {
     const sourceValue = source === "top" ? topInput : followupInput;
-    const effectiveInput = typeof overrideInput === "string" ? overrideInput : sourceValue;
+    const effectiveInput =
+      typeof overrideInput === "string" ? overrideInput : sourceValue;
     const trimmed = effectiveInput.trim();
 
     if (action === "clarify" && !trimmed) {
@@ -200,17 +254,18 @@ export default function AIInteractionPage() {
       return;
     }
 
-    if (action === "simplify" && !lastClarifyResult) {
-      setError("There is nothing to simplify yet.");
+    if (action === "plain_language" && !lastClarifyResult) {
+      setError("There is nothing to restate in plain language yet.");
       return;
     }
 
     setLoading(true);
     setError(null);
+    setIsDone(false);
 
     try {
       const payload =
-        action === "simplify"
+        action === "plain_language"
           ? {
               action,
               history,
@@ -226,7 +281,9 @@ export default function AIInteractionPage() {
 
       const res = await fetch("/api/clarify", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(payload),
       });
 
@@ -242,7 +299,11 @@ export default function AIInteractionPage() {
       const typedData = data as VirekaResponse;
 
       if (action === "clarify") {
-        const userTurn: ConversationTurn = { role: "user", content: trimmed };
+        const userTurn: ConversationTurn = {
+          role: "user",
+          content: trimmed,
+        };
+
         const assistantTurn: ConversationTurn = {
           role: "assistant",
           content: formatResponseForHistory(typedData),
@@ -259,30 +320,30 @@ export default function AIInteractionPage() {
         if (typedData.mode === "clarify") {
           setLastClarifyResult(typedData);
 
-          setIterations((prev) => {
-            const isFirst = prev.length === 0;
-            if (isFirst && source === "top") {
-              setInitialSituation(trimmed);
-            }
-            const newIteration: ClarificationIteration = {
-              id: `iter-${Date.now()}`,
-              step: prev.length + 1,
-              submittedInput: trimmed,
-              source,
-              response: typedData,
-            };
-            return [...prev, newIteration];
-          });
+          const newIteration: ClarificationIteration = {
+            id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+            step: iterations.length + 1,
+            submittedInput: trimmed,
+            source,
+            response: typedData,
+          };
+
+          setIterations((prev) => [...prev, newIteration]);
+
+          if (source === "top" && !initialSituation) {
+            setInitialSituation(trimmed);
+          }
         } else {
           setLastClarifyResult(null);
         }
       }
 
-      if (action === "simplify") {
+      if (action === "plain_language") {
         const assistantTurn: ConversationTurn = {
           role: "assistant",
           content: formatResponseForHistory(typedData),
         };
+
         setHistory((prev) => [...prev, assistantTurn]);
       }
 
@@ -308,47 +369,32 @@ export default function AIInteractionPage() {
   }
 
   function handlePlainLanguage(): void {
-    void submitToClarify("simplify", "followup");
+    void submitToClarify("plain_language", "followup");
   }
 
-  function handleDone(source: "top" | "followup"): void {
-    if (loading) return;
-    void submitToClarify("clarify", source, "done");
-  }
-
-  function insertSuggestedQuestion(question: string): void {
-    setFollowupInput(question);
+  function handleDone(): void {
+    if (loading || !result) return;
+    setIsDone(true);
     setTimeout(() => {
-      const el = document.getElementById("ai-followup-input");
-      el?.scrollIntoView({ behavior: "smooth", block: "center" });
-    }, 50);
+      resultRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 100);
   }
-
-  function insertMainClarifyingQuestion(question: string): void {
-    setFollowupInput(question);
-    setTimeout(() => {
-      const el = document.getElementById("ai-followup-input");
-      el?.scrollIntoView({ behavior: "smooth", block: "center" });
-    }, 50);
-  }
-
-  const possibleClarifyingQuestions =
-    lastClarifyResult?.suggestedQuestions?.length
-      ? lastClarifyResult.suggestedQuestions
-      : lastClarifyResult?.question
-      ? [lastClarifyResult.question]
-      : [];
 
   const isTopClarifyDisabled = loading || !topInput.trim();
   const isFollowupClarifyDisabled = loading || !followupInput.trim();
-  const isPlainLanguageDisabled = loading || !lastClarifyResult;
-  const isTopMicDisabled = loading || listeningTarget === "top" || listeningTarget === "followup";
-  const isFollowupMicDisabled = loading || listeningTarget === "top" || listeningTarget === "followup";
-  const isTopDoneDisabled = loading || !result;
-  const isFollowupDoneDisabled = loading || !result;
+  const isPlainLanguageDisabled = loading || !lastClarifyResult || isDone;
+  const isTopMicDisabled =
+    loading || listeningTarget === "top" || listeningTarget === "followup";
+  const isFollowupMicDisabled =
+    loading || listeningTarget === "top" || listeningTarget === "followup";
+  const isDoneDisabled = loading || !result || isDone;
 
   function renderList(items: string[] | undefined, heading: string) {
     if (!items?.length) return null;
+
     return (
       <div style={{ marginBottom: "1.75rem" }}>
         <h3
@@ -382,13 +428,61 @@ export default function AIInteractionPage() {
     );
   }
 
-  function renderActionRow(source: "top" | "followup") {
-    const isTop = source === "top";
-    const isClarifyDisabled = isTop ? isTopClarifyDisabled : isFollowupClarifyDisabled;
-    const isMicDisabled = isTop ? isTopMicDisabled : isFollowupMicDisabled;
-    const isDoneDisabled = isTop ? isTopDoneDisabled : isFollowupDoneDisabled;
-    const listening = listeningTarget === source;
+  function renderPlainLanguageButton(show: boolean) {
+    if (!show) return null;
 
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-start",
+          marginBottom: "1.5rem",
+        }}
+      >
+        <button
+          type="button"
+          onClick={handlePlainLanguage}
+          disabled={isPlainLanguageDisabled}
+          style={{
+            display: "inline-flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            minWidth: "96px",
+            minHeight: "56px",
+            padding: "0.55rem 0.85rem",
+            backgroundColor: isPlainLanguageDisabled ? "#ccc" : "#111",
+            color: "#fff",
+            border: "none",
+            borderRadius: "14px",
+            fontSize: "0.76rem",
+            fontWeight: 600,
+            lineHeight: 1.05,
+            textAlign: "center",
+            cursor: isPlainLanguageDisabled ? "not-allowed" : "pointer",
+            opacity: isPlainLanguageDisabled ? 0.6 : 1,
+            transition: "background-color 0.15s",
+            letterSpacing: "-0.01em",
+          }}
+          onMouseEnter={(e) => {
+            if (!isPlainLanguageDisabled) {
+              e.currentTarget.style.backgroundColor = "#333";
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!isPlainLanguageDisabled) {
+              e.currentTarget.style.backgroundColor = "#111";
+            }
+          }}
+        >
+          <span>Plain</span>
+          <span>Language</span>
+        </button>
+      </div>
+    );
+  }
+
+  function renderTopActionRow() {
     return (
       <div
         style={{
@@ -401,8 +495,8 @@ export default function AIInteractionPage() {
       >
         <button
           type="button"
-          onClick={() => startListening(source)}
-          disabled={isMicDisabled}
+          onClick={() => startListening("top")}
+          disabled={isTopMicDisabled}
           style={{
             padding: "0.7rem 1rem",
             backgroundColor: "#fff",
@@ -411,37 +505,107 @@ export default function AIInteractionPage() {
             borderRadius: "999px",
             fontSize: "0.9rem",
             fontWeight: 600,
-            cursor: isMicDisabled ? "not-allowed" : "pointer",
+            cursor: isTopMicDisabled ? "not-allowed" : "pointer",
             whiteSpace: "nowrap",
-            opacity: isMicDisabled ? 0.6 : 1,
+            opacity: isTopMicDisabled ? 0.6 : 1,
           }}
         >
-          {listening ? "Listening…" : "Mic"}
+          {listeningTarget === "top" ? "Listening…" : "Mic"}
         </button>
 
         <button
           type="button"
-          onClick={() => handleClarify(source)}
-          disabled={isClarifyDisabled}
+          onClick={() => handleClarify("top")}
+          disabled={isTopClarifyDisabled}
           style={{
             flexShrink: 0,
             padding: "0.7rem 1.75rem",
-            backgroundColor: isClarifyDisabled ? "#ccc" : "#111",
+            backgroundColor: isTopClarifyDisabled ? "#ccc" : "#111",
             color: "#fff",
             border: "none",
             borderRadius: "999px",
             fontSize: "0.9rem",
             fontWeight: 600,
-            cursor: isClarifyDisabled ? "not-allowed" : "pointer",
+            cursor: isTopClarifyDisabled ? "not-allowed" : "pointer",
             transition: "background-color 0.15s",
             letterSpacing: "-0.01em",
             whiteSpace: "nowrap",
           }}
           onMouseEnter={(e) => {
-            if (!isClarifyDisabled) e.currentTarget.style.backgroundColor = "#333";
+            if (!isTopClarifyDisabled) {
+              e.currentTarget.style.backgroundColor = "#333";
+            }
           }}
           onMouseLeave={(e) => {
-            if (!isClarifyDisabled) e.currentTarget.style.backgroundColor = "#111";
+            if (!isTopClarifyDisabled) {
+              e.currentTarget.style.backgroundColor = "#111";
+            }
+          }}
+        >
+          {loading ? "Clarifying…" : "Clarify"}
+        </button>
+      </div>
+    );
+  }
+
+  function renderFollowupActionRow() {
+    return (
+      <div
+        style={{
+          display: "flex",
+          gap: "0.75rem",
+          alignItems: "center",
+          flexShrink: 0,
+          flexWrap: "wrap",
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => startListening("followup")}
+          disabled={isFollowupMicDisabled}
+          style={{
+            padding: "0.7rem 1rem",
+            backgroundColor: "#fff",
+            color: "#111",
+            border: "1px solid #d6d3d1",
+            borderRadius: "999px",
+            fontSize: "0.9rem",
+            fontWeight: 600,
+            cursor: isFollowupMicDisabled ? "not-allowed" : "pointer",
+            whiteSpace: "nowrap",
+            opacity: isFollowupMicDisabled ? 0.6 : 1,
+          }}
+        >
+          {listeningTarget === "followup" ? "Listening…" : "Mic"}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => handleClarify("followup")}
+          disabled={isFollowupClarifyDisabled}
+          style={{
+            flexShrink: 0,
+            padding: "0.7rem 1.75rem",
+            backgroundColor: isFollowupClarifyDisabled ? "#ccc" : "#111",
+            color: "#fff",
+            border: "none",
+            borderRadius: "999px",
+            fontSize: "0.9rem",
+            fontWeight: 600,
+            cursor: isFollowupClarifyDisabled ? "not-allowed" : "pointer",
+            transition: "background-color 0.15s",
+            letterSpacing: "-0.01em",
+            whiteSpace: "nowrap",
+          }}
+          onMouseEnter={(e) => {
+            if (!isFollowupClarifyDisabled) {
+              e.currentTarget.style.backgroundColor = "#333";
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!isFollowupClarifyDisabled) {
+              e.currentTarget.style.backgroundColor = "#111";
+            }
           }}
         >
           {loading ? "Clarifying…" : "Clarify"}
@@ -449,7 +613,7 @@ export default function AIInteractionPage() {
 
         <button
           type="button"
-          onClick={() => handleDone(source)}
+          onClick={handleDone}
           disabled={isDoneDisabled}
           style={{
             flexShrink: 0,
@@ -473,32 +637,33 @@ export default function AIInteractionPage() {
 
   function renderInitialSituationCard() {
     if (!initialSituation) return null;
+
     return (
       <div
         style={{
-          marginBottom: "1.25rem",
-          backgroundColor: "#f9f8f5",
-          borderRadius: "14px",
+          backgroundColor: "#fcfbf8",
           border: "1px solid #e7e5e4",
-          padding: "1.5rem 1.75rem",
+          borderRadius: "16px",
+          padding: "1.4rem 1.5rem",
+          marginTop: "1rem",
         }}
       >
         <h3
           style={{
-            fontSize: "0.65rem",
+            fontSize: "0.72rem",
             fontWeight: 700,
             letterSpacing: "0.1em",
             textTransform: "uppercase",
-            color: "#aaa",
-            margin: "0 0 0.75rem 0",
+            color: "#8e8a84",
+            margin: "0 0 0.7rem 0",
           }}
         >
           Initial AI issue
         </h3>
         <p
           style={{
-            color: "#444",
             margin: 0,
+            color: "#333",
             fontSize: "0.95rem",
             lineHeight: 1.65,
           }}
@@ -513,116 +678,88 @@ export default function AIInteractionPage() {
     iteration: ClarificationIteration,
     isLatest: boolean
   ) {
-    const { step, submittedInput, source, response } = iteration;
-    const clarifyingQuestion = response.question;
-
-    const suggestedChips =
-      isLatest && possibleClarifyingQuestions.length > 0
-        ? possibleClarifyingQuestions
-        : [];
+    const response = iteration.response;
+    const suggestedQuestions = getDistinctSuggestedQuestions(response);
 
     return (
       <div
         key={iteration.id}
+        ref={isLatest ? resultRef : null}
         style={{
-          marginBottom: "1.5rem",
+          marginTop: "1.5rem",
           backgroundColor: "#ffffff",
-          borderRadius: "16px",
           border: "1px solid #e7e5e4",
+          borderRadius: "16px",
           padding: "2rem 1.75rem",
         }}
       >
-        {/* Step label */}
         <div style={{ marginBottom: "1.25rem" }}>
-          <span
+          <div
             style={{
-              fontSize: "0.65rem",
+              fontSize: "0.72rem",
               fontWeight: 700,
               letterSpacing: "0.1em",
               textTransform: "uppercase",
-              color: "#bbb",
+              color: "#8e8a84",
+              marginBottom: "0.6rem",
             }}
           >
-            Refinement {step}
-          </span>
+            Refinement {iteration.step}
+          </div>
+
+          {iteration.source === "followup" && (
+            <div
+              style={{
+                backgroundColor: "#fafafa",
+                border: "1px solid #eceae7",
+                borderRadius: "10px",
+                padding: "0.9rem 1rem",
+              }}
+            >
+              <h3
+                style={{
+                  fontSize: "0.72rem",
+                  fontWeight: 700,
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                  color: "#8e8a84",
+                  margin: "0 0 0.55rem 0",
+                }}
+              >
+                Your input
+              </h3>
+              <p
+                style={{
+                  margin: 0,
+                  color: "#444",
+                  fontSize: "0.9rem",
+                  lineHeight: 1.6,
+                }}
+              >
+                {iteration.submittedInput}
+              </p>
+            </div>
+          )}
         </div>
 
-        {/* Show follow-up input sub-card if from follow-up */}
-        {source === "followup" && submittedInput && (
-          <div
-            style={{
-              marginBottom: "1.5rem",
-              padding: "0.875rem 1.1rem",
-              backgroundColor: "#f9f8f5",
-              borderRadius: "10px",
-              border: "1px solid #e7e5e4",
-            }}
-          >
-            <p
-              style={{
-                fontSize: "0.8rem",
-                fontWeight: 600,
-                color: "#aaa",
-                textTransform: "uppercase",
-                letterSpacing: "0.08em",
-                margin: "0 0 0.4rem 0",
-              }}
-            >
-              Your follow-up
-            </p>
-            <p
-              style={{
-                color: "#555",
-                margin: 0,
-                fontSize: "0.9rem",
-                lineHeight: 1.6,
-              }}
-            >
-              {submittedInput}
-            </p>
-          </div>
-        )}
-
-        {/* Plain Language — latest only */}
-        {isLatest && (
-          <button
-            type="button"
-            onClick={handlePlainLanguage}
-            disabled={isPlainLanguageDisabled}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: "0.7rem 1.4rem",
-              backgroundColor: isPlainLanguageDisabled ? "#a8a29e" : "#78716c",
-              color: "#fff",
-              border: "none",
-              borderRadius: "999px",
-              fontSize: "0.9rem",
-              fontWeight: 600,
-              cursor: isPlainLanguageDisabled ? "not-allowed" : "pointer",
-              marginBottom: "1.5rem",
-              opacity: isPlainLanguageDisabled ? 0.65 : 1,
-            }}
-          >
-            Plain Language
-          </button>
-        )}
+        {renderPlainLanguageButton(isLatest)}
 
         {renderList(response.observable, "What appears to be happening")}
         {renderList(response.interpretive, "What may be assumed")}
         {renderList(response.unknown, "What may still be unclear")}
-        {renderList(response.structural, "Structural considerations")}
+        {renderList(
+          response.structural,
+          "What may be influencing the AI interaction"
+        )}
 
-        {/* Orientation */}
-        <div style={{ marginBottom: clarifyingQuestion ? "1.75rem" : 0 }}>
+        <div style={{ marginBottom: response.question ? "1.75rem" : 0 }}>
           <h3
             style={{
-              fontSize: "0.68rem",
+              fontSize: "0.72rem",
               fontWeight: 700,
               letterSpacing: "0.1em",
               textTransform: "uppercase",
-              color: "#888",
+              color: "#8e8a84",
               margin: "0 0 0.7rem 0",
             }}
           >
@@ -640,37 +777,25 @@ export default function AIInteractionPage() {
           </p>
         </div>
 
-        {/* Main clarifying question */}
-        {clarifyingQuestion && (
+        {response.question && (
           <div
-            role="button"
-            tabIndex={0}
-            onClick={() => insertMainClarifyingQuestion(clarifyingQuestion)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                insertMainClarifyingQuestion(clarifyingQuestion);
-              }
-            }}
             style={{
               padding: "1.125rem 1.25rem",
               backgroundColor: "#f9f8f5",
               border: "1px solid #e7e5e4",
               borderLeft: "3px solid #111",
               borderRadius: "0 10px 10px 0",
-              marginTop: "1.75rem",
-              marginBottom: suggestedChips.length > 0 ? "1.25rem" : 0,
-              cursor: "pointer",
+              marginBottom: suggestedQuestions.length > 0 ? "1.25rem" : 0,
             }}
           >
             <h3
               style={{
-                fontSize: "0.68rem",
+                fontSize: "0.72rem",
                 fontWeight: 700,
                 letterSpacing: "0.1em",
                 textTransform: "uppercase",
-                color: "#888",
-                margin: "0 0 0.5rem 0",
+                color: "#8e8a84",
+                margin: "0 0 0.55rem 0",
               }}
             >
               Clarifying question
@@ -684,46 +809,54 @@ export default function AIInteractionPage() {
                 fontWeight: 500,
               }}
             >
-              {clarifyingQuestion}
+              {response.question}
             </p>
           </div>
         )}
 
-        {/* Suggested question chips — latest only */}
-        {isLatest && suggestedChips.length > 0 && (
-          <div style={{ marginTop: "1.25rem" }}>
+        {suggestedQuestions.length > 0 && (
+          <div style={{ marginTop: "1.65rem" }}>
             <h3
               style={{
-                fontSize: "0.68rem",
+                fontSize: "0.72rem",
                 fontWeight: 700,
                 letterSpacing: "0.1em",
                 textTransform: "uppercase",
-                color: "#bbb",
-                margin: "0 0 0.8rem 0",
+                color: "#8e8a84",
+                margin: "0 0 0.85rem 0",
               }}
             >
-              Possible clarifying questions
+              Suggested questions
             </h3>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "0.6rem" }}>
-              {suggestedChips.map((item, index) => (
-                <button
-                  key={`chip-${index}`}
-                  type="button"
-                  onClick={() => insertSuggestedQuestion(item)}
+
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "0.7rem",
+              }}
+            >
+              {suggestedQuestions.map((item, index) => (
+                <div
+                  key={`${iteration.id}-${item}-${index}`}
                   style={{
-                    padding: "0.62rem 0.9rem",
-                    borderRadius: "999px",
-                    border: "1px solid #d6d3d1",
+                    padding: "0.9rem 1rem",
+                    borderRadius: "10px",
+                    border: "1px solid #e7e5e4",
                     backgroundColor: "#fff",
-                    color: "#555",
-                    fontSize: "0.88rem",
-                    lineHeight: 1.4,
-                    cursor: "pointer",
-                    textAlign: "left",
                   }}
                 >
-                  {item}
-                </button>
+                  <p
+                    style={{
+                      margin: 0,
+                      color: "#333",
+                      fontSize: "0.92rem",
+                      lineHeight: 1.55,
+                    }}
+                  >
+                    {item}
+                  </p>
+                </div>
               ))}
             </div>
           </div>
@@ -733,36 +866,32 @@ export default function AIInteractionPage() {
   }
 
   function renderClarificationPath() {
-    if (iterations.length === 0) return null;
+    if (iterations.length === 0 && !initialSituation) return null;
 
     return (
-      <div style={{ marginTop: "2.5rem" }} ref={resultRef}>
-        {/* Section header */}
-        <div style={{ marginBottom: "1.5rem" }}>
-          <h2
-            style={{
-              fontSize: "0.75rem",
-              fontWeight: 700,
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              color: "#999",
-              margin: "0 0 0.4rem 0",
-            }}
-          >
-            Clarification path
-          </h2>
-          <p
-            style={{
-              fontSize: "0.85rem",
-              color: "#aaa",
-              margin: 0,
-              lineHeight: 1.55,
-            }}
-          >
-            View the initial issue and each refinement as assumptions,
-            interpretations, and unknowns become clearer.
-          </p>
-        </div>
+      <div style={{ marginTop: "2rem" }}>
+        <h2
+          style={{
+            fontSize: "0.9rem",
+            fontWeight: 600,
+            color: "#111",
+            margin: "0 0 0.25rem 0",
+          }}
+        >
+          Clarification path
+        </h2>
+
+        <p
+          style={{
+            fontSize: "0.84rem",
+            color: "#7a756f",
+            lineHeight: 1.55,
+            margin: 0,
+          }}
+        >
+          View the initial AI issue and each refinement as assumptions,
+          interpretations, and unknowns become clearer.
+        </p>
 
         {renderInitialSituationCard()}
 
@@ -776,8 +905,47 @@ export default function AIInteractionPage() {
   function renderSupplementaryResult(response: VirekaResponse) {
     if (response.mode === "clarify") return null;
 
+    if (response.mode === "close") {
+      return (
+        <div
+          ref={resultRef}
+          style={{
+            marginTop: "1.5rem",
+            backgroundColor: "#ffffff",
+            border: "1px solid #e7e5e4",
+            borderRadius: "16px",
+            padding: "2rem 1.75rem",
+          }}
+        >
+          <h3
+            style={{
+              fontSize: "0.72rem",
+              fontWeight: 700,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              color: "#8e8a84",
+              margin: "0 0 0.7rem 0",
+            }}
+          >
+            Response
+          </h3>
+          <p
+            style={{
+              color: "#333",
+              margin: 0,
+              fontSize: "0.95rem",
+              lineHeight: 1.65,
+            }}
+          >
+            {response.message}
+          </p>
+        </div>
+      );
+    }
+
     return (
       <div
+        ref={resultRef}
         style={{
           marginTop: "1.5rem",
           backgroundColor: "#ffffff",
@@ -788,15 +956,15 @@ export default function AIInteractionPage() {
       >
         <h3
           style={{
-            fontSize: "0.68rem",
+            fontSize: "0.72rem",
             fontWeight: 700,
             letterSpacing: "0.1em",
             textTransform: "uppercase",
-            color: "#888",
-            margin: "0 0 0.625rem 0",
+            color: "#8e8a84",
+            margin: "0 0 0.7rem 0",
           }}
         >
-          {response.mode === "simplify" ? "Plain language" : "Response"}
+          Plain language
         </h3>
         <p
           style={{
@@ -813,12 +981,12 @@ export default function AIInteractionPage() {
   }
 
   function renderFollowupBox() {
-    if (iterations.length === 0 && !result) return null;
+    if (!result || isDone || !lastClarifyResult) return null;
 
     return (
       <div
         style={{
-          marginTop: "1.5rem",
+          marginTop: "1.75rem",
           backgroundColor: "#ffffff",
           borderRadius: "16px",
           border: "1px solid #e7e5e4",
@@ -890,15 +1058,27 @@ export default function AIInteractionPage() {
               flex: "1 1 260px",
             }}
           >
-            Continue the same AI issue, respond to a clarifying question, or
+            Continue the same AI issue, respond to the clarifying question, or
             add what may help distinguish the prompt, the objective, and the
             output.
           </p>
 
-          {renderActionRow("followup")}
+          {renderFollowupActionRow()}
         </div>
       </div>
     );
+  }
+
+  function resetSession(): void {
+    setTopInput("");
+    setFollowupInput("");
+    setResult(null);
+    setLastClarifyResult(null);
+    setHistory([]);
+    setError(null);
+    setIsDone(false);
+    setInitialSituation("");
+    setIterations([]);
   }
 
   return (
@@ -962,10 +1142,21 @@ export default function AIInteractionPage() {
             margin: "0 0 1.25rem 0",
           }}
         >
-          SEE CLEARLY BEFORE DECIDING WHAT TO ASK AI TO DO.
+          See clearly before deciding what to ask AI to do.
         </h1>
 
         <div style={{ maxWidth: "680px" }}>
+          <p
+            style={{
+              fontSize: "0.95rem",
+              color: "#444",
+              lineHeight: 1.65,
+              margin: "0 0 0.75rem 0",
+            }}
+          >
+            Describe the prompt, output issue, or AI-related situation as it
+            currently appears.
+          </p>
           <p
             style={{
               fontSize: "0.95rem",
@@ -987,7 +1178,6 @@ export default function AIInteractionPage() {
           }}
         />
 
-        {/* Top input card */}
         <div
           style={{
             backgroundColor: "#ffffff",
@@ -1065,7 +1255,7 @@ export default function AIInteractionPage() {
               prompting AI.
             </p>
 
-            {renderActionRow("top")}
+            {renderTopActionRow()}
           </div>
         </div>
 
@@ -1086,14 +1276,61 @@ export default function AIInteractionPage() {
           </div>
         )}
 
-        {/* Clarification path — renders all iterations */}
-        {renderClarificationPath()}
-
-        {/* Supplementary result for simplify/close responses */}
-        {result && result.mode !== "clarify" && renderSupplementaryResult(result)}
-
-        {/* Follow-up composer */}
+        {!isDone && renderClarificationPath()}
+        {!isDone && result && renderSupplementaryResult(result)}
         {renderFollowupBox()}
+
+        {result && isDone && (
+          <div
+            ref={resultRef}
+            style={{
+              marginTop: "2rem",
+              backgroundColor: "#ffffff",
+              border: "1px solid #e7e5e4",
+              borderRadius: "16px",
+              padding: "2rem 1.75rem",
+            }}
+          >
+            <h3
+              style={{
+                fontSize: "1.1rem",
+                fontWeight: 600,
+                color: "#111",
+                margin: "0 0 0.75rem 0",
+              }}
+            >
+              Thank you.
+            </h3>
+
+            <p
+              style={{
+                color: "#444",
+                margin: "0 0 1.25rem 0",
+                fontSize: "0.95rem",
+                lineHeight: 1.65,
+              }}
+            >
+              Clearer interaction improves output quality.
+            </p>
+
+            <button
+              type="button"
+              onClick={resetSession}
+              style={{
+                padding: "0.7rem 1rem",
+                borderRadius: "999px",
+                border: "1px solid #d6d3d1",
+                backgroundColor: "#fff",
+                color: "#111",
+                fontSize: "0.9rem",
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+            >
+              Start a new AI interaction
+            </button>
+          </div>
+        )}
       </div>
     </main>
   );

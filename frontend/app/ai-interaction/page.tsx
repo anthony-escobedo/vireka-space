@@ -1158,14 +1158,13 @@ export default function AIInteractionPage() {
           }}
         />
 
-        <div
-          style={{
-            display: "flex",
-            alignItems: "flex-end",
-            justifyContent: "space-between",
-            gap: "1.5rem",
-            marginTop: "1rem",
-            flexWrap: "wrap",
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "stretch",
+              gap: "1rem",
+              marginTop: "1rem",
           }}
         >
           <p
@@ -1174,24 +1173,22 @@ export default function AIInteractionPage() {
               color: "#888",
               lineHeight: 1.55,
               margin: 0,
-              maxWidth: "480px",
-              flex: "1 1 260px",
-            }}
-          >
+              maxWidth: "100%",
+          }}
+        >
             Continue the same AI issue, respond to the clarifying question, or
             add what may help distinguish the prompt, the objective, and the
             output.
           </p>
 
-          <div
-            style={{
-              display: "flex",
-              gap: "0.75rem",
-              alignItems: "center",
-              flexShrink: 0,
-              flexWrap: "wrap",
-            }}
-          >
+            <div
+              style={{
+                display: "flex",
+                gap: "0.75rem",
+                alignItems: "center",
+                flexWrap: "wrap",
+          }}
+        >
             <button
               type="button"
               onClick={() => startListening("followup")}

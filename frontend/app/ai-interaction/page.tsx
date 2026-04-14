@@ -5,8 +5,6 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import CollapsibleLayer from "../../components/CollapsibleLayer";
 
-import { useRouter } from "next/navigation";
-
 declare global {
   interface Window {
     SpeechRecognition?: new () => SpeechRecognition;

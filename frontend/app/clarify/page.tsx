@@ -319,6 +319,14 @@ export default function ClarifyPage() {
     }, 50);
   }
 
+  function insertMainClarifyingQuestion(question: string): void {
+    setFollowupInput(question);
+    setTimeout(() => {
+      const el = document.getElementById("clarify-followup-input");
+      el?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 50);
+  }
+
   const possibleClarifyingQuestions =
     lastClarifyResult?.suggestedQuestions?.length
       ? lastClarifyResult.suggestedQuestions.slice(0, 2)
@@ -543,6 +551,15 @@ export default function ClarifyPage() {
 
         {response.question && (
           <div
+            role="button"
+            tabIndex={0}
+            onClick={() => insertMainClarifyingQuestion(response.question!)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                insertMainClarifyingQuestion(response.question!);
+              }
+            }}
             style={{
               padding: "1.125rem 1.25rem",
               backgroundColor: "#f9f8f5",
@@ -550,6 +567,7 @@ export default function ClarifyPage() {
               borderLeft: "3px solid #111",
               borderRadius: "0 10px 10px 0",
               marginBottom: possibleClarifyingQuestions.length > 0 ? "1.25rem" : 0,
+              cursor: "pointer",
             }}
           >
             <h3

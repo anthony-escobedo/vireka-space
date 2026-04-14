@@ -893,39 +893,6 @@ export default function AIInteractionPage() {
   panel: ClarificationPanel,
   isLastPanel: boolean
 ) {
-  const open = isPanelOpen(panel.id);
-  const isLatest = panel.id === latestPanelId;
-  const showYourInput =
-    panel.kind === "refinement" ? panel.iteration.submittedInput : undefined;
-
-  return (
-    <div
-      key={panel.id}
-      ref={isLatest ? resultRef : null}
-      style={{
-        marginTop: "1rem",
-      }}
-    >
-      <CollapsibleLayer
-        title={panel.title}
-        summary={panel.summary}
-        isOpen={open}
-        onToggle={() => togglePanel(panel.id)}
-        contentClassName=""
-      >
-        <div
-          style={{
-            paddingBottom: isLastPanel ? "0.25rem" : "0.1rem",
-          }}
-        >
-          {renderClarifyContent(panel, showYourInput)}
-        </div>
-      </CollapsibleLayer>
-    </div>
-  );
-}
-  
-  {
     const open = isPanelOpen(panel.id);
     const isLatest = panel.id === latestPanelId;
     const showYourInput =

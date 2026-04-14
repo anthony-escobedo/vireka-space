@@ -3,18 +3,12 @@ import { NextRequest, NextResponse } from "next/server";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-type ResponseMode = "clarify" | "simplify" | "close";
-type RequestAction = "clarify" | "simplify";
+type ResponseMode = "clarify" | "plain_language" | "close";
+type RequestAction = "clarify" | "plain_language";
 
 type ConversationTurn = {
   role: "user" | "assistant";
   content: string;
-};
-
-type VirekaRequest = {
-  input: string;
-  action?: RequestAction;
-  history?: ConversationTurn[];
 };
 
 type ClarifyResponse = {
@@ -28,8 +22,8 @@ type ClarifyResponse = {
   suggestedQuestions?: string[];
 };
 
-type SimplifyResponse = {
-  mode: "simplify";
+type PlainLanguageResponse = {
+  mode: "plain_language";
   message: string;
 };
 
@@ -38,7 +32,17 @@ type CloseResponse = {
   message: string;
 };
 
-type VirekaResponse = ClarifyResponse | SimplifyResponse | CloseResponse;
+type VirekaResponse =
+  | ClarifyResponse
+  | PlainLanguageResponse
+  | CloseResponse;
+
+type VirekaRequest = {
+  input?: string;
+  action?: RequestAction;
+  history?: ConversationTurn[];
+  latestResult?: ClarifyResponse;
+};
 
 type ChatCompletionResponse = {
   choices?: Array<{
@@ -51,23 +55,29 @@ type ChatCompletionResponse = {
 const SYSTEM_PROMPT = `
 You are Vireka Space, an interpretive support AI.
 
-Your function is to help users see situations more clearly by separating:
-- what appears to be happening
-- what may be assumed or interpreted
-- what may still be unclear
-- what structural conditions may be shaping the situation
+Your function is to help users see situations more clearly by improving structural visibility before reaction, optimization, or decision pressure takes over.
 
-You support clarity before reaction, and perception before prescriptive action.
+Vireka Space is grounded in these principles:
+- clarity before optimization
+- observation before conclusion
+- structure over narrative escalation
+- perception before correction
+- movement without requiring total certainty
+- participation without fixation
+
+Your role is to help users distinguish:
+- what appears to be happening
+- what may be assumed
+- what may still be unclear
+- what may be influencing the situation
+
+You help reduce unnecessary interpretive escalation by clarifying conditions, assumptions, pressures, and influences without prescribing what the user should do.
+
 You do not provide therapy, coaching, diagnosis, motivational guidance, ideology, moral judgment, or prescriptive advice.
 You do not tell users what to do.
 You do not amplify urgency.
 You do not present interpretations as facts.
-
-Vireka Space prioritizes:
-- clarity over persuasion
-- distinction over instruction
-- structure over narrative escalation
-- precision over inspiration
+You do not turn temporary situations into identity conclusions.
 
 Tone must remain:
 - calm
@@ -88,26 +98,37 @@ Avoid:
 - exaggerated certainty
 - identity-based conclusions
 - unnecessary urgency
+- academic density when simpler language will do
 
-Adapt language to the user's register while preserving conceptual precision.
-Prefer simpler phrasing when meaning remains intact.
-Use direct and concrete language where possible.
+Default to neutral, accessible professional language.
+Only lightly adapt to the user's register when it is reasonably clear.
+Do not become overly academic, overly casual, or overly technical without strong reason.
 
 Treat emotional intensity as information, not as something to mirror.
 Acknowledge intensity without amplifying it.
 Do not imitate profanity or escalation.
 
-The goal is not to eliminate thought.
-The goal is to improve structural visibility so that unnecessary pressure decreases.
+The goal is not total explanation.
+The goal is sufficient differentiation so the user can see the situation more clearly.
 
 Clarification behavior:
 - Distinguish observation from interpretation.
 - Distinguish assumptions from facts.
-- Distinguish structural conditions from narrative conclusions.
+- Distinguish changing conditions from narrative conclusions.
 - Identify what remains unclear without manufacturing uncertainty.
-- Support movement without requiring total certainty.
+- Clarify what may be influencing the situation, including timing, incentives, roles, expectations, constraints, environment, or institutional context when relevant.
+- Support movement without requiring full certainty.
 - Ask at most one clarifying question, and only when another distinction would materially improve clarity.
 - Do not ask a question when sufficient clarity is already present.
+
+Question behavior:
+- Any clarifying question must be specific to the user's situation.
+- It must not sound generic, templated, therapeutic, or like a coaching prompt.
+- It should help differentiate a real uncertainty in the user's actual input.
+- Suggested questions, when included, must also be specific to the user's situation.
+- Include suggested questions only when helpful.
+- Suggested questions should be short, neutral, and specific.
+- Do not include suggested questions when clarity already appears sufficient.
 
 Rumination prevention:
 - Do not repeatedly reframe the same distinction once sufficient structural visibility has been achieved.
@@ -120,16 +141,19 @@ Closure behavior:
 - When closure is clearly signaled, respond briefly and politely.
 - Do not reopen interpretation unnecessarily.
 
-Simplification behavior:
-- When simplification is requested, preserve the original reasoning and distinctions.
-- Reduce conceptual density.
-- Use simpler language.
-- Maintain neutrality.
+Plain language behavior:
+- When plain language is requested, preserve the original meaning exactly.
+- Preserve the original distinctions and reasoning.
 - Do not add new analysis.
+- Do not remove important distinctions.
+- Do not change the conclusion or scope.
+- Use easier wording, shorter sentences when helpful, and more direct phrasing.
+- Maintain neutrality, calm tone, and dignity.
+- The goal is easier understanding, not less meaning.
 
 Output modes:
 1. clarify
-2. simplify
+2. plain_language
 3. close
 
 Return ONLY valid JSON matching one of the allowed response shapes.
@@ -151,19 +175,18 @@ Rules for mode "clarify":
 - orientation must be one string
 - question is optional
 - suggestedQuestions is optional
-- suggestedQuestions should include 1–3 useful follow-up questions when helpful
+- suggestedQuestions should include 1-2 useful follow-up questions only when helpful
 - suggestedQuestions must relate specifically to the user's situation
-- avoid generic coaching questions
-- keep questions short and neutral
+- do not include generic template questions
 - do not include suggestedQuestions when clarity already appears sufficient
 
-For mode "simplify":
+For mode "plain_language", use:
 {
-  "mode": "simplify",
+  "mode": "plain_language",
   "message": "..."
 }
 
-For mode "close":
+For mode "close", use:
 {
   "mode": "close",
   "message": "..."
@@ -212,6 +235,35 @@ function sanitizeHistory(history: unknown): ConversationTurn[] {
     .slice(-8);
 }
 
+function sanitizeLatestResult(value: unknown): ClarifyResponse | null {
+  if (!isObject(value)) return null;
+  if (value.mode !== "clarify") return null;
+  if (!isNonEmptyStringArray(value.observable)) return null;
+  if (!isNonEmptyStringArray(value.interpretive)) return null;
+  if (!isNonEmptyStringArray(value.unknown)) return null;
+  if (!isNonEmptyStringArray(value.structural)) return null;
+  if (!isNonEmptyString(value.orientation)) return null;
+
+  return {
+    mode: "clarify",
+    observable: value.observable.map(normalizeWhitespace),
+    interpretive: value.interpretive.map(normalizeWhitespace),
+    unknown: value.unknown.map(normalizeWhitespace),
+    structural: value.structural.map(normalizeWhitespace),
+    orientation: normalizeWhitespace(value.orientation),
+    question:
+      typeof value.question === "string"
+        ? normalizeWhitespace(value.question)
+        : undefined,
+    suggestedQuestions: Array.isArray(value.suggestedQuestions)
+      ? value.suggestedQuestions
+          .filter((q): q is string => typeof q === "string" && q.trim().length > 0)
+          .slice(0, 2)
+          .map(normalizeWhitespace)
+      : undefined,
+  };
+}
+
 function detectClosureSignal(input: string): boolean {
   const normalized = input.toLowerCase();
 
@@ -222,11 +274,13 @@ function detectClosureSignal(input: string): boolean {
     "that helps",
     "i understand",
     "i'm clear",
+    "im clear",
     "all clear",
     "that is enough",
     "got it",
-    "i'm good now"
-  ].some(p => normalized.includes(p));
+    "i'm good now",
+    "im good now",
+  ].some((phrase) => normalized.includes(phrase));
 }
 
 function validateClarifyResponse(data: unknown): ClarifyResponse {
@@ -256,23 +310,32 @@ function validateClarifyResponse(data: unknown): ClarifyResponse {
     throw new Error("orientation required");
   }
 
-  let suggestedQuestions: string[] | undefined;
+  let question: string | undefined;
+  if (typeof data.question === "string" && data.question.trim().length > 0) {
+    question = normalizeWhitespace(data.question);
+  }
 
+  let suggestedQuestions: string[] | undefined;
   if (Array.isArray(data.suggestedQuestions)) {
-    suggestedQuestions = data.suggestedQuestions
-      .filter((q): q is string => typeof q === "string")
-      .slice(0, 3);
+    const filtered = data.suggestedQuestions
+      .filter((q): q is string => typeof q === "string" && q.trim().length > 0)
+      .map(normalizeWhitespace)
+      .slice(0, 2);
+
+    if (filtered.length > 0) {
+      suggestedQuestions = filtered;
+    }
   }
 
   return {
     mode: "clarify",
-    observable: data.observable,
-    interpretive: data.interpretive,
-    unknown: data.unknown,
-    structural: data.structural,
-    orientation: data.orientation,
-    question: typeof data.question === "string" ? data.question : undefined,
-    suggestedQuestions
+    observable: data.observable.map(normalizeWhitespace),
+    interpretive: data.interpretive.map(normalizeWhitespace),
+    unknown: data.unknown.map(normalizeWhitespace),
+    structural: data.structural.map(normalizeWhitespace),
+    orientation: normalizeWhitespace(data.orientation),
+    question,
+    suggestedQuestions,
   };
 }
 
@@ -283,14 +346,14 @@ function validateResponse(data: unknown): VirekaResponse {
     return validateClarifyResponse(data);
   }
 
-  if (data.mode === "simplify") {
+  if (data.mode === "plain_language") {
     if (!isNonEmptyString(data.message)) {
-      throw new Error("Simplify message required");
+      throw new Error("Plain language message required");
     }
 
     return {
-      mode: "simplify",
-      message: data.message
+      mode: "plain_language",
+      message: normalizeWhitespace(data.message),
     };
   }
 
@@ -301,67 +364,118 @@ function validateResponse(data: unknown): VirekaResponse {
 
     return {
       mode: "close",
-      message: data.message
+      message: normalizeWhitespace(data.message),
     };
   }
 
   throw new Error("Invalid mode");
 }
 
+function buildClarifyUserMessage(input: string): string {
+  return `Clarify this situation using the required response structure.
+
+User input:
+${input}`;
+}
+
+function buildPlainLanguageUserMessage(latestResult: ClarifyResponse): string {
+  const sections = [
+    `What appears to be happening:\n${latestResult.observable.join("\n")}`,
+    `What may be assumed:\n${latestResult.interpretive.join("\n")}`,
+    `What may still be unclear:\n${latestResult.unknown.join("\n")}`,
+    `What may be influencing the situation:\n${latestResult.structural.join("\n")}`,
+    `Orientation:\n${latestResult.orientation}`,
+  ];
+
+  if (latestResult.question) {
+    sections.push(`Question:\n${latestResult.question}`);
+  }
+
+  if (latestResult.suggestedQuestions?.length) {
+    sections.push(
+      `Suggested questions:\n${latestResult.suggestedQuestions.join("\n")}`
+    );
+  }
+
+  return `Restate the following clarification in plain language.
+
+Important:
+- preserve the meaning exactly
+- preserve the distinctions
+- do not add new analysis
+- do not remove important distinctions
+- make the wording easier to understand
+
+Original clarification:
+${sections.join("\n\n")}`;
+}
+
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const body = (await req.json()) as VirekaRequest;
 
+    const action: RequestAction =
+      body.action === "plain_language" ? "plain_language" : "clarify";
+
+    const history = sanitizeHistory(body.history);
     const input = normalizeWhitespace(body.input ?? "");
+    const latestResult = sanitizeLatestResult(body.latestResult);
 
-    if (!input) {
+    if (action === "clarify" && !input) {
+      return NextResponse.json({ error: "Input required" }, { status: 400 });
+    }
+
+    if (action === "plain_language" && !latestResult) {
       return NextResponse.json(
-        { error: "Input required" },
+        { error: "A prior clarification result is required for plain language." },
         { status: 400 }
       );
     }
 
-    const action: RequestAction =
-      body.action === "simplify" ? "simplify" : "clarify";
+    if (action === "clarify" && detectClosureSignal(input)) {
+      return NextResponse.json({
+        mode: "close",
+        message: "You're welcome. If needed, you can start a new situation when you're ready.",
+      } satisfies CloseResponse);
+    }
 
-    const history = sanitizeHistory(body.history);
-
-    const closureHint =
-      action === "clarify" && detectClosureSignal(input);
+    const userMessage =
+      action === "plain_language"
+        ? buildPlainLanguageUserMessage(latestResult as ClarifyResponse)
+        : buildClarifyUserMessage(input);
 
     const messages = [
       { role: "system", content: SYSTEM_PROMPT },
       ...history,
-      {
-        role: "user",
-        content: input
-      }
+      { role: "user", content: userMessage },
     ];
 
-    const response = await fetch(
-      "https://api.openai.com/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
-        },
-        body: JSON.stringify({
-          model: "gpt-4.1-mini",
-          temperature: 0.2,
-          response_format: { type: "json_object" },
-          messages
-        })
-      }
-    );
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-4.1-mini",
+        temperature: 0.2,
+        response_format: { type: "json_object" },
+        messages,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => "");
+      return NextResponse.json(
+        { error: `Upstream model request failed: ${errorText || response.status}` },
+        { status: 500 }
+      );
+    }
 
     const json: ChatCompletionResponse = await response.json();
-
-    const content =
-      json.choices?.[0]?.message?.content ?? "";
+    const content = json.choices?.[0]?.message?.content ?? "";
 
     let parsed: unknown;
-
     try {
       parsed = JSON.parse(content);
     } catch {
@@ -372,13 +486,8 @@ export async function POST(req: NextRequest) {
     }
 
     const validated = validateResponse(parsed);
-
     return NextResponse.json(validated);
-
-  } catch (error) {
-    return NextResponse.json(
-      { error: "Server error" },
-      { status: 500 }
-    );
+  } catch {
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

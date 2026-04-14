@@ -75,6 +75,16 @@ type ClarificationIteration = {
   response: ClarifyResponse;
 };
 
+type PanelKind = "initial_response" | "refinement";
+
+type ClarificationPanel = {
+  id: string;
+  kind: PanelKind;
+  title: string;
+  summary: string;
+  iteration: ClarificationIteration;
+};
+
 export default function ClarifyPage() {
   const [topInput, setTopInput] = useState<string>("");
   const [followupInput, setFollowupInput] = useState<string>("");
@@ -90,6 +100,14 @@ export default function ClarifyPage() {
   const [isDone, setIsDone] = useState<boolean>(false);
   const [initialSituation, setInitialSituation] = useState<string>("");
   const [iterations, setIterations] = useState<ClarificationIteration[]>([]);
+  const [openPanelIds, setOpenPanelIds] = useState<string[]>([]);
+  const [latestPanelId, setLatestPanelId] = useState<string | null>(null);
+  const [plainLanguageMessage, setPlainLanguageMessage] = useState<string | null>(
+    null
+  );
+  const [plainLanguagePanelId, setPlainLanguagePanelId] = useState<string | null>(
+    null
+  );
 
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const resultRef = useRef<HTMLDivElement | null>(null);
@@ -126,6 +144,12 @@ export default function ClarifyPage() {
       .replace(/\s+/g, " ");
   }
 
+  function truncateText(text: string, maxLength = 72): string {
+    const trimmed = text.trim();
+    if (trimmed.length <= maxLength) return trimmed;
+    return `${trimmed.slice(0, maxLength).trimEnd()}…`;
+  }
+
   function getDistinctSuggestedQuestions(response: ClarifyResponse): string[] {
     const mainQuestionNormalized = response.question
       ? normalizeQuestion(response.question)
@@ -154,6 +178,81 @@ export default function ClarifyPage() {
     }
 
     return distinct;
+  }
+
+  function getPanelSummary(iteration: ClarificationIteration): string {
+    const { response, source, submittedInput } = iteration;
+
+    if (source === "top") {
+      if (response.question?.trim()) {
+        return truncateText(response.question);
+      }
+
+      const firstUnknown = response.unknown?.[0];
+      if (firstUnknown) {
+        return truncateText(firstUnknown);
+      }
+
+      return truncateText(response.orientation);
+    }
+
+    if (response.question?.trim()) {
+      return truncateText(response.question);
+    }
+
+    const firstSuggestion = getDistinctSuggestedQuestions(response)[0];
+    if (firstSuggestion) {
+      return truncateText(firstSuggestion);
+    }
+
+    if (submittedInput.trim()) {
+      return truncateText(submittedInput);
+    }
+
+    return truncateText(response.orientation);
+  }
+
+  function getPanels(): ClarificationPanel[] {
+    const topIteration = iterations.find((iteration) => iteration.source === "top");
+    const followupIterations = iterations.filter(
+      (iteration) => iteration.source === "followup"
+    );
+
+    const panels: ClarificationPanel[] = [];
+
+    if (topIteration) {
+      panels.push({
+        id: `panel-${topIteration.id}`,
+        kind: "initial_response",
+        title: "AI response",
+        summary: getPanelSummary(topIteration),
+        iteration: topIteration,
+      });
+    }
+
+    for (const iteration of followupIterations) {
+      panels.push({
+        id: `panel-${iteration.id}`,
+        kind: "refinement",
+        title: `Refinement ${iteration.step - 1}`,
+        summary: getPanelSummary(iteration),
+        iteration,
+      });
+    }
+
+    return panels;
+  }
+
+  function isPanelOpen(panelId: string): boolean {
+    return openPanelIds.includes(panelId);
+  }
+
+  function togglePanel(panelId: string): void {
+    setOpenPanelIds((prev) =>
+      prev.includes(panelId)
+        ? prev.filter((id) => id !== panelId)
+        : [...prev, panelId]
+    );
   }
 
   function startListening(target: "top" | "followup"): void {
@@ -315,6 +414,8 @@ export default function ClarifyPage() {
 
         if (typedData.mode === "clarify") {
           setLastClarifyResult(typedData);
+          setPlainLanguageMessage(null);
+          setPlainLanguagePanelId(null);
 
           const newIteration: ClarificationIteration = {
             id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
@@ -324,7 +425,11 @@ export default function ClarifyPage() {
             response: typedData,
           };
 
+          const panelId = `panel-${newIteration.id}`;
+
           setIterations((prev) => [...prev, newIteration]);
+          setLatestPanelId(panelId);
+          setOpenPanelIds([panelId]);
 
           if (source === "top" && !initialSituation) {
             setInitialSituation(trimmed);
@@ -341,6 +446,16 @@ export default function ClarifyPage() {
         };
 
         setHistory((prev) => [...prev, assistantTurn]);
+
+        if (typedData.mode === "plain_language") {
+          setPlainLanguageMessage(typedData.message);
+          setPlainLanguagePanelId(latestPanelId);
+          if (latestPanelId) {
+            setOpenPanelIds((prev) =>
+              prev.includes(latestPanelId) ? prev : [...prev, latestPanelId]
+            );
+          }
+        }
       }
 
       setResult(typedData);
@@ -378,6 +493,8 @@ export default function ClarifyPage() {
       });
     }, 100);
   }
+
+  const panels = getPanels();
 
   const isTopClarifyDisabled = loading || !topInput.trim();
   const isFollowupClarifyDisabled = loading || !followupInput.trim();
@@ -523,75 +640,55 @@ export default function ClarifyPage() {
     );
   }
 
-  function renderRefinementCard(
-    iteration: ClarificationIteration,
-    isLatest: boolean
+  function renderClarifyContent(
+    response: ClarifyResponse,
+    panelId: string,
+    showYourInput?: string
   ) {
-    const response = iteration.response;
     const refinementQuestions = getDistinctSuggestedQuestions(response);
+    const shouldShowPlainLanguage =
+      panelId === latestPanelId && response === lastClarifyResult;
+    const shouldRenderPlainLanguageMessage =
+      plainLanguageMessage && plainLanguagePanelId === panelId;
 
     return (
-      <div
-        key={iteration.id}
-        ref={isLatest ? resultRef : null}
-        style={{
-          marginTop: "1.5rem",
-          backgroundColor: "#ffffff",
-          border: "1px solid #e7e5e4",
-          borderRadius: "16px",
-          padding: "2rem 1.75rem",
-        }}
-      >
-        <div style={{ marginBottom: "1.25rem" }}>
+      <div style={{ padding: "0 0.25rem 0.1rem 1.7rem" }}>
+        {showYourInput && (
           <div
             style={{
-              fontSize: "0.72rem",
-              fontWeight: 700,
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              color: "#8e8a84",
-              marginBottom: "0.6rem",
+              backgroundColor: "#fafafa",
+              border: "1px solid #eceae7",
+              borderRadius: "10px",
+              padding: "0.9rem 1rem",
+              marginBottom: "1.5rem",
             }}
           >
-            Refinement {iteration.step}
-          </div>
-
-          {iteration.source === "followup" && (
-            <div
+            <h3
               style={{
-                backgroundColor: "#fafafa",
-                border: "1px solid #eceae7",
-                borderRadius: "10px",
-                padding: "0.9rem 1rem",
+                fontSize: "0.72rem",
+                fontWeight: 700,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                color: "#8e8a84",
+                margin: "0 0 0.55rem 0",
               }}
             >
-              <h3
-                style={{
-                  fontSize: "0.72rem",
-                  fontWeight: 700,
-                  letterSpacing: "0.1em",
-                  textTransform: "uppercase",
-                  color: "#8e8a84",
-                  margin: "0 0 0.55rem 0",
-                }}
-              >
-                Your input
-              </h3>
-              <p
-                style={{
-                  margin: 0,
-                  color: "#444",
-                  fontSize: "0.9rem",
-                  lineHeight: 1.6,
-                }}
-              >
-                {iteration.submittedInput}
-              </p>
-            </div>
-          )}
-        </div>
+              Your input
+            </h3>
+            <p
+              style={{
+                margin: 0,
+                color: "#444",
+                fontSize: "0.9rem",
+                lineHeight: 1.6,
+              }}
+            >
+              {showYourInput}
+            </p>
+          </div>
+        )}
 
-        {renderPlainLanguageButton(isLatest)}
+        {renderPlainLanguageButton(Boolean(shouldShowPlainLanguage))}
 
         {renderList(response.observable, "What appears to be happening")}
         {renderList(response.interpretive, "What may be assumed")}
@@ -634,7 +731,10 @@ export default function ClarifyPage() {
               border: "1px solid #e7e5e4",
               borderLeft: "3px solid #111",
               borderRadius: "0 10px 10px 0",
-              marginBottom: refinementQuestions.length > 0 ? "1.25rem" : 0,
+              marginBottom:
+                refinementQuestions.length > 0 || shouldRenderPlainLanguageMessage
+                  ? "1.25rem"
+                  : 0,
             }}
           >
             <h3
@@ -663,59 +763,191 @@ export default function ClarifyPage() {
           </div>
         )}
 
-{refinementQuestions.length > 0 && (
-  <div style={{ marginTop: "1.65rem" }}>
-    <h3
-      style={{
-        fontSize: "0.72rem",
-        fontWeight: 700,
-        letterSpacing: "0.1em",
-        textTransform: "uppercase",
-        color: "#8e8a84",
-        margin: "0 0 0.85rem 0",
-      }}
-    >
-      Suggested questions
-    </h3>
-
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "0.7rem",
-      }}
-    >
-      {refinementQuestions.map((item, index) => (
-        <div
-          key={`${iteration.id}-${item}-${index}`}
-          style={{
-            padding: "0.9rem 1rem",
-            borderRadius: "10px",
-            border: "1px solid #e7e5e4",
-            backgroundColor: "#fff",
-          }}
-        >
-          <p
+        {shouldRenderPlainLanguageMessage && (
+          <div
             style={{
-              margin: 0,
-              color: "#333",
-              fontSize: "0.92rem",
-              lineHeight: 1.55,
+              marginTop: response.question ? 0 : "1.25rem",
+              marginBottom: refinementQuestions.length > 0 ? "1.25rem" : 0,
+              padding: "1.125rem 1.25rem",
+              backgroundColor: "#ffffff",
+              border: "1px solid #e7e5e4",
+              borderRadius: "12px",
             }}
           >
-            {item}
-          </p>
-        </div>
-      ))}
-    </div>
-  </div>
-)}
+            <h3
+              style={{
+                fontSize: "0.72rem",
+                fontWeight: 700,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                color: "#8e8a84",
+                margin: "0 0 0.55rem 0",
+              }}
+            >
+              Plain language
+            </h3>
+            <p
+              style={{
+                color: "#333",
+                margin: 0,
+                fontSize: "0.95rem",
+                lineHeight: 1.65,
+              }}
+            >
+              {plainLanguageMessage}
+            </p>
+          </div>
+        )}
+
+        {refinementQuestions.length > 0 && (
+          <div style={{ marginTop: "1.65rem" }}>
+            <h3
+              style={{
+                fontSize: "0.72rem",
+                fontWeight: 700,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                color: "#8e8a84",
+                margin: "0 0 0.85rem 0",
+              }}
+            >
+              Suggested questions
+            </h3>
+
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "0.7rem",
+              }}
+            >
+              {refinementQuestions.map((item, index) => (
+                <div
+                  key={`${panelId}-${item}-${index}`}
+                  style={{
+                    padding: "0.9rem 1rem",
+                    borderRadius: "10px",
+                    border: "1px solid #e7e5e4",
+                    backgroundColor: "#fff",
+                  }}
+                >
+                  <p
+                    style={{
+                      margin: 0,
+                      color: "#333",
+                      fontSize: "0.92rem",
+                      lineHeight: 1.55,
+                    }}
+                  >
+                    {item}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  function renderCollapsiblePanel(
+    panel: ClarificationPanel,
+    isLastPanel: boolean
+  ) {
+    const open = isPanelOpen(panel.id);
+    const isLatest = panel.id === latestPanelId;
+    const showYourInput = panel.kind === "refinement"
+      ? panel.iteration.submittedInput
+      : undefined;
+
+    return (
+      <div
+        key={panel.id}
+        ref={isLatest ? resultRef : null}
+        style={{
+          marginTop: "1rem",
+          borderTop: "1px solid #ece9e4",
+          paddingTop: "0.2rem",
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => togglePanel(panel.id)}
+          aria-expanded={open}
+          style={{
+            width: "100%",
+            display: "flex",
+            alignItems: "flex-start",
+            gap: "0.85rem",
+            padding: "0.9rem 0.25rem 0.85rem 0.1rem",
+            border: "none",
+            background: "transparent",
+            cursor: "pointer",
+            textAlign: "left",
+          }}
+        >
+          <span
+            style={{
+              display: "inline-flex",
+              width: "18px",
+              minWidth: "18px",
+              justifyContent: "center",
+              alignItems: "center",
+              color: "#8e8a84",
+              fontSize: "0.88rem",
+              lineHeight: 1,
+              transform: open ? "rotate(90deg)" : "rotate(0deg)",
+              transition: "transform 0.14s ease",
+              marginTop: "0.1rem",
+            }}
+          >
+            ▸
+          </span>
+
+          <span style={{ display: "block", flex: 1, minWidth: 0 }}>
+            <span
+              style={{
+                display: "block",
+                fontSize: "0.92rem",
+                fontWeight: 600,
+                color: "#111",
+                marginBottom: "0.18rem",
+              }}
+            >
+              {panel.title}
+            </span>
+            <span
+              style={{
+                display: "block",
+                fontSize: "0.84rem",
+                color: "#7a756f",
+                lineHeight: 1.5,
+              }}
+            >
+              {panel.summary}
+            </span>
+          </span>
+        </button>
+
+        {open && (
+          <div
+            style={{
+              paddingBottom: isLastPanel ? "0.25rem" : "0.1rem",
+            }}
+          >
+            {renderClarifyContent(
+              panel.iteration.response,
+              panel.id,
+              showYourInput
+            )}
+          </div>
+        )}
       </div>
     );
   }
 
   function renderClarificationPath() {
-    if (iterations.length === 0 && !initialSituation) return null;
+    if (panels.length === 0 && !initialSituation) return null;
 
     return (
       <div style={{ marginTop: "2rem" }}>
@@ -738,65 +970,32 @@ export default function ClarifyPage() {
             margin: 0,
           }}
         >
-          View the initial situation and each refinement as assumptions,
-          interpretations, and unknowns become clearer.
+          The initial situation stays visible. Earlier responses and refinements
+          can be expanded whenever needed.
         </p>
 
         {renderInitialSituationCard()}
 
-        {iterations
-          .filter((iteration) => iteration.source === "followup")
-          .map((iteration, index, filteredIterations) =>
-            renderRefinementCard(
-              iteration,
-              index === filteredIterations.length - 1
-            )
+        <div
+          style={{
+            marginTop: "1rem",
+            backgroundColor: "#ffffff",
+            border: "1px solid #e7e5e4",
+            borderRadius: "16px",
+            padding: "0.35rem 1.25rem 1rem",
+          }}
+        >
+          {panels.map((panel, index) =>
+            renderCollapsiblePanel(panel, index === panels.length - 1)
           )}
+        </div>
       </div>
     );
   }
 
   function renderSupplementaryResult(response: VirekaResponse) {
-    if (response.mode === "clarify") return null;
-
-    if (response.mode === "close") {
-      return (
-        <div
-          ref={resultRef}
-          style={{
-            marginTop: "1.5rem",
-            backgroundColor: "#ffffff",
-            border: "1px solid #e7e5e4",
-            borderRadius: "16px",
-            padding: "2rem 1.75rem",
-          }}
-        >
-          <div style={{ marginBottom: "0.25rem" }}>
-            <h3
-              style={{
-                fontSize: "0.72rem",
-                fontWeight: 700,
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                color: "#8e8a84",
-                margin: "0 0 0.7rem 0",
-              }}
-            >
-              Response
-            </h3>
-            <p
-              style={{
-                color: "#333",
-                margin: 0,
-                fontSize: "0.95rem",
-                lineHeight: 1.65,
-              }}
-            >
-              {response.message}
-            </p>
-          </div>
-        </div>
-      );
+    if (response.mode === "clarify" || response.mode === "plain_language") {
+      return null;
     }
 
     return (
@@ -821,7 +1020,7 @@ export default function ClarifyPage() {
               margin: "0 0 0.7rem 0",
             }}
           >
-            Plain language
+            Response
           </h3>
           <p
             style={{
@@ -982,8 +1181,8 @@ export default function ClarifyPage() {
               flex: "1 1 260px",
             }}
           >
-            Add anything that may help separate what is happening, what may
-            be assumed, and what may still be unclear.
+            Add anything that may help separate what is happening, what may be
+            assumed, and what may still be unclear.
           </p>
 
           <div
@@ -1083,6 +1282,10 @@ export default function ClarifyPage() {
     setIsDone(false);
     setInitialSituation("");
     setIterations([]);
+    setOpenPanelIds([]);
+    setLatestPanelId(null);
+    setPlainLanguageMessage(null);
+    setPlainLanguagePanelId(null);
   }
 
   return (
@@ -1169,9 +1372,9 @@ export default function ClarifyPage() {
               margin: 0,
             }}
           >
-            VIREKA helps distinguish what appears to be happening, what may
-            be assumed, and what may still be unclear, so responses begin
-            from clearer understanding.
+            VIREKA helps distinguish what appears to be happening, what may be
+            assumed, and what may still be unclear, so responses begin from
+            clearer understanding.
           </p>
         </div>
 

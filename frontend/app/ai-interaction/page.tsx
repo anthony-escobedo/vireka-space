@@ -717,7 +717,7 @@ export default function AIInteractionPage() {
   const plainLanguageMessage = plainLanguageByPanelId[panel.id];
 
   return (
-    <div style={{ padding: "0 0.25rem 0.1rem 1.7rem" }}>
+    <div style={{ padding: "0 0 0.1rem 0" }}>
       {renderInitialSituationReferenceBar(panel)}
 
       {showYourInput && (

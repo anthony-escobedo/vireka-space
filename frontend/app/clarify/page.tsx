@@ -102,12 +102,9 @@ export default function ClarifyPage() {
   const [iterations, setIterations] = useState<ClarificationIteration[]>([]);
   const [openPanelIds, setOpenPanelIds] = useState<string[]>([]);
   const [latestPanelId, setLatestPanelId] = useState<string | null>(null);
-  const [plainLanguageMessage, setPlainLanguageMessage] = useState<string | null>(
-    null
-  );
-  const [plainLanguagePanelId, setPlainLanguagePanelId] = useState<string | null>(
-    null
-  );
+  const [plainLanguageByPanelId, setPlainLanguageByPanelId] = useState<
+    Record<string, string>
+  >({});
 
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const resultRef = useRef<HTMLDivElement | null>(null);
@@ -144,10 +141,14 @@ export default function ClarifyPage() {
       .replace(/\s+/g, " ");
   }
 
-  function truncateText(text: string, maxLength = 72): string {
+  function truncateText(text: string, maxLength = 78): string {
     const trimmed = text.trim();
     if (trimmed.length <= maxLength) return trimmed;
     return `${trimmed.slice(0, maxLength).trimEnd()}…`;
+  }
+
+  function truncateSentence(text: string, maxLength = 120): string {
+    return truncateText(text, maxLength);
   }
 
   function getDistinctSuggestedQuestions(response: ClarifyResponse): string[] {
@@ -183,21 +184,17 @@ export default function ClarifyPage() {
   function getPanelSummary(iteration: ClarificationIteration): string {
     const { response, source, submittedInput } = iteration;
 
-    if (source === "top") {
-      if (response.question?.trim()) {
-        return truncateText(response.question);
-      }
+    if (response.question?.trim()) {
+      return truncateText(response.question);
+    }
 
+    if (source === "top") {
       const firstUnknown = response.unknown?.[0];
       if (firstUnknown) {
         return truncateText(firstUnknown);
       }
 
       return truncateText(response.orientation);
-    }
-
-    if (response.question?.trim()) {
-      return truncateText(response.question);
     }
 
     const firstSuggestion = getDistinctSuggestedQuestions(response)[0];
@@ -224,7 +221,7 @@ export default function ClarifyPage() {
       panels.push({
         id: `panel-${topIteration.id}`,
         kind: "initial_response",
-        title: "AI response",
+        title: "Initial reflection",
         summary: getPanelSummary(topIteration),
         iteration: topIteration,
       });
@@ -318,7 +315,7 @@ export default function ClarifyPage() {
     const sections = [
       `What appears to be happening:\n${response.observable.join("\n")}`,
       `What may be assumed:\n${response.interpretive.join("\n")}`,
-      `What may still be unclear:\n${response.unknown.join("\n")}`,
+      `What may remain unclear:\n${response.unknown.join("\n")}`,
       `What may be influencing the situation:\n${response.structural.join("\n")}`,
       `Orientation:\n${response.orientation}`,
     ];
@@ -414,8 +411,6 @@ export default function ClarifyPage() {
 
         if (typedData.mode === "clarify") {
           setLastClarifyResult(typedData);
-          setPlainLanguageMessage(null);
-          setPlainLanguagePanelId(null);
 
           const newIteration: ClarificationIteration = {
             id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
@@ -447,14 +442,19 @@ export default function ClarifyPage() {
 
         setHistory((prev) => [...prev, assistantTurn]);
 
-        if (typedData.mode === "plain_language") {
-          setPlainLanguageMessage(typedData.message);
-          setPlainLanguagePanelId(latestPanelId);
-          if (latestPanelId) {
-            setOpenPanelIds((prev) =>
-              prev.includes(latestPanelId) ? prev : [...prev, latestPanelId]
-            );
-          }
+        if (
+          typedData.mode === "plain_language" &&
+          latestPanelId &&
+          latestPanelId.trim()
+        ) {
+          setPlainLanguageByPanelId((prev) => ({
+            ...prev,
+            [latestPanelId]: typedData.message,
+          }));
+
+          setOpenPanelIds((prev) =>
+            prev.includes(latestPanelId) ? prev : [...prev, latestPanelId]
+          );
         }
       }
 
@@ -640,19 +640,63 @@ export default function ClarifyPage() {
     );
   }
 
+  function renderInitialSituationReferenceBar(panel: ClarificationPanel) {
+    const isRefinement = panel.kind === "refinement";
+    const refinementNumber = panel.iteration.step - 1;
+
+    if (!isRefinement || refinementNumber < 2 || !initialSituation) return null;
+
+    return (
+      <div
+        style={{
+          margin: "0 0 1.25rem 1.7rem",
+          padding: "0.7rem 0 0.85rem 0",
+          borderBottom: "1px solid #eeeae5",
+        }}
+      >
+        <div
+          style={{
+            fontSize: "0.69rem",
+            fontWeight: 700,
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+            color: "#9a948d",
+            marginBottom: "0.35rem",
+          }}
+        >
+          Initial situation
+        </div>
+        <p
+          style={{
+            margin: 0,
+            color: "#6f6a64",
+            fontSize: "0.86rem",
+            lineHeight: 1.55,
+          }}
+        >
+          {truncateSentence(initialSituation, 150)}
+        </p>
+      </div>
+    );
+  }
+
   function renderClarifyContent(
-    response: ClarifyResponse,
-    panelId: string,
+    panel: ClarificationPanel,
     showYourInput?: string
   ) {
+    const response = panel.iteration.response;
     const refinementQuestions = getDistinctSuggestedQuestions(response);
-    const shouldShowPlainLanguage =
-      panelId === latestPanelId && response === lastClarifyResult;
-    const shouldRenderPlainLanguageMessage =
-      plainLanguageMessage && plainLanguagePanelId === panelId;
+    const shouldShowPlainLanguageButton =
+      panel.id === latestPanelId &&
+      response === lastClarifyResult &&
+      !plainLanguageByPanelId[panel.id];
+
+    const plainLanguageMessage = plainLanguageByPanelId[panel.id];
 
     return (
       <div style={{ padding: "0 0.25rem 0.1rem 1.7rem" }}>
+        {renderInitialSituationReferenceBar(panel)}
+
         {showYourInput && (
           <div
             style={{
@@ -688,53 +732,12 @@ export default function ClarifyPage() {
           </div>
         )}
 
-        {renderPlainLanguageButton(Boolean(shouldShowPlainLanguage))}
+        {renderPlainLanguageButton(shouldShowPlainLanguageButton)}
 
-        {renderList(response.observable, "What appears to be happening")}
-        {renderList(response.interpretive, "What may be assumed")}
-        {renderList(response.unknown, "What may still be unclear")}
-        {renderList(
-          response.structural,
-          "What may be influencing the situation"
-        )}
-
-        <div style={{ marginBottom: response.question ? "1.75rem" : 0 }}>
-          <h3
-            style={{
-              fontSize: "0.72rem",
-              fontWeight: 700,
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              color: "#8e8a84",
-              margin: "0 0 0.7rem 0",
-            }}
-          >
-            Orientation
-          </h3>
-          <p
-            style={{
-              color: "#333",
-              margin: 0,
-              fontSize: "0.95rem",
-              lineHeight: 1.65,
-            }}
-          >
-            {response.orientation}
-          </p>
-        </div>
-
-        {response.question && (
+        {plainLanguageMessage ? (
           <div
             style={{
-              padding: "1.125rem 1.25rem",
-              backgroundColor: "#f9f8f5",
-              border: "1px solid #e7e5e4",
-              borderLeft: "3px solid #111",
-              borderRadius: "0 10px 10px 0",
-              marginBottom:
-                refinementQuestions.length > 0 || shouldRenderPlainLanguageMessage
-                  ? "1.25rem"
-                  : 0,
+              marginBottom: 0,
             }}
           >
             <h3
@@ -744,44 +747,7 @@ export default function ClarifyPage() {
                 letterSpacing: "0.1em",
                 textTransform: "uppercase",
                 color: "#8e8a84",
-                margin: "0 0 0.55rem 0",
-              }}
-            >
-              Clarifying question
-            </h3>
-            <p
-              style={{
-                color: "#111",
-                margin: 0,
-                fontSize: "0.95rem",
-                lineHeight: 1.65,
-                fontWeight: 500,
-              }}
-            >
-              {response.question}
-            </p>
-          </div>
-        )}
-
-        {shouldRenderPlainLanguageMessage && (
-          <div
-            style={{
-              marginTop: response.question ? 0 : "1.25rem",
-              marginBottom: refinementQuestions.length > 0 ? "1.25rem" : 0,
-              padding: "1.125rem 1.25rem",
-              backgroundColor: "#ffffff",
-              border: "1px solid #e7e5e4",
-              borderRadius: "12px",
-            }}
-          >
-            <h3
-              style={{
-                fontSize: "0.72rem",
-                fontWeight: 700,
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                color: "#8e8a84",
-                margin: "0 0 0.55rem 0",
+                margin: "0 0 0.7rem 0",
               }}
             >
               Plain language
@@ -791,60 +757,132 @@ export default function ClarifyPage() {
                 color: "#333",
                 margin: 0,
                 fontSize: "0.95rem",
-                lineHeight: 1.65,
+                lineHeight: 1.7,
               }}
             >
               {plainLanguageMessage}
             </p>
           </div>
-        )}
+        ) : (
+          <>
+            {renderList(response.observable, "What appears to be happening")}
+            {renderList(response.interpretive, "What may be assumed")}
+            {renderList(response.unknown, "What may remain unclear")}
+            {renderList(
+              response.structural,
+              "What may be influencing the situation"
+            )}
 
-        {refinementQuestions.length > 0 && (
-          <div style={{ marginTop: "1.65rem" }}>
-            <h3
-              style={{
-                fontSize: "0.72rem",
-                fontWeight: 700,
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                color: "#8e8a84",
-                margin: "0 0 0.85rem 0",
-              }}
-            >
-              Suggested questions
-            </h3>
+            <div style={{ marginBottom: response.question ? "1.75rem" : 0 }}>
+              <h3
+                style={{
+                  fontSize: "0.72rem",
+                  fontWeight: 700,
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                  color: "#8e8a84",
+                  margin: "0 0 0.7rem 0",
+                }}
+              >
+                Orientation
+              </h3>
+              <p
+                style={{
+                  color: "#333",
+                  margin: 0,
+                  fontSize: "0.95rem",
+                  lineHeight: 1.65,
+                }}
+              >
+                {response.orientation}
+              </p>
+            </div>
 
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "0.7rem",
-              }}
-            >
-              {refinementQuestions.map((item, index) => (
-                <div
-                  key={`${panelId}-${item}-${index}`}
+            {response.question && (
+              <div
+                style={{
+                  padding: "1.125rem 1.25rem",
+                  backgroundColor: "#f9f8f5",
+                  border: "1px solid #e7e5e4",
+                  borderLeft: "3px solid #111",
+                  borderRadius: "0 10px 10px 0",
+                  marginBottom: refinementQuestions.length > 0 ? "1.25rem" : 0,
+                }}
+              >
+                <h3
                   style={{
-                    padding: "0.9rem 1rem",
-                    borderRadius: "10px",
-                    border: "1px solid #e7e5e4",
-                    backgroundColor: "#fff",
+                    fontSize: "0.72rem",
+                    fontWeight: 700,
+                    letterSpacing: "0.1em",
+                    textTransform: "uppercase",
+                    color: "#8e8a84",
+                    margin: "0 0 0.55rem 0",
                   }}
                 >
-                  <p
-                    style={{
-                      margin: 0,
-                      color: "#333",
-                      fontSize: "0.92rem",
-                      lineHeight: 1.55,
-                    }}
-                  >
-                    {item}
-                  </p>
+                  Clarifying question
+                </h3>
+                <p
+                  style={{
+                    color: "#111",
+                    margin: 0,
+                    fontSize: "0.95rem",
+                    lineHeight: 1.65,
+                    fontWeight: 500,
+                  }}
+                >
+                  {response.question}
+                </p>
+              </div>
+            )}
+
+            {refinementQuestions.length > 0 && (
+              <div style={{ marginTop: "1.65rem" }}>
+                <h3
+                  style={{
+                    fontSize: "0.72rem",
+                    fontWeight: 700,
+                    letterSpacing: "0.1em",
+                    textTransform: "uppercase",
+                    color: "#8e8a84",
+                    margin: "0 0 0.85rem 0",
+                  }}
+                >
+                  Suggested questions
+                </h3>
+
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "0.7rem",
+                  }}
+                >
+                  {refinementQuestions.map((item, index) => (
+                    <div
+                      key={`${panel.id}-${item}-${index}`}
+                      style={{
+                        padding: "0.9rem 1rem",
+                        borderRadius: "10px",
+                        border: "1px solid #e7e5e4",
+                        backgroundColor: "#fff",
+                      }}
+                    >
+                      <p
+                        style={{
+                          margin: 0,
+                          color: "#333",
+                          fontSize: "0.92rem",
+                          lineHeight: 1.55,
+                        }}
+                      >
+                        {item}
+                      </p>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
+              </div>
+            )}
+          </>
         )}
       </div>
     );
@@ -856,9 +894,8 @@ export default function ClarifyPage() {
   ) {
     const open = isPanelOpen(panel.id);
     const isLatest = panel.id === latestPanelId;
-    const showYourInput = panel.kind === "refinement"
-      ? panel.iteration.submittedInput
-      : undefined;
+    const showYourInput =
+      panel.kind === "refinement" ? panel.iteration.submittedInput : undefined;
 
     return (
       <div
@@ -935,11 +972,7 @@ export default function ClarifyPage() {
               paddingBottom: isLastPanel ? "0.25rem" : "0.1rem",
             }}
           >
-            {renderClarifyContent(
-              panel.iteration.response,
-              panel.id,
-              showYourInput
-            )}
+            {renderClarifyContent(panel, showYourInput)}
           </div>
         )}
       </div>
@@ -970,8 +1003,8 @@ export default function ClarifyPage() {
             margin: 0,
           }}
         >
-          The initial situation stays visible. Earlier responses and refinements
-          can be expanded whenever needed.
+          The initial situation remains visible. Each refinement can be expanded
+          when needed.
         </p>
 
         {renderInitialSituationCard()}
@@ -1126,7 +1159,7 @@ export default function ClarifyPage() {
             marginBottom: "0.875rem",
           }}
         >
-          Continue clarifying (optional)
+          Refine further (optional)
         </label>
 
         <textarea
@@ -1134,7 +1167,7 @@ export default function ClarifyPage() {
           value={followupInput}
           onChange={(e) => setFollowupInput(e.target.value)}
           disabled={loading}
-          placeholder="Add any details that may help clarify the situation, your assumptions, or what remains unclear."
+          placeholder="Add any detail that may help distinguish what appears to be happening, what may be assumed, or what may remain unclear."
           rows={6}
           style={{
             display: "block",
@@ -1181,8 +1214,7 @@ export default function ClarifyPage() {
               flex: "1 1 260px",
             }}
           >
-            Add anything that may help separate what is happening, what may be
-            assumed, and what may still be unclear.
+            Additional detail may help separate observation from interpretation.
           </p>
 
           <div
@@ -1284,8 +1316,7 @@ export default function ClarifyPage() {
     setIterations([]);
     setOpenPanelIds([]);
     setLatestPanelId(null);
-    setPlainLanguageMessage(null);
-    setPlainLanguagePanelId(null);
+    setPlainLanguageByPanelId({});
   }
 
   return (
@@ -1361,8 +1392,7 @@ export default function ClarifyPage() {
               margin: "0 0 0.75rem 0",
             }}
           >
-            Describe a situation, decision, or AI-related question as it
-            currently appears.
+            Describe the situation as it currently appears.
           </p>
           <p
             style={{
@@ -1372,9 +1402,9 @@ export default function ClarifyPage() {
               margin: 0,
             }}
           >
-            VIREKA helps distinguish what appears to be happening, what may be
-            assumed, and what may still be unclear, so responses begin from
-            clearer understanding.
+            Vireka distinguishes what appears to be happening, what may be
+            assumed, and what may remain unclear so response can begin from
+            clearer structure.
           </p>
         </div>
 
@@ -1404,7 +1434,7 @@ export default function ClarifyPage() {
               marginBottom: "0.875rem",
             }}
           >
-            Situation or question
+            Situation
           </label>
 
           <textarea
@@ -1412,7 +1442,7 @@ export default function ClarifyPage() {
             value={topInput}
             onChange={(e) => setTopInput(e.target.value)}
             disabled={loading}
-            placeholder='Example: "The situation suggests a need for action, but it is not yet clear which factors are driving the outcome."'
+            placeholder="Example: The situation suggests a need for action, but the factors shaping the outcome are not yet fully clear."
             rows={8}
             style={{
               display: "block",
@@ -1459,9 +1489,8 @@ export default function ClarifyPage() {
                 flex: "1 1 260px",
               }}
             >
-              Include the situation as you currently see it, even if
-              interpretation or uncertainty are present. The system helps
-              separate these elements before a response is formed.
+              Include the situation as it currently appears, even if
+              interpretation or uncertainty are present.
             </p>
 
             {renderTopActionRow()}
@@ -1508,7 +1537,7 @@ export default function ClarifyPage() {
                 margin: "0 0 0.75rem 0",
               }}
             >
-              Thank you.
+              Clarity established
             </h3>
 
             <p
@@ -1519,7 +1548,7 @@ export default function ClarifyPage() {
                 lineHeight: 1.65,
               }}
             >
-              Clarity improves interaction quality.
+              Clear structure supports better interaction.
             </p>
 
             <button
@@ -1536,7 +1565,7 @@ export default function ClarifyPage() {
                 cursor: "pointer",
               }}
             >
-              Start a new situation
+              Start new situation
             </button>
           </div>
         )}

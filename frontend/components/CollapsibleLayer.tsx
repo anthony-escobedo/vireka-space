@@ -25,8 +25,8 @@ export default function CollapsibleLayer({
     <div
       className={[
         "rounded-2xl border border-stone-200/80 bg-white",
+        "transition-[border-color,background-color,box-shadow] duration-300",
         "shadow-[0_1px_2px_rgba(0,0,0,0.02)]",
-        "transition-[border-color,background-color,box-shadow] duration-200",
         isOpen ? "border-stone-300/80" : "hover:border-stone-300/70",
         className,
       ].join(" ")}
@@ -56,11 +56,12 @@ export default function CollapsibleLayer({
           ) : null}
         </div>
 
+        {/* Chevron — duration matched to content, strokeWidth bumped for visibility */}
         <span
           aria-hidden="true"
           className={[
             "mt-[3px] inline-flex h-5 w-5 shrink-0 items-center justify-center",
-            "text-stone-400 transition-transform duration-200",
+            "text-stone-400 transition-transform duration-300 ease-in-out",
             isOpen ? "rotate-90" : "rotate-0",
           ].join(" ")}
         >
@@ -82,19 +83,38 @@ export default function CollapsibleLayer({
         </span>
       </button>
 
-      {isOpen && (
-        <div className="px-4 pb-4 sm:px-5 sm:pb-5">
+      {/*
+        Animated wrapper — uses the CSS grid-rows trick for height: auto transitions.
+        The outer div animates grid-rows and opacity.
+        The inner div carries overflow-hidden so content is clipped during the collapse.
+        DO NOT put overflow-hidden on the outer div — it would clip the grid animation itself.
+      */}
+      <div
+        className={[
+          "grid transition-all duration-300 ease-in-out",
+          isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
+        ].join(" ")}
+      >
+        <div className="overflow-hidden">
+          {/*
+            translate-y gives a physical "drop open / pull closed" feel.
+            Without it the content appears to pop in rather than slide.
+          */}
           <div
             className={[
-              "border-t border-stone-200/70 pt-4",
+              "px-4 pb-4 sm:px-5 sm:pb-5",
               "text-[0.95rem] leading-7 text-neutral-700",
+              "transition-transform duration-300 ease-in-out",
+              isOpen ? "translate-y-0" : "-translate-y-2",
               contentClassName,
             ].join(" ")}
           >
-            {children}
+            <div className="border-t border-stone-200/70 pt-4">
+              {children}
+            </div>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

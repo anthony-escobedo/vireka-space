@@ -423,7 +423,16 @@ export default function ClarifyPage() {
       }
 
       setResult(typedData);
+      // auto-redirect when conversation is complete
+      if (typedData.mode === "close") {
+      if (redirectTimeoutRef.current) {
+      clearTimeout(redirectTimeoutRef.current);
+    }
 
+      redirectTimeoutRef.current = setTimeout(() => {
+        router.push("/");
+    }, 2000);
+}  
       setTimeout(() => {
         resultRef.current?.scrollIntoView({
           behavior: "smooth",

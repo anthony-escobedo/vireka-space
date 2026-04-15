@@ -839,7 +839,6 @@ export default function ClarifyPage() {
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
         {panels.map((panel, idx) => {
-          const isLatest = idx === panels.length - 1;
           const showYourInput =
             panel.kind === "refinement"
               ? panel.iteration.submittedInput

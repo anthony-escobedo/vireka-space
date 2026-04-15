@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import CollapsibleLayer from "../../components/CollapsibleLayer";
+import OnboardingModal from "../../components/OnboardingModal";
 
 declare global {
   interface Window {
@@ -107,7 +108,9 @@ export default function AIInteractionPage() {
   const [plainLanguageByPanelId, setPlainLanguageByPanelId] = useState<
     Record<string, string>
   >({});
-
+  const [showOnboarding, setShowOnboarding] = useState<boolean>(false);
+  const [checkedOnboarding, setCheckedOnboarding] = useState(false);
+  
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const resultRef = useRef<HTMLDivElement | null>(null);
 
@@ -115,13 +118,20 @@ export default function AIInteractionPage() {
   const redirectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    return () => {
-      if (redirectTimeoutRef.current) {
-        clearTimeout(redirectTimeoutRef.current);
-      }
-      recognitionRef.current?.stop?.();
-    };
-  }, []);
+  const accepted =
+    typeof window !== "undefined" &&
+    window.localStorage.getItem("vireka_onboarding_accepted") === "true";
+
+  setShowOnboarding(!accepted);
+  setCheckedOnboarding(true);
+
+  return () => {
+    if (redirectTimeoutRef.current) {
+      clearTimeout(redirectTimeoutRef.current);
+    }
+    recognitionRef.current?.stop?.();
+  };
+}, []);
 
   function cleanTranscript(text: string): string {
     let t = text.trim();
@@ -464,7 +474,16 @@ export default function AIInteractionPage() {
   function handlePlainLanguage(): void {
     void submitToClarify("plain_language", "followup");
   }
+  
+  function handleBeginOnboarding(): void {
+  window.localStorage.setItem("vireka_onboarding_accepted", "true");
+  setShowOnboarding(false);
+}
 
+function handleDismissOnboarding(): void {
+  router.push("/");
+}
+  
   function handleDone(): void {
     if (loading || !result) return;
 
@@ -1233,6 +1252,15 @@ export default function AIInteractionPage() {
   }
 
   return (
+  <>
+    {checkedOnboarding && (
+      <OnboardingModal
+        isOpen={showOnboarding}
+        onBegin={handleBeginOnboarding}
+        onDismiss={handleDismissOnboarding}
+      />
+    )}
+
     <main
       style={{
         minHeight: "100vh",
@@ -1478,5 +1506,6 @@ export default function AIInteractionPage() {
         )}
       </div>
     </main>
-  );
+  </>
+);
 }

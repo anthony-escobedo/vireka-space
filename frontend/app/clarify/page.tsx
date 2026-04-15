@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import CollapsibleLayer from "../../components/CollapsibleLayer";
+import OnboardingModal from "../../components/OnboardingModal";
 import { useRouter } from "next/navigation";
 
 declare global {
@@ -107,14 +108,24 @@ export default function ClarifyPage() {
   const [plainLanguageByPanelId, setPlainLanguageByPanelId] = useState<
     Record<string, string>
   >({});
-
+  const [showOnboarding, setShowOnboarding] = useState<boolean>(false);
+  const topInputRef = useRef<HTMLTextAreaElement | null>(null);
+  
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const resultRef = useRef<HTMLDivElement | null>(null);
 
   const router = useRouter();
   const redirectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  useEffect(() => {
+    useEffect(() => {
+    const seen =
+      typeof window !== "undefined" &&
+      window.localStorage.getItem("onboardingSeen") === "true";
+
+    if (!seen) {
+      setShowOnboarding(true);
+    }
+
     return () => {
       if (redirectTimeoutRef.current) {
         clearTimeout(redirectTimeoutRef.current);
@@ -457,6 +468,20 @@ export default function ClarifyPage() {
     void submitToClarify("plain_language", "followup");
   }
 
+  function handleBeginOnboarding(): void {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("onboardingSeen", "true");
+    }
+    setShowOnboarding(false);
+
+    setTimeout(() => {
+      topInputRef.current?.focus();
+    }, 0);
+  }
+
+  function handleDismissOnboarding(): void {
+    setShowOnboarding(false);
+  }  
   function handleDone(): void {
     if (loading || !result) return;
     setIsDone(true);
@@ -1202,6 +1227,13 @@ export default function ClarifyPage() {
   }
 
   return (
+  <>
+    <OnboardingModal
+      isOpen={showOnboarding}
+      onBegin={handleBeginOnboarding}
+      onDismiss={handleDismissOnboarding}
+    />
+
     <main
       style={{
         minHeight: "100vh",
@@ -1315,7 +1347,8 @@ export default function ClarifyPage() {
             Situation
           </label>
 
-          <textarea
+            <textarea
+            ref={topInputRef}
             id="clarify-input"
             value={topInput}
             onChange={(e) => setTopInput(e.target.value)}
@@ -1444,7 +1477,8 @@ export default function ClarifyPage() {
             </button>
           </div>
         )}
-      </div>
+          </div>
     </main>
-  );
+  </>
+);
 }

@@ -1497,12 +1497,12 @@ function handleDismissOnboarding(): void {
         {!isDone && renderFollowupBox()}
 
         {isDone && (
-  <DoneState
-    onCopy={handleCopyResult}
-    onStartNew={handleStartNew}
-    onReturnHome={handleReturnHome}
-  />
-)}
+        <DoneState
+          onCopy={handleCopyResult}
+          onNew={handleStartNew}
+          onHome={handleReturnHome}
+        />
+      )}
       </div>
     </main>
   </>

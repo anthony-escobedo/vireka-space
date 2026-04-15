@@ -471,22 +471,63 @@ export default function ClarifyPage() {
   }
 
   function handleBeginOnboarding(): void {
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem("onboardingSeen", "true");
-    }
-    setShowOnboarding(false);
-
-    setTimeout(() => {
-      topInputRef.current?.focus();
-    }, 0);
+  if (typeof window !== "undefined") {
+    window.localStorage.setItem("vireka_onboarding_accepted", "true");
   }
+  setShowOnboarding(false);
 
+  setTimeout(() => {
+    topInputRef.current?.focus();
+  }, 0);
+}
+  
   function handleDismissOnboarding(): void {
   router.push("/");
 }
-  function handleDone(): void {
-    if (loading || !result) return;
-    setIsDone(true);
+
+function handleCopyResult(): void {
+  if (!result) return;
+
+  const text =
+    result.mode === "close" || result.mode === "plain_language"
+      ? result.message
+      : [
+          "What appears to be happening:",
+          ...result.observable,
+          "",
+          "What may be assumed:",
+          ...result.interpretive,
+          "",
+          "What may remain unclear:",
+          ...result.unknown,
+          "",
+          "What may be influencing the situation:",
+          ...result.structural,
+          "",
+          "Orientation:",
+          result.orientation,
+          ...(result.question ? ["", "Clarifying question:", result.question] : []),
+          ...(
+            result.suggestedQuestions?.length
+              ? ["", "Suggested questions:", ...result.suggestedQuestions]
+              : []
+          ),
+        ].join("\n");
+
+  void navigator.clipboard.writeText(text);
+}
+
+function handleStartNew(): void {
+  resetSession();
+}
+
+function handleReturnHome(): void {
+  router.push("/");
+}
+
+function handleDone(): void {
+  if (loading || !result) return;
+  setIsDone(true);
 
     if (redirectTimeoutRef.current) {
       clearTimeout(redirectTimeoutRef.current);
@@ -1433,54 +1474,16 @@ export default function ClarifyPage() {
         )}
 
         {!isDone && renderClarificationPath()}
-        {!isDone && result && renderSupplementaryResult(result)}
-        {renderFollowupBox()}
+{!isDone && result && renderSupplementaryResult(result)}
+{renderFollowupBox()}
 
-        {result && isDone && (
-          <div
-            ref={resultRef}
-            style={{
-              marginTop: "2rem",
-              backgroundColor: "#ffffff",
-              border: "1px solid #e7e5e4",
-              borderRadius: "16px",
-              padding: "1.6rem 1.25rem",
-              maxWidth: "100%",
-              minWidth: 0,
-              boxSizing: "border-box",
-            }}
-          >
-            <h3
-              style={{
-                fontSize: "1.1rem",
-                fontWeight: 600,
-                color: "#111",
-                margin: "0 0 0.75rem 0",
-              }}
-            >
-              Clarity established
-            </h3>
-            <p style={{ color: "#444", margin: "0 0 1.25rem 0", fontSize: "0.95rem", lineHeight: 1.65 }}>
-              Clear structure supports better interaction.
-            </p>
-            <button
-              type="button"
-              onClick={() => router.push("/")}
-              style={{
-                padding: "0.7rem 1rem",
-                borderRadius: "999px",
-                border: "1px solid #d6d3d1",
-                backgroundColor: "#fff",
-                color: "#111",
-                fontSize: "0.9rem",
-                fontWeight: 600,
-                cursor: "pointer",
-              }}
-            >
-              Start new situation
-            </button>
-          </div>
-        )}
+{isDone && (
+  <DoneState
+    onCopy={handleCopyResult}
+    onNew={handleStartNew}
+    onHome={handleReturnHome}
+  />
+)}
           </div>
     </main>
   </>

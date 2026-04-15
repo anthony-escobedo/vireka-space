@@ -437,12 +437,10 @@ export default function AIInteractionPage() {
       if (redirectTimeoutRef.current) {
       clearTimeout(redirectTimeoutRef.current);
     }
-
-  redirectTimeoutRef.current = setTimeout(() => {
-    router.push("/");
-  }, 2000);
+      redirectTimeoutRef.current = setTimeout(() => {
+      router.push("/");
+    },  2000);
 }
-
       
       setTimeout(() => {
         resultRef.current?.scrollIntoView({

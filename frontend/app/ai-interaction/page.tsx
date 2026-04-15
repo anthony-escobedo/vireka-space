@@ -865,7 +865,6 @@ export default function AIInteractionPage() {
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
         {panels.map((panel, idx) => {
-          const isLatest = idx === panels.length - 1;
           const showYourInput =
             panel.kind === "refinement"
               ? panel.iteration.submittedInput
@@ -878,7 +877,6 @@ export default function AIInteractionPage() {
               onToggle={() => togglePanel(panel.id)}
               title={panel.title}
               summary={panel.summary}
-              isLatest={isLatest}
             >
               {renderClarifyContent(panel, showYourInput)}
             </CollapsibleLayer>

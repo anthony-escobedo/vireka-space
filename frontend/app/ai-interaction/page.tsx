@@ -850,9 +850,11 @@ export default function AIInteractionPage() {
           onToggle={() => togglePanel(panel.id)}
           contentClassName=""
         >
-          <div style={{ paddingBottom: "0.1rem" }}>
-            {renderClarifyContent(panel, showYourInput)}
-          </div>
+          {open ? (
+            <div style={{ paddingBottom: "0.1rem" }}>
+              {renderClarifyContent(panel, showYourInput)}
+            </div>
+          ) : null}
         </CollapsibleLayer>
       </div>
     );

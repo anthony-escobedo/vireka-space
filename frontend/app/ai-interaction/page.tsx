@@ -482,7 +482,7 @@ export default function AIInteractionPage() {
     void submitToClarify("plain_language", "followup");
   }
 
-  ffunction handleCopyResult(): void {
+  function handleCopyResult(): void {
   if (!result) return;
 
   const text =

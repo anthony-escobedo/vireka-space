@@ -529,22 +529,18 @@ function handleDone(): void {
   if (loading || !result) return;
   setIsDone(true);
 
-    if (redirectTimeoutRef.current) {
-      clearTimeout(redirectTimeoutRef.current);
-    }
-
-    setTimeout(() => {
-      resultRef.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-    }, 100);
-
-    redirectTimeoutRef.current = setTimeout(() => {
-      router.push("/");
-    }, 1800);
+  if (redirectTimeoutRef.current) {
+    clearTimeout(redirectTimeoutRef.current);
   }
 
+  setTimeout(() => {
+    resultRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  }, 100);
+}
+  
   const panels = getPanels();
   const archivedPanels = panels.slice(0, -1);
   const activePanel = panels.length > 0 ? panels[panels.length - 1] : null;

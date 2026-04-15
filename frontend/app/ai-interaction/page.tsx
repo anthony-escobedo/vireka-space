@@ -1300,7 +1300,7 @@ function handleDismissOnboarding(): void {
       />
     )}
 
-    <main
+        <main
       style={{
         minHeight: "100vh",
         backgroundColor: "#f5f3ef",
@@ -1313,17 +1313,36 @@ function handleDismissOnboarding(): void {
         boxSizing: "border-box",
       }}
     >
-      <div
-        style={{
-          maxWidth: "780px",
-          width: "100%",
-          boxSizing: "border-box",
-          margin: "0 auto",
-          padding: "1.5rem 1.25rem 4rem",
-          overflowX: "hidden",
-          minWidth: 0,
-        }}
-      >
+      {isDone ? (
+        <div
+          style={{
+            minHeight: "100vh",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "2rem 1.25rem",
+            boxSizing: "border-box",
+          }}
+        >
+          <DoneState
+            onCopy={handleCopyResult}
+            onNew={handleStartNew}
+            onHome={handleReturnHome}
+          />
+        </div>
+      ) : (
+        <div
+          style={{
+            maxWidth: "780px",
+            width: "100%",
+            boxSizing: "border-box",
+            margin: "0 auto",
+            padding: "1.5rem 1.25rem 4rem",
+            overflowX: "hidden",
+            minWidth: 0,
+          }}
+        >
+          
         <div style={{ marginBottom: "2rem" }}>
           <Link
             href="/"
@@ -1495,16 +1514,10 @@ function handleDismissOnboarding(): void {
         {!isDone && renderClarificationPath()}
         {!isDone && result && renderSupplementaryResult(result)}
         {!isDone && renderFollowupBox()}
-
-        {isDone && (
-        <DoneState
-          onCopy={handleCopyResult}
-          onNew={handleStartNew}
-          onHome={handleReturnHome}
-        />
-      )}
-      </div>
-    </main>
-  </>
-);
+          
+          </div>
+        )}
+      </main>
+    </>
+  );
 }

@@ -82,7 +82,7 @@ export default function CollapsibleLayer({
         </span>
       </button>
 
-      {isOpen ? (
+      {isOpen && (
         <div className="px-4 pb-4 sm:px-5 sm:pb-5">
           <div
             className={[
@@ -94,7 +94,7 @@ export default function CollapsibleLayer({
             {children}
           </div>
         </div>
-      ) : null}
+      )}
     </div>
   );
 }

@@ -110,12 +110,14 @@ export default function ClarifyPage() {
   const [plainLanguageByPanelId, setPlainLanguageByPanelId] = useState<
     Record<string, string>
   >({});
+  const [copyLabel, setCopyLabel] = useState("Copy result");
   const [showOnboarding, setShowOnboarding] = useState<boolean>(false);
   const [checkedOnboarding, setCheckedOnboarding] = useState(false);
   const topInputRef = useRef<HTMLTextAreaElement | null>(null);
   
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const resultRef = useRef<HTMLDivElement | null>(null);
+  const copyResetTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const router = useRouter();
   const redirectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -128,9 +130,12 @@ export default function ClarifyPage() {
   setShowOnboarding(!accepted);
   setCheckedOnboarding(true);
 
-  return () => {
+    return () => {
     if (redirectTimeoutRef.current) {
       clearTimeout(redirectTimeoutRef.current);
+    }
+    if (copyResetTimeoutRef.current) {
+      clearTimeout(copyResetTimeoutRef.current);
     }
     if (recognitionRef.current) {
       recognitionRef.current.stop();
@@ -514,13 +519,66 @@ function handleCopyResult(): void {
           ),
         ].join("\n");
 
-  void navigator.clipboard.writeText(text);
-}
+  const resetLabel = () => {
+    if (copyResetTimeoutRef.current) {
+      clearTimeout(copyResetTimeoutRef.current);
+    }
+    copyResetTimeoutRef.current = setTimeout(() => {
+      setCopyLabel("Copy result");
+    }, 1500);
+  };
 
+  const fallbackCopy = () => {
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.setAttribute("readonly", "");
+    textarea.style.position = "fixed";
+    textarea.style.opacity = "0";
+    textarea.style.pointerEvents = "none";
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+
+    let successful = false;
+    try {
+      successful = document.execCommand("copy");
+    } catch {
+      successful = false;
+    }
+
+    document.body.removeChild(textarea);
+
+    if (successful) {
+      setCopyLabel("Copied");
+    } else {
+      setCopyLabel("Could not copy");
+    }
+    resetLabel();
+  };
+
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        setCopyLabel("Copied");
+        resetLabel();
+      })
+      .catch(() => {
+        fallbackCopy();
+      });
+  } else {
+    fallbackCopy();
+  }
+}
+  
 function handleStartNew(): void {
+  if (copyResetTimeoutRef.current) {
+    clearTimeout(copyResetTimeoutRef.current);
+  }
+  setCopyLabel("Copy result");
   resetSession();
 }
-
+  
 function handleReturnHome(): void {
   router.push("/");
 }
@@ -1299,10 +1357,11 @@ function handleDone(): void {
             boxSizing: "border-box",
           }}
         >
-          <DoneState
+                    <DoneState
             onCopy={handleCopyResult}
             onNew={handleStartNew}
             onHome={handleReturnHome}
+            copyLabel={copyLabel}
           />
         </div>
       ) : (

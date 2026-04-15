@@ -109,6 +109,7 @@ export default function ClarifyPage() {
     Record<string, string>
   >({});
   const [showOnboarding, setShowOnboarding] = useState<boolean>(false);
+  const [checkedOnboarding, setCheckedOnboarding] = useState(false);
   const topInputRef = useRef<HTMLTextAreaElement | null>(null);
   
   const recognitionRef = useRef<SpeechRecognition | null>(null);
@@ -118,23 +119,22 @@ export default function ClarifyPage() {
   const redirectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
-    const seen =
-      typeof window !== "undefined" &&
-      window.localStorage.getItem("onboardingSeen") === "true";
+  const accepted =
+    typeof window !== "undefined" &&
+    window.localStorage.getItem("vireka_onboarding_accepted") === "true";
 
-    if (!seen) {
-      setShowOnboarding(true);
+  setShowOnboarding(!accepted);
+  setCheckedOnboarding(true);
+
+  return () => {
+    if (redirectTimeoutRef.current) {
+      clearTimeout(redirectTimeoutRef.current);
     }
-
-    return () => {
-      if (redirectTimeoutRef.current) {
-        clearTimeout(redirectTimeoutRef.current);
-      }
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-      }
-    };
-  }, []);
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
+  };
+}, []);
 
   function cleanTranscript(text: string): string {
     let t = text.trim();
@@ -1228,11 +1228,13 @@ export default function ClarifyPage() {
 
   return (
   <>
-    <OnboardingModal
-      isOpen={showOnboarding}
-      onBegin={handleBeginOnboarding}
-      onDismiss={handleDismissOnboarding}
-    />
+    {checkedOnboarding && (
+      <OnboardingModal
+        isOpen={showOnboarding}
+        onBegin={handleBeginOnboarding}
+        onDismiss={handleDismissOnboarding}
+      />
+    )}
 
     <main
       style={{

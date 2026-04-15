@@ -423,6 +423,7 @@ export default function ClarifyPage() {
       }
 
       setResult(typedData);
+      
       // auto-redirect when conversation is complete
       if (typedData.mode === "close") {
       if (redirectTimeoutRef.current) {

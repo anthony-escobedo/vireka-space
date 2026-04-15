@@ -25,9 +25,9 @@ export default function CollapsibleLayer({
     <div
       className={[
         "rounded-2xl border border-stone-200/80 bg-white",
-        "transition-[border-color,background-color,box-shadow] duration-300",
+        "transition-[border-color,background-color,box-shadow] duration-200",
         "shadow-[0_1px_2px_rgba(0,0,0,0.02)]",
-        isOpen ? "border-stone-300/80" : "hover:border-stone-300/70",
+        isOpen ? "border-stone-300/80 shadow-sm" : "hover:border-stone-300/70",
         className,
       ].join(" ")}
     >
@@ -56,12 +56,11 @@ export default function CollapsibleLayer({
           ) : null}
         </div>
 
-        {/* Chevron — duration matched to content, strokeWidth bumped for visibility */}
         <span
           aria-hidden="true"
           className={[
-            "mt-[3px] inline-flex h-5 w-5 shrink-0 items-center justify-center",
-            "text-stone-400 transition-transform duration-300 ease-in-out",
+            "mt-[2px] inline-flex h-5 w-5 shrink-0 items-center justify-center",
+            "text-stone-400 transition-transform duration-250 ease-in-out",
             isOpen ? "rotate-90" : "rotate-0",
           ].join(" ")}
         >
@@ -70,12 +69,11 @@ export default function CollapsibleLayer({
             height="18"
             viewBox="0 0 20 20"
             fill="none"
-            xmlns="http://www.w3.org/2000/svg"
           >
             <path
               d="M7.5 5.5L12 10L7.5 14.5"
               stroke="currentColor"
-              strokeWidth="1.75"
+              strokeWidth="1.8"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
@@ -83,29 +81,26 @@ export default function CollapsibleLayer({
         </span>
       </button>
 
-      {/*
-        Animated wrapper — uses the CSS grid-rows trick for height: auto transitions.
-        The outer div animates grid-rows and opacity.
-        The inner div carries overflow-hidden so content is clipped during the collapse.
-        DO NOT put overflow-hidden on the outer div — it would clip the grid animation itself.
-      */}
       <div
         className={[
-          "grid transition-all duration-300 ease-in-out",
-          isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
+          "grid transition-[grid-template-rows,opacity] duration-300 ease-in-out",
+          isOpen
+            ? "grid-rows-[1fr] opacity-100"
+            : "grid-rows-[0fr] opacity-0",
         ].join(" ")}
       >
         <div className="overflow-hidden">
-          {/*
-            translate-y gives a physical "drop open / pull closed" feel.
-            Without it the content appears to pop in rather than slide.
-          */}
           <div
             className={[
               "px-4 pb-4 sm:px-5 sm:pb-5",
               "text-[0.95rem] leading-7 text-neutral-700",
-              "transition-transform duration-300 ease-in-out",
-              isOpen ? "translate-y-0" : "-translate-y-2",
+
+              /* stronger motion cue */
+              "transition-all duration-300 ease-in-out",
+              isOpen
+                ? "translate-y-0 scale-[1]"
+                : "-translate-y-3 scale-[0.985]",
+
               contentClassName,
             ].join(" ")}
           >

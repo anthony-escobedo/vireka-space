@@ -16,20 +16,24 @@ export default function DoneState({
   return (
     <div
       style={{
-        marginTop: "3rem",
-        padding: "2.25rem",
-        borderRadius: "18px",
-        backgroundColor: "white",
-        border: "1px solid rgba(0,0,0,0.06)",
-        boxShadow: "0 1px 2px rgba(0,0,0,0.03)",
-        maxWidth: "640px",
+        width: "100%",
+        maxWidth: "620px",
+        backgroundColor: "#ffffff",
+        border: "1px solid #e7e5e4",
+        borderRadius: "20px",
+        padding: "2.75rem 2.5rem",
+        boxSizing: "border-box",
+        boxShadow: "0 1px 2px rgba(0,0,0,0.02)",
       }}
     >
       <h2
         style={{
-          fontSize: "1.35rem",
-          fontWeight: 500,
-          marginBottom: ".35rem",
+          margin: "0 0 0.8rem 0",
+          fontSize: "clamp(1.8rem, 4vw, 2.2rem)",
+          lineHeight: 1.1,
+          letterSpacing: "-0.03em",
+          fontWeight: 600,
+          color: "#111",
         }}
       >
         Clarity established
@@ -37,8 +41,10 @@ export default function DoneState({
 
       <p
         style={{
-          color: "#666",
-          marginBottom: "1.6rem",
+          margin: "0 0 2rem 0",
+          fontSize: "1rem",
+          lineHeight: 1.65,
+          color: "#66615b",
         }}
       >
         Structure supports clearer understanding.
@@ -48,26 +54,60 @@ export default function DoneState({
         style={{
           display: "flex",
           flexWrap: "wrap",
-          gap: ".6rem",
+          gap: "0.85rem",
+          alignItems: "center",
         }}
       >
         <button
+          type="button"
           onClick={onCopy}
-          style={buttonStyle}
+          style={{
+            padding: "0.78rem 1.15rem",
+            borderRadius: "999px",
+            border: "1px solid #d6d3d1",
+            backgroundColor: "#fff",
+            color: "#111",
+            fontSize: "0.95rem",
+            fontWeight: 600,
+            cursor: "pointer",
+            whiteSpace: "nowrap",
+          }}
         >
           Copy result
         </button>
 
         <button
+          type="button"
           onClick={onNew}
-          style={buttonStyle}
+          style={{
+            padding: "0.78rem 1.15rem",
+            borderRadius: "999px",
+            border: "1px solid #d6d3d1",
+            backgroundColor: "#fff",
+            color: "#111",
+            fontSize: "0.95rem",
+            fontWeight: 600,
+            cursor: "pointer",
+            whiteSpace: "nowrap",
+          }}
         >
           Start new situation
         </button>
 
         <button
+          type="button"
           onClick={onHome}
-          style={buttonStyleSecondary}
+          style={{
+            padding: "0.78rem 1.15rem",
+            borderRadius: "999px",
+            border: "1px solid #d6d3d1",
+            backgroundColor: "#fff",
+            color: "#7a756f",
+            fontSize: "0.95rem",
+            fontWeight: 600,
+            cursor: "pointer",
+            whiteSpace: "nowrap",
+          }}
         >
           Return home
         </button>
@@ -75,17 +115,3 @@ export default function DoneState({
     </div>
   );
 }
-
-const buttonStyle: React.CSSProperties = {
-  padding: ".55rem .9rem",
-  borderRadius: "999px",
-  border: "1px solid rgba(0,0,0,.08)",
-  background: "white",
-  cursor: "pointer",
-  fontSize: ".85rem",
-};
-
-const buttonStyleSecondary: React.CSSProperties = {
-  ...buttonStyle,
-  color: "#777",
-};

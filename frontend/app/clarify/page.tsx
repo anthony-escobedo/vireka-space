@@ -1275,7 +1275,7 @@ function handleDone(): void {
       />
     )}
 
-    <main
+        <main
       style={{
         minHeight: "100vh",
         backgroundColor: "#f5f3ef",
@@ -1288,17 +1288,36 @@ function handleDone(): void {
         boxSizing: "border-box",
       }}
     >
-      <div
-        style={{
-          maxWidth: "780px",
-          width: "100%",
-          boxSizing: "border-box",
-          margin: "0 auto",
-          padding: "1.5rem 1.25rem 4rem",
-          overflowX: "hidden",
-          minWidth: 0,
-        }}
-      >
+      {isDone ? (
+        <div
+          style={{
+            minHeight: "100vh",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "2rem 1.25rem",
+            boxSizing: "border-box",
+          }}
+        >
+          <DoneState
+            onCopy={handleCopyResult}
+            onNew={handleStartNew}
+            onHome={handleReturnHome}
+          />
+        </div>
+      ) : (
+        <div
+          style={{
+            maxWidth: "780px",
+            width: "100%",
+            boxSizing: "border-box",
+            margin: "0 auto",
+            padding: "1.5rem 1.25rem 4rem",
+            overflowX: "hidden",
+            minWidth: 0,
+          }}
+        >
+          
         <div style={{ marginBottom: "2rem" }}>
           <Link
             href="/"
@@ -1473,14 +1492,8 @@ function handleDone(): void {
 {!isDone && result && renderSupplementaryResult(result)}
 {renderFollowupBox()}
 
-{isDone && (
-  <DoneState
-    onCopy={handleCopyResult}
-    onNew={handleStartNew}
-    onHome={handleReturnHome}
-  />
-)}
-          </div>
+        </div>
+      )}
     </main>
   </>
 );

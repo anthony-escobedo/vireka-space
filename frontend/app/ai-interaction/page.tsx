@@ -151,10 +151,6 @@ export default function AIInteractionPage() {
     return `${trimmed.slice(0, maxLength).trimEnd()}…`;
   }
 
-  function truncateSentence(text: string, maxLength = 120): string {
-    return truncateText(text, maxLength);
-  }
-
   function getDistinctSuggestedQuestions(response: ClarifyResponse): string[] {
     const mainQuestionNormalized = response.question
       ? normalizeQuestion(response.question)
@@ -179,30 +175,18 @@ export default function AIInteractionPage() {
     return distinct;
   }
 
-  function getPanelSummary(iteration: ClarificationIteration): string {
-    const { response, source, submittedInput } = iteration;
-
-    if (response.question?.trim()) {
-      return truncateText(response.question);
-    }
-
-    if (source === "top") {
-      const firstUnknown = response.unknown?.[0];
-      if (firstUnknown) {
-        return truncateText(firstUnknown);
-      }
-      return truncateText(response.orientation);
-    }
-
-    const firstSuggestion = getDistinctSuggestedQuestions(response)[0];
-    if (firstSuggestion) {
-      return truncateText(firstSuggestion);
-    }
-
+  function getRefinementPanelSummary(iteration: ClarificationIteration): string {
+    const { response, submittedInput } = iteration;
     if (submittedInput.trim()) {
       return truncateText(submittedInput);
     }
-
+    if (response.question?.trim()) {
+      return truncateText(response.question);
+    }
+    const firstUnknown = response.unknown?.[0];
+    if (firstUnknown) {
+      return truncateText(firstUnknown);
+    }
     return truncateText(response.orientation);
   }
 
@@ -219,7 +203,7 @@ export default function AIInteractionPage() {
         id: `panel-${topIteration.id}`,
         kind: "initial_response",
         title: "Initial reflection",
-        summary: getPanelSummary(topIteration),
+        summary: "",
         iteration: topIteration,
       });
     }
@@ -229,7 +213,7 @@ export default function AIInteractionPage() {
         id: `panel-${iteration.id}`,
         kind: "refinement",
         title: `Refinement ${iteration.step - 1}`,
-        summary: getPanelSummary(iteration),
+        summary: getRefinementPanelSummary(iteration),
         iteration,
       });
     }
@@ -416,13 +400,7 @@ export default function AIInteractionPage() {
 
           setIterations((prev) => [...prev, newIteration]);
           setLatestPanelId(panelId);
-
-          // FIX: append the new panel to open IDs rather than replacing the
-          // whole array. This preserves any panels the user manually opened.
-          setOpenPanelIds((prev) => {
-            const withoutNew = prev.filter((id) => id !== panelId);
-            return [...withoutNew, panelId];
-          });
+          setOpenPanelIds([]);
 
           if (source === "top" && !initialSituation) {
             setInitialSituation(trimmed);
@@ -449,10 +427,6 @@ export default function AIInteractionPage() {
             ...prev,
             [latestPanelId]: typedData.message,
           }));
-
-          setOpenPanelIds((prev) =>
-            prev.includes(latestPanelId) ? prev : [...prev, latestPanelId]
-          );
         }
       }
 
@@ -503,6 +477,8 @@ export default function AIInteractionPage() {
   }
 
   const panels = getPanels();
+  const archivedPanels = panels.slice(0, -1);
+  const activePanel = panels.length > 0 ? panels[panels.length - 1] : null;
 
   const isTopClarifyDisabled = loading || !topInput.trim();
   const isFollowupClarifyDisabled = loading || !followupInput.trim();
@@ -539,6 +515,8 @@ export default function AIInteractionPage() {
                 color: "#333",
                 fontSize: "0.95rem",
                 lineHeight: 1.65,
+                overflowWrap: "anywhere",
+                wordBreak: "break-word",
               }}
             >
               {item}
@@ -612,6 +590,9 @@ export default function AIInteractionPage() {
           borderRadius: "16px",
           padding: "1.4rem 1.5rem",
           marginTop: "1rem",
+          maxWidth: "100%",
+          minWidth: 0,
+          boxSizing: "border-box",
         }}
       >
         <h3
@@ -626,41 +607,17 @@ export default function AIInteractionPage() {
         >
           Initial AI issue
         </h3>
-        <p style={{ margin: 0, color: "#333", fontSize: "0.95rem", lineHeight: 1.65 }}>
-          {initialSituation}
-        </p>
-      </div>
-    );
-  }
-
-  function renderInitialSituationReferenceBar(panel: ClarificationPanel) {
-    const isRefinement = panel.kind === "refinement";
-    const refinementNumber = panel.iteration.step - 1;
-
-    if (!isRefinement || refinementNumber < 2 || !initialSituation) return null;
-
-    return (
-      <div
-        style={{
-          margin: "0 0 1.25rem 1.7rem",
-          padding: "0.7rem 0 0.85rem 0",
-          borderBottom: "1px solid #eeeae5",
-        }}
-      >
-        <div
+        <p
           style={{
-            fontSize: "0.69rem",
-            fontWeight: 700,
-            letterSpacing: "0.1em",
-            textTransform: "uppercase",
-            color: "#9a948d",
-            marginBottom: "0.35rem",
+            margin: 0,
+            color: "#333",
+            fontSize: "0.95rem",
+            lineHeight: 1.65,
+            overflowWrap: "anywhere",
+            wordBreak: "break-word",
           }}
         >
-          Initial AI issue
-        </div>
-        <p style={{ margin: 0, color: "#6f6a64", fontSize: "0.86rem", lineHeight: 1.55 }}>
-          {truncateSentence(initialSituation, 150)}
+          {initialSituation}
         </p>
       </div>
     );
@@ -680,9 +637,7 @@ export default function AIInteractionPage() {
     const plainLanguageMessage = plainLanguageByPanelId[panel.id];
 
     return (
-      <div style={{ padding: "0 0 0.1rem 0" }}>
-        {renderInitialSituationReferenceBar(panel)}
-
+      <div style={{ padding: "0 0 0.1rem 0", minWidth: 0, maxWidth: "100%" }}>
         {showYourInput && (
           <div
             style={{
@@ -691,6 +646,9 @@ export default function AIInteractionPage() {
               borderRadius: "10px",
               padding: "0.9rem 1rem",
               marginBottom: "1.5rem",
+              maxWidth: "100%",
+              minWidth: 0,
+              boxSizing: "border-box",
             }}
           >
             <h3
@@ -705,7 +663,16 @@ export default function AIInteractionPage() {
             >
               Your input
             </h3>
-            <p style={{ margin: 0, color: "#444", fontSize: "0.9rem", lineHeight: 1.6 }}>
+            <p
+              style={{
+                margin: 0,
+                color: "#444",
+                fontSize: "0.9rem",
+                lineHeight: 1.6,
+                overflowWrap: "anywhere",
+                wordBreak: "break-word",
+              }}
+            >
               {showYourInput}
             </p>
           </div>
@@ -727,7 +694,16 @@ export default function AIInteractionPage() {
             >
               Plain language
             </h3>
-            <p style={{ color: "#333", margin: 0, fontSize: "0.95rem", lineHeight: 1.7 }}>
+            <p
+              style={{
+                color: "#333",
+                margin: 0,
+                fontSize: "0.95rem",
+                lineHeight: 1.7,
+                overflowWrap: "anywhere",
+                wordBreak: "break-word",
+              }}
+            >
               {plainLanguageMessage}
             </p>
           </div>
@@ -753,7 +729,16 @@ export default function AIInteractionPage() {
           >
             Orientation
           </h3>
-          <p style={{ color: "#333", margin: 0, fontSize: "0.95rem", lineHeight: 1.65 }}>
+          <p
+            style={{
+              color: "#333",
+              margin: 0,
+              fontSize: "0.95rem",
+              lineHeight: 1.65,
+              overflowWrap: "anywhere",
+              wordBreak: "break-word",
+            }}
+          >
             {response.orientation}
           </p>
         </div>
@@ -767,6 +752,9 @@ export default function AIInteractionPage() {
               borderLeft: "3px solid #111",
               borderRadius: "0 10px 10px 0",
               marginBottom: refinementQuestions.length > 0 ? "1.25rem" : 0,
+              maxWidth: "100%",
+              minWidth: 0,
+              boxSizing: "border-box",
             }}
           >
             <h3
@@ -788,6 +776,8 @@ export default function AIInteractionPage() {
                 fontSize: "0.95rem",
                 lineHeight: 1.65,
                 fontWeight: 500,
+                overflowWrap: "anywhere",
+                wordBreak: "break-word",
               }}
             >
               {response.question}
@@ -818,9 +808,21 @@ export default function AIInteractionPage() {
                     borderRadius: "10px",
                     border: "1px solid #e7e5e4",
                     backgroundColor: "#fff",
+                    maxWidth: "100%",
+                    minWidth: 0,
+                    boxSizing: "border-box",
                   }}
                 >
-                  <p style={{ margin: 0, color: "#333", fontSize: "0.92rem", lineHeight: 1.55 }}>
+                  <p
+                    style={{
+                      margin: 0,
+                      color: "#333",
+                      fontSize: "0.92rem",
+                      lineHeight: 1.55,
+                      overflowWrap: "anywhere",
+                      wordBreak: "break-word",
+                    }}
+                  >
                     {item}
                   </p>
                 </div>
@@ -833,20 +835,14 @@ export default function AIInteractionPage() {
   }
 
   function renderCollapsiblePanel(
-    panel: ClarificationPanel,
-    isLastPanel: boolean
+    panel: ClarificationPanel
   ) {
     const open = isPanelOpen(panel.id);
-    const isLatest = panel.id === latestPanelId;
     const showYourInput =
       panel.kind === "refinement" ? panel.iteration.submittedInput : undefined;
 
     return (
-      <div
-        key={panel.id}
-        ref={isLatest ? resultRef : null}
-        style={{ marginTop: "1rem" }}
-      >
+      <div key={panel.id} style={{ marginTop: "1rem" }}>
         <CollapsibleLayer
           title={panel.title}
           summary={panel.summary}
@@ -854,7 +850,7 @@ export default function AIInteractionPage() {
           onToggle={() => togglePanel(panel.id)}
           contentClassName=""
         >
-          <div style={{ paddingBottom: isLastPanel ? "0.25rem" : "0.1rem" }}>
+          <div style={{ paddingBottom: "0.1rem" }}>
             {renderClarifyContent(panel, showYourInput)}
           </div>
         </CollapsibleLayer>
@@ -862,11 +858,34 @@ export default function AIInteractionPage() {
     );
   }
 
-  function renderClarificationPath() {
-    if (panels.length === 0 && !initialSituation) return null;
+  function renderActiveResponse(panel: ClarificationPanel) {
+    const showYourInput =
+      panel.kind === "refinement" ? panel.iteration.submittedInput : undefined;
 
     return (
-      <div style={{ marginTop: "2rem" }}>
+      <div
+        ref={panel.id === latestPanelId ? resultRef : null}
+        style={{
+          marginTop: "1rem",
+          backgroundColor: "#ffffff",
+          border: "1px solid #e7e5e4",
+          borderRadius: "16px",
+          padding: "1rem 1.25rem 0.35rem",
+          maxWidth: "100%",
+          minWidth: 0,
+          boxSizing: "border-box",
+        }}
+      >
+        {renderClarifyContent(panel, showYourInput)}
+      </div>
+    );
+  }
+
+  function renderClarificationPath() {
+    if (panels.length === 0) return null;
+
+    return (
+      <div style={{ marginTop: "2rem", minWidth: 0, maxWidth: "100%" }}>
         <h2
           style={{
             fontSize: "0.9rem",
@@ -877,25 +896,39 @@ export default function AIInteractionPage() {
         >
           Clarification path
         </h2>
-        <p style={{ fontSize: "0.84rem", color: "#7a756f", lineHeight: 1.55, margin: 0 }}>
-          The initial AI issue remains visible. Each refinement can be expanded when needed.
+        <p
+          style={{
+            fontSize: "0.84rem",
+            color: "#7a756f",
+            lineHeight: 1.55,
+            margin: 0,
+            overflowWrap: "anywhere",
+            wordBreak: "break-word",
+          }}
+        >
+          Earlier reflections can be expanded when needed, while the latest response remains visible.
         </p>
 
         {renderInitialSituationCard()}
 
-        <div
-          style={{
-            marginTop: "1rem",
-            backgroundColor: "#ffffff",
-            border: "1px solid #e7e5e4",
-            borderRadius: "16px",
-            padding: "0.35rem 1.25rem 1rem",
-          }}
-        >
-          {panels.map((panel, index) =>
-            renderCollapsiblePanel(panel, index === panels.length - 1)
-          )}
-        </div>
+        {archivedPanels.length > 0 && (
+          <div
+            style={{
+              marginTop: "1rem",
+              backgroundColor: "#ffffff",
+              border: "1px solid #e7e5e4",
+              borderRadius: "16px",
+              padding: "0.35rem 1.25rem 1rem",
+              maxWidth: "100%",
+              minWidth: 0,
+              boxSizing: "border-box",
+            }}
+          >
+            {archivedPanels.map((panel) => renderCollapsiblePanel(panel))}
+          </div>
+        )}
+
+        {activePanel && renderActiveResponse(activePanel)}
       </div>
     );
   }
@@ -914,6 +947,9 @@ export default function AIInteractionPage() {
           border: "1px solid #e7e5e4",
           borderRadius: "16px",
           padding: "1.6rem 1.25rem",
+          maxWidth: "100%",
+          minWidth: 0,
+          boxSizing: "border-box",
         }}
       >
         <div style={{ marginBottom: "0.25rem" }}>
@@ -929,7 +965,16 @@ export default function AIInteractionPage() {
           >
             Response
           </h3>
-          <p style={{ color: "#333", margin: 0, fontSize: "0.95rem", lineHeight: 1.65 }}>
+          <p
+            style={{
+              color: "#333",
+              margin: 0,
+              fontSize: "0.95rem",
+              lineHeight: 1.65,
+              overflowWrap: "anywhere",
+              wordBreak: "break-word",
+            }}
+          >
             {response.message}
           </p>
         </div>
@@ -1012,6 +1057,9 @@ export default function AIInteractionPage() {
           borderRadius: "16px",
           border: "1px solid #e7e5e4",
           padding: "1.6rem 1.25rem 1.35rem",
+          maxWidth: "100%",
+          minWidth: 0,
+          boxSizing: "border-box",
         }}
       >
         <label
@@ -1037,6 +1085,8 @@ export default function AIInteractionPage() {
           style={{
             display: "block",
             width: "100%",
+            maxWidth: "100%",
+            minWidth: 0,
             boxSizing: "border-box",
             backgroundColor: "#fafafa",
             color: "#111",
@@ -1050,6 +1100,8 @@ export default function AIInteractionPage() {
             fontFamily: "inherit",
             transition: "border-color 0.15s",
             opacity: loading ? 0.6 : 1,
+            overflowWrap: "anywhere",
+            wordBreak: "break-word",
           }}
           onFocus={(e) => { e.currentTarget.style.borderColor = "#aaa"; }}
           onBlur={(e) => { e.currentTarget.style.borderColor = "#e7e5e4"; }}
@@ -1177,7 +1229,9 @@ export default function AIInteractionPage() {
           "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif",
         color: "#111",
         width: "100%",
+        maxWidth: "100vw",
         overflowX: "hidden",
+        boxSizing: "border-box",
       }}
     >
       <div
@@ -1188,6 +1242,7 @@ export default function AIInteractionPage() {
           margin: "0 auto",
           padding: "1.5rem 1.25rem 4rem",
           overflowX: "hidden",
+          minWidth: 0,
         }}
       >
         <div style={{ marginBottom: "2rem" }}>
@@ -1237,7 +1292,7 @@ export default function AIInteractionPage() {
           See clearly before deciding what to ask AI to do.
         </h1>
 
-        <div style={{ maxWidth: "680px" }}>
+        <div style={{ maxWidth: "680px", minWidth: 0, width: "100%" }}>
           <p style={{ fontSize: "0.95rem", color: "#444", lineHeight: 1.65, margin: "0 0 0.75rem 0" }}>
             Describe the prompt, output issue, or AI-related situation as it currently appears.
           </p>
@@ -1261,6 +1316,9 @@ export default function AIInteractionPage() {
             borderRadius: "16px",
             border: "1px solid #e7e5e4",
             padding: "1.6rem 1.25rem 1.35rem",
+            maxWidth: "100%",
+            minWidth: 0,
+            boxSizing: "border-box",
           }}
         >
           <label
@@ -1286,6 +1344,8 @@ export default function AIInteractionPage() {
             style={{
               display: "block",
               width: "100%",
+              maxWidth: "100%",
+              minWidth: 0,
               boxSizing: "border-box",
               backgroundColor: "#fafafa",
               color: "#111",
@@ -1299,6 +1359,8 @@ export default function AIInteractionPage() {
               fontFamily: "inherit",
               transition: "border-color 0.15s",
               opacity: loading ? 0.6 : 1,
+              overflowWrap: "anywhere",
+              wordBreak: "break-word",
             }}
             onFocus={(e) => { e.currentTarget.style.borderColor = "#aaa"; }}
             onBlur={(e) => { e.currentTarget.style.borderColor = "#e7e5e4"; }}
@@ -1312,6 +1374,7 @@ export default function AIInteractionPage() {
               gap: "1.5rem",
               marginTop: "1rem",
               flexWrap: "wrap",
+              minWidth: 0,
             }}
           >
             <p
@@ -1322,6 +1385,7 @@ export default function AIInteractionPage() {
                 margin: 0,
                 maxWidth: "480px",
                 flex: "1 1 260px",
+                minWidth: 0,
               }}
             >
               Include the prompt, the objective, the output, or anything that may help
@@ -1341,6 +1405,8 @@ export default function AIInteractionPage() {
               borderRadius: "10px",
               color: "#8a2d2d",
               fontSize: "0.9rem",
+              overflowWrap: "anywhere",
+              wordBreak: "break-word",
             }}
           >
             {error}
@@ -1360,6 +1426,9 @@ export default function AIInteractionPage() {
               border: "1px solid #e7e5e4",
               borderRadius: "16px",
               padding: "1.6rem 1.25rem",
+              maxWidth: "100%",
+              minWidth: 0,
+              boxSizing: "border-box",
             }}
           >
             <h3

@@ -851,7 +851,6 @@ export default function ClarifyPage() {
               onToggle={() => togglePanel(panel.id)}
               title={panel.title}
               summary={panel.summary}
-              isLatest={isLatest}
             >
               {renderClarifyContent(panel, showYourInput)}
             </CollapsibleLayer>

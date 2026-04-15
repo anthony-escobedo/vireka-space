@@ -91,11 +91,11 @@ export default function CollapsibleLayer({
       */}
       <div
         className={[
-          "grid transition-all duration-300 ease-in-out",
+          "grid min-h-0 transition-all duration-300 ease-in-out",
           isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
         ].join(" ")}
       >
-        <div className="overflow-hidden">
+        <div className="min-h-0 overflow-hidden">
           {/*
             translate-y gives a physical "drop open / pull closed" feel.
             Without it the content appears to pop in rather than slide.

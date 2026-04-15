@@ -110,17 +110,8 @@ export default function CollapsibleLayer({
             ].join(" ")}
           >
             <div className="border-t border-stone-200/70 pt-4">
-
-              {isOpen && (
-                <div style={{ padding: "8px", background: "yellow", color: "black", marginBottom: "8px" }}>
-                  DEBUG: PANEL OPEN
-                </div>
-              )}
-
               {children}
-
             </div>
-              
           </div>
         </div>
       </div>

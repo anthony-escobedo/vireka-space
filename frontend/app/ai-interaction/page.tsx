@@ -476,6 +476,46 @@ export default function AIInteractionPage() {
   function handlePlainLanguage(): void {
     void submitToClarify("plain_language", "followup");
   }
+
+  function handleCopyResult(): void {
+  if (!result) return;
+
+  const text =
+    result.mode === "close" || result.mode === "plain_language"
+      ? result.message
+      : [
+          "What appears to be happening:",
+          ...result.observable,
+          "",
+          "What may be assumed:",
+          ...result.interpretive,
+          "",
+          "What may remain unclear:",
+          ...result.unknown,
+          "",
+          "What may be influencing the AI interaction:",
+          ...result.structural,
+          "",
+          "Orientation:",
+          result.orientation,
+          ...(result.question ? ["", "Clarifying question:", result.question] : []),
+          ...(
+            result.suggestedQuestions?.length
+              ? ["", "Suggested questions:", ...result.suggestedQuestions]
+              : []
+          ),
+        ].join("\n");
+
+  navigator.clipboard.writeText(text);
+}
+
+function handleStartNew(): void {
+  resetSession();
+}
+
+function handleReturnHome(): void {
+  router.push("/");
+}
   
   function handleBeginOnboarding(): void {
   window.localStorage.setItem("vireka_onboarding_accepted", "true");
@@ -502,9 +542,6 @@ function handleDismissOnboarding(): void {
       });
     }, 100);
 
-    redirectTimeoutRef.current = setTimeout(() => {
-      router.push("/");
-    }, 1800);
   }
 
   const panels = getPanels();
@@ -1460,52 +1497,12 @@ function handleDismissOnboarding(): void {
         {!isDone && renderFollowupBox()}
 
         {isDone && (
-          <div
-            ref={resultRef}
-            style={{
-              marginTop: "1.5rem",
-              backgroundColor: "#ffffff",
-              border: "1px solid #e7e5e4",
-              borderRadius: "16px",
-              padding: "1.6rem 1.25rem",
-              maxWidth: "100%",
-              minWidth: 0,
-              boxSizing: "border-box",
-            }}
-          >
-            <h3
-              style={{
-                fontSize: "1.05rem",
-                fontWeight: 600,
-                color: "#111",
-                margin: "0 0 0.5rem 0",
-              }}
-            >
-              Clarity established
-            </h3>
-            <p style={{ color: "#555", margin: "0 0 1.25rem 0", fontSize: "0.95rem", lineHeight: 1.65 }}>
-              Clear structure supports better interaction.
-            </p>
-            <button
-              type="button"
-              onClick={() => router.push("/")}
-              disabled={loading}
-              style={{
-                padding: "0.72rem 1.1rem",
-                backgroundColor: "#fff",
-                color: "#111",
-                border: "1px solid #d6d3d1",
-                borderRadius: "999px",
-                fontSize: "0.9rem",
-                fontWeight: 600,
-                cursor: loading ? "not-allowed" : "pointer",
-                opacity: loading ? 0.6 : 1,
-              }}
-            >
-              Start new situation
-            </button>
-          </div>
-        )}
+  <DoneState
+    onCopy={handleCopyResult}
+    onStartNew={handleStartNew}
+    onReturnHome={handleReturnHome}
+  />
+)}
       </div>
     </main>
   </>

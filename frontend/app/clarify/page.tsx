@@ -480,8 +480,8 @@ export default function ClarifyPage() {
   }
 
   function handleDismissOnboarding(): void {
-    setShowOnboarding(false);
-  }  
+  router.push("/");
+}
   function handleDone(): void {
     if (loading || !result) return;
     setIsDone(true);

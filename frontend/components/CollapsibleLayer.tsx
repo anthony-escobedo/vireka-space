@@ -110,8 +110,11 @@ export default function CollapsibleLayer({
             ].join(" ")}
           >
             <div className="border-t border-stone-200/70 pt-4">
+
               {children}
+
             </div>
+              
           </div>
         </div>
       </div>

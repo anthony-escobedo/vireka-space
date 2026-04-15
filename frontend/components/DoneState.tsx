@@ -6,12 +6,14 @@ type DoneStateProps = {
   onCopy: () => void;
   onNew: () => void;
   onHome: () => void;
+  copyLabel?: string;
 };
 
 export default function DoneState({
   onCopy,
   onNew,
   onHome,
+  copyLabel = "Copy result",
 }: DoneStateProps) {
   return (
     <div
@@ -73,7 +75,7 @@ export default function DoneState({
             whiteSpace: "nowrap",
           }}
         >
-          Copy result
+          {copyLabel}
         </button>
 
         <button

@@ -6,7 +6,7 @@ import Link from "next/link";
 
 import CollapsibleLayer from "../../components/CollapsibleLayer";
 import OnboardingModal from "../../components/OnboardingModal";
-import DoneState from "@/components/DoneState";
+import DoneState from "../../components/DoneState";
 
 declare global {
   interface Window {

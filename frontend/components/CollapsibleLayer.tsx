@@ -25,8 +25,8 @@ export default function CollapsibleLayer({
     <div
       className={[
         "rounded-2xl border border-stone-200/80 bg-white",
-        "transition-[border-color,background-color,box-shadow] duration-300",
         "shadow-[0_1px_2px_rgba(0,0,0,0.02)]",
+        "transition-[border-color,background-color,box-shadow] duration-200",
         isOpen ? "border-stone-300/80" : "hover:border-stone-300/70",
         className,
       ].join(" ")}
@@ -60,7 +60,7 @@ export default function CollapsibleLayer({
           aria-hidden="true"
           className={[
             "mt-[3px] inline-flex h-5 w-5 shrink-0 items-center justify-center",
-            "text-stone-400 transition-transform duration-300 ease-in-out",
+            "text-stone-400 transition-transform duration-200",
             isOpen ? "rotate-90" : "rotate-0",
           ].join(" ")}
         >
@@ -82,26 +82,19 @@ export default function CollapsibleLayer({
         </span>
       </button>
 
-      <div
-        className={[
-          "overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out",
-          isOpen ? "max-h-[1200px] opacity-100" : "max-h-0 opacity-0",
-        ].join(" ")}
-      >
-        <div
-          className={[
-            "px-4 pb-4 sm:px-5 sm:pb-5",
-            "text-[0.95rem] leading-7 text-neutral-700",
-            "transition-transform duration-300 ease-in-out",
-            isOpen ? "translate-y-0" : "-translate-y-2",
-            contentClassName,
-          ].join(" ")}
-        >
-          <div className="border-t border-stone-200/70 pt-4">
+      {isOpen ? (
+        <div className="px-4 pb-4 sm:px-5 sm:pb-5">
+          <div
+            className={[
+              "border-t border-stone-200/70 pt-4",
+              "text-[0.95rem] leading-7 text-neutral-700",
+              contentClassName,
+            ].join(" ")}
+          >
             {children}
           </div>
         </div>
-      </div>
+      ) : null}
     </div>
   );
 }

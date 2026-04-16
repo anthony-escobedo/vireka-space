@@ -59,13 +59,20 @@ type ClarifyResponse = {
   question?: string;
   suggestedQuestions?: string[];
 };
+type IntegratedViewResponse = {
+  mode: "integrated_view";
+  message: string;
+};
 
 type CloseResponse = {
   mode: "close";
   message: string;
 };
 
-type VirekaResponse = ClarifyResponse | CloseResponse;
+type VirekaResponse =
+  | ClarifyResponse
+  | IntegratedViewResponse
+  | CloseResponse;
 
 type ClarificationIteration = {
   id: string;
@@ -447,7 +454,7 @@ export default function AIInteractionPage() {
   void submitToClarify(
     "integrated_view",
     "followup",
-    "" // no new input required
+    ""
   );
 }
   
@@ -1219,6 +1226,27 @@ function handleDismissOnboarding(): void {
             >
               {loading ? "Clarifying…" : "Clarify"}
             </button>
+
+            <button
+               type="button"
+                onClick={handleIntegratedView}
+                disabled={loading || !lastClarifyResult}
+                style={{
+                flexShrink: 0,
+                padding: "0.7rem 1.15rem",
+                backgroundColor: "#fff",
+                color: "#111",
+                border: "1px solid #d6d3d1",
+                borderRadius: "999px",
+                fontSize: "0.9rem",
+                fontWeight: 600,
+                cursor: loading || !lastClarifyResult ? "not-allowed" : "pointer",
+                whiteSpace: "nowrap",
+                opacity: loading || !lastClarifyResult ? 0.6 : 1,
+  }}
+>
+  Integrated View
+</button>
 
             <button
               type="button"

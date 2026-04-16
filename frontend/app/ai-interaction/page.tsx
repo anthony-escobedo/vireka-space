@@ -890,32 +890,45 @@ function handleDismissOnboarding(): void {
   }
 
   function renderCollapsiblePanel(
-    panel: ClarificationPanel
-  ) {
-    const open = isPanelOpen(panel.id);
-    const showYourInput =
-      panel.kind === "refinement" ? panel.iteration.submittedInput : undefined;
+  panel: ClarificationPanel
+) {
+  const open = isPanelOpen(panel.id);
+  const showYourInput =
+    panel.kind === "refinement" ? panel.iteration.submittedInput : undefined;
 
-    return (
-      <div key={panel.id} style={{ marginTop: "1rem" }}>
-        <CollapsibleLayer
-          title={panel.title}
-          summary={panel.summary}
-          isOpen={open}
-          onToggle={() => togglePanel(panel.id)}
-          contentClassName=""
-        >
-          {open ? (
-            <div style={{ paddingBottom: "0.1rem" }}>
-              {renderClarifyContent(panel, showYourInput)}
-            </div>
-          ) : null}
-        </CollapsibleLayer>
-      </div>
-    );
-  }
+  return (
+    <div key={panel.id} style={{ marginTop: "1rem" }}>
+      <CollapsibleLayer
+        title={panel.title}
+        summary={panel.summary}
+        isOpen={open}
+        onToggle={() => togglePanel(panel.id)}
+        contentClassName=""
+      >
+        {open ? (
+          <div style={{ paddingBottom: "0.1rem" }}>
+            {renderClarifyContent(panel, showYourInput)}
+          </div>
+        ) : null}
+      </CollapsibleLayer>
+    </div>
+  );
+}
 
-  function renderActiveResponse(panel: ClarificationPanel) {
+function renderIterationDivider() {
+  return (
+    <div
+      aria-hidden="true"
+      style={{
+        marginTop: "1.75rem",
+        paddingTop: "1.75rem",
+        borderTop: "1px solid rgba(231, 229, 228, 0.9)",
+      }}
+    />
+  );
+}
+
+function renderActiveResponse(panel: ClarificationPanel) {
     const showYourInput =
       panel.kind === "refinement" ? panel.iteration.submittedInput : undefined;
 
@@ -969,23 +982,33 @@ function handleDismissOnboarding(): void {
         {renderInitialSituationCard()}
 
         {archivedPanels.length > 0 && (
-          <div
-            style={{
-              marginTop: "1rem",
-              backgroundColor: "#ffffff",
-              border: "1px solid #e7e5e4",
-              borderRadius: "16px",
-              padding: "0.35rem 1.25rem 1rem",
-              maxWidth: "100%",
-              minWidth: 0,
-              boxSizing: "border-box",
-            }}
-          >
-            {archivedPanels.map((panel) => renderCollapsiblePanel(panel))}
-          </div>
-        )}
+  <div
+    style={{
+      marginTop: "1rem",
+      backgroundColor: "#ffffff",
+      border: "1px solid #e7e5e4",
+      borderRadius: "16px",
+      padding: "0.35rem 1.25rem 1rem",
+      maxWidth: "100%",
+      minWidth: 0,
+      boxSizing: "border-box",
+    }}
+  >
+    {archivedPanels.map((panel, index) => (
+      <div key={panel.id}>
+        {index > 0 && renderIterationDivider()}
+        {renderCollapsiblePanel(panel)}
+      </div>
+    ))}
+  </div>
+)}
 
-        {activePanel && renderActiveResponse(activePanel)}
+        {activePanel && (
+  <>
+    {archivedPanels.length > 0 && renderIterationDivider()}
+    {renderActiveResponse(activePanel)}
+  </>
+)}
       </div>
     );
   }

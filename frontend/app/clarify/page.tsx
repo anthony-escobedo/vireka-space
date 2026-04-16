@@ -1435,105 +1435,96 @@ function handleDone(): void {
           </p>
         </div>
 
-        <div
-          style={{
-            borderTop: "1px solid #e7e5e4",
-            marginTop: "2.25rem",
-            marginBottom: "2.25rem",
-          }}
-        />
-
-        <div
-          style={{
-            backgroundColor: "#ffffff",
-            borderRadius: "16px",
-            border: "1px solid #e7e5e4",
-            padding: "1.6rem 1.25rem 1.35rem",
-            maxWidth: "100%",
-            minWidth: 0,
-            boxSizing: "border-box",
-          }}
-        >
-          {!hasClarificationHistory && (
-<>
-  <label
-    htmlFor="clarify-input"
+        {!hasClarificationHistory && (
+  <div
     style={{
-      display: "block",
-      fontSize: "0.875rem",
-      fontWeight: 600,
-      color: "#111",
-      marginBottom: "0.875rem",
-    }}
-  >
-    Situation
-  </label>
-
-  <textarea
-    ref={topInputRef}
-    id="clarify-input"
-    value={topInput}
-    onChange={(e) => setTopInput(e.target.value)}
-    disabled={loading}
-    placeholder="Example: The situation suggests a need for action, but the factors shaping the outcome are not yet clear."
-    rows={8}
-    style={{
-      display: "block",
-      width: "100%",
+      backgroundColor: "#ffffff",
+      borderRadius: "16px",
+      border: "1px solid #e7e5e4",
+      padding: "1.6rem 1.25rem 1.35rem",
       maxWidth: "100%",
       minWidth: 0,
       boxSizing: "border-box",
-      backgroundColor: "#fafafa",
-      color: "#111",
-      border: "1px solid #e7e5e4",
-      borderRadius: "10px",
-      padding: "1rem 1.125rem",
-      fontSize: "0.925rem",
-      lineHeight: 1.65,
-      resize: "vertical",
-      outline: "none",
-      fontFamily: "inherit",
-      transition: "border-color 0.15s",
-      opacity: loading ? 0.6 : 1,
-      overflowWrap: "anywhere",
-      wordBreak: "break-word",
-    }}
-    onFocus={(e) => {
-      e.currentTarget.style.borderColor = "#aaa";
-    }}
-    onBlur={(e) => {
-      e.currentTarget.style.borderColor = "#e7e5e4";
-    }}
-  />
-
-  <div
-    style={{
-      display: "flex",
-      alignItems: "flex-end",
-      justifyContent: "space-between",
-      gap: "1.5rem",
-      marginTop: "1rem",
-      flexWrap: "wrap",
-      minWidth: 0,
     }}
   >
-    <p
+    <label
+      htmlFor="clarify-input"
       style={{
-        fontSize: "0.8rem",
-        color: "#888",
-        lineHeight: 1.55,
-        margin: 0,
-        maxWidth: "480px",
-        flex: "1 1 260px",
+        display: "block",
+        fontSize: "0.875rem",
+        fontWeight: 600,
+        color: "#111",
+        marginBottom: "0.875rem",
+      }}
+    >
+      Situation
+    </label>
+
+    <textarea
+      ref={topInputRef}
+      id="clarify-input"
+      value={topInput}
+      onChange={(e) => setTopInput(e.target.value)}
+      disabled={loading}
+      placeholder="Example: The situation suggests a need for action, but the factors shaping the outcome are not yet clear."
+      rows={8}
+      style={{
+        display: "block",
+        width: "100%",
+        maxWidth: "100%",
+        minWidth: 0,
+        boxSizing: "border-box",
+        backgroundColor: "#fafafa",
+        color: "#111",
+        border: "1px solid #e7e5e4",
+        borderRadius: "10px",
+        padding: "1rem 1.125rem",
+        fontSize: "0.925rem",
+        lineHeight: 1.65,
+        resize: "vertical",
+        outline: "none",
+        fontFamily: "inherit",
+        transition: "border-color 0.15s",
+        opacity: loading ? 0.6 : 1,
+        overflowWrap: "anywhere",
+        wordBreak: "break-word",
+      }}
+      onFocus={(e) => {
+        e.currentTarget.style.borderColor = "#aaa";
+      }}
+      onBlur={(e) => {
+        e.currentTarget.style.borderColor = "#e7e5e4";
+      }}
+    />
+
+    <div
+      style={{
+        display: "flex",
+        alignItems: "flex-end",
+        justifyContent: "space-between",
+        gap: "1.5rem",
+        marginTop: "1rem",
+        flexWrap: "wrap",
         minWidth: 0,
       }}
     >
-      Include the situation as it currently appears, even if interpretation or uncertainty are present.
-    </p>
+      <p
+        style={{
+          fontSize: "0.8rem",
+          color: "#888",
+          lineHeight: 1.55,
+          margin: 0,
+          maxWidth: "480px",
+          flex: "1 1 260px",
+          minWidth: 0,
+        }}
+      >
+        Include the situation as it currently appears, even if interpretation or uncertainty are present.
+      </p>
 
-    {renderTopActionRow()}
+      {renderTopActionRow()}
+    </div>
   </div>
-</>
 )}
         </div>
 

@@ -1237,27 +1237,6 @@ function handleDismissOnboarding(): void {
             </button>
 
             <button
-               type="button"
-                onClick={handleIntegratedView}
-                disabled={loading || !lastClarifyResult}
-                style={{
-                flexShrink: 0,
-                padding: "0.7rem 1.15rem",
-                backgroundColor: "#fff",
-                color: "#111",
-                border: "1px solid #d6d3d1",
-                borderRadius: "999px",
-                fontSize: "0.9rem",
-                fontWeight: 600,
-                cursor: loading || !lastClarifyResult ? "not-allowed" : "pointer",
-                whiteSpace: "nowrap",
-                opacity: loading || !lastClarifyResult ? 0.6 : 1,
-  }}
->
-  Integrated View
-</button>
-
-            <button
               type="button"
               onClick={handleDone}
               disabled={isDoneDisabled}

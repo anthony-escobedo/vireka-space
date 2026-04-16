@@ -465,31 +465,36 @@ export default function AIInteractionPage() {
   function handleCopyResult(): void {
   if (!result) return;
 
-  const text =
-    result.mode === "close"
-      ? result.message
-      : [
-          "What appears to be happening:",
-          ...result.observable,
-          "",
-          "What may be assumed:",
-          ...result.interpretive,
-          "",
-          "What may remain unclear:",
-          ...result.unknown,
-          "",
-          "What may be influencing the AI interaction:",
-          ...result.structural,
-          ...(result.orientation.trim()
-            ? ["", result.orientation.trim()]
-            : []),
-          ...(result.question ? ["", "Clarifying question:", result.question] : []),
-          ...(
-            result.suggestedQuestions?.length
-              ? ["", "Suggested questions:", ...result.suggestedQuestions]
-              : []
-          ),
-        ].join("\n");
+  let text = "";
+
+  if (result.mode === "close") {
+    text = result.message;
+  } else if (result.mode === "integrated_view") {
+    text = result.message;
+  } else {
+    text = [
+      "What appears to be happening:",
+      ...result.observable,
+      "",
+      "What may be assumed:",
+      ...result.interpretive,
+      "",
+      "What may remain unclear:",
+      ...result.unknown,
+      "",
+      "What may be influencing the AI interaction:",
+      ...result.structural,
+      ...(result.orientation.trim()
+        ? ["", result.orientation.trim()]
+        : []),
+      ...(result.question ? ["", "Clarifying question:", result.question] : []),
+      ...(
+        result.suggestedQuestions?.length
+          ? ["", "Suggested questions:", ...result.suggestedQuestions]
+          : []
+      ),
+    ].join("\n");
+  }
 
   const resetLabel = () => {
     if (copyResetTimeoutRef.current) {

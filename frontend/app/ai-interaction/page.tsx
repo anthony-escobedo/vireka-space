@@ -842,7 +842,7 @@ function handleDismissOnboarding(): void {
                 fontWeight: 600,
                 letterSpacing: "0.04em",
                 color: "#8e8a84",
-                opacity: 0.68,
+                opacity: 0.75,
                 margin: 0,
                 whiteSpace: "nowrap",
               }}

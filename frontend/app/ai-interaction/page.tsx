@@ -42,7 +42,7 @@ declare global {
   }
 }
 
-type RequestAction = "clarify";
+type RequestAction = "clarify" | "integrated_view";
 
 type ConversationTurn = {
   role: "user" | "assistant";
@@ -441,6 +441,16 @@ export default function AIInteractionPage() {
     void submitToClarify("clarify", source);
   }
 
+  function handleIntegratedView(): void {
+  if (!lastClarifyResult) return;
+
+  void submitToClarify(
+    "integrated_view",
+    "followup",
+    "" // no new input required
+  );
+}
+  
   function handleCopyResult(): void {
   if (!result) return;
 

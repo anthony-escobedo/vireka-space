@@ -25,66 +25,66 @@ export default function HomePage() {
         }}
       >
         <div
-  style={{
-    maxWidth: "1100px",
-    margin: "0 auto",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    gap: "12px",
-    flexWrap: "wrap",
-    width: "100%",
-    boxSizing: "border-box",
-  }}
->
+          style={{
+            maxWidth: "1100px",
+            margin: "0 auto",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: "12px",
+            flexWrap: "wrap",
+            width: "100%",
+            boxSizing: "border-box",
+          }}
+        >
           <Link
-  href="/"
-  style={{
-    fontSize: "18px",
-    fontWeight: 650,
-    letterSpacing: "-0.015em",
-    color: "#000",
-    textDecoration: "none",
-    display: "inline-block",
-    whiteSpace: "nowrap",
-    flexShrink: 0,
-  }}
->
-  VIREKA Space
-</Link>
+            href="/"
+            style={{
+              fontSize: "18px",
+              fontWeight: 650,
+              letterSpacing: "-0.015em",
+              color: "#000",
+              textDecoration: "none",
+              display: "inline-block",
+              whiteSpace: "nowrap",
+              flexShrink: 0,
+            }}
+          >
+            VIREKA Space
+          </Link>
 
           <nav
-  style={{
-    display: "flex",
-    gap: "10px",
-    fontSize: "13px",
-    flexWrap: "wrap",
-    justifyContent: "flex-start",
-    width: "100%",
-    maxWidth: "100%",
-  }}
->
-  <Link
-    href="/about"
-    style={{ color: "#222", textDecoration: "none" }}
-  >
-    About
-  </Link>
+            style={{
+              display: "flex",
+              gap: "10px",
+              fontSize: "13px",
+              flexWrap: "wrap",
+              justifyContent: "flex-start",
+              width: "100%",
+              maxWidth: "100%",
+            }}
+          >
+            <Link
+              href="/about"
+              style={{ color: "#222", textDecoration: "none" }}
+            >
+              About
+            </Link>
 
-  <Link
-    href="/clarify"
-    style={{ color: "#222", textDecoration: "none" }}
-  >
-    Clarify
-  </Link>
+            <Link
+              href="/clarify"
+              style={{ color: "#222", textDecoration: "none" }}
+            >
+              Clarify
+            </Link>
 
-  <Link
-    href="/ai-interaction"
-    style={{ color: "#222", textDecoration: "none" }}
-  >
-    AI Interaction
-  </Link>
-</nav>
+            <Link
+              href="/ai-interaction"
+              style={{ color: "#222", textDecoration: "none" }}
+            >
+              AI Interaction
+            </Link>
+          </nav>
         </div>
       </header>
 
@@ -158,41 +158,41 @@ export default function HomePage() {
             }}
           >
             <Link
-  href="/clarify"
-  style={{
-    padding: "16px 26px",
-    fontSize: "16px",
-    fontWeight: 600,
-    borderRadius: "999px",
-    border: "1px solid #111",
-    backgroundColor: "#111",
-    color: "#fff",
-    textDecoration: "none",
-    minWidth: "210px",
-    display: "inline-block",
-    textAlign: "center",
-  }}
->
-  Clarify a situation
-</Link>
+              href="/clarify"
+              style={{
+                padding: "16px 26px",
+                fontSize: "16px",
+                fontWeight: 600,
+                borderRadius: "999px",
+                border: "1px solid #111",
+                backgroundColor: "#111",
+                color: "#fff",
+                textDecoration: "none",
+                minWidth: "210px",
+                display: "inline-block",
+                textAlign: "center",
+              }}
+            >
+              Clarify a situation
+            </Link>
             <Link
-  href="/ai-interaction"
-  style={{
-    padding: "16px 26px",
-    fontSize: "16px",
-    fontWeight: 600,
-    borderRadius: "999px",
-    border: "1px solid #d7d7cf",
-    backgroundColor: "#fff",
-    color: "#111",
-    textDecoration: "none",
-    minWidth: "210px",
-    display: "inline-block",
-    textAlign: "center",
-  }}
->
-  AI interaction
-</Link>
+              href="/ai-interaction"
+              style={{
+                padding: "16px 26px",
+                fontSize: "16px",
+                fontWeight: 600,
+                borderRadius: "999px",
+                border: "1px solid #d7d7cf",
+                backgroundColor: "#fff",
+                color: "#111",
+                textDecoration: "none",
+                minWidth: "210px",
+                display: "inline-block",
+                textAlign: "center",
+              }}
+            >
+              AI interaction
+            </Link>
           </div>
 
           <div
@@ -210,7 +210,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      
       <section
         id="about"
         style={{
@@ -253,7 +252,7 @@ export default function HomePage() {
               }}
             >
               VIREKA Space helps clarify how situations are being understood
-              before conclusions form.
+              before conclusions guide response.
             </p>
 
             <p
@@ -289,8 +288,8 @@ export default function HomePage() {
                 margin: "0 0 28px 0",
               }}
             >
-              When these are clearer, decisions, conversations, and AI prompts
-              begin from a more stable starting point.
+              When these become clearer, decisions, conversations, and AI
+              prompts begin from a more stable starting point.
             </p>
 
             <h3
@@ -317,7 +316,7 @@ export default function HomePage() {
               <li>thinking through an important decision</li>
               <li>preparing a complex AI prompt</li>
               <li>navigating uncertainty</li>
-              <li>separating what is known from what is assumed</li>
+              <li>separating what is observed from what may be assumed</li>
               <li>identifying what information may be missing</li>
             </ul>
 

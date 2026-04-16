@@ -302,36 +302,40 @@ export default function AIInteractionPage() {
   }
 
   function formatResponseForHistory(response: VirekaResponse): string {
-    if (response.mode === "close") {
-      return response.message;
-    }
-
-    const distinctSuggestedQuestions = getDistinctSuggestedQuestions(response);
-
-    const sections = [
-      `What appears to be happening:\n${response.observable.join("\n")}`,
-      `What may be assumed:\n${response.interpretive.join("\n")}`,
-      `What may remain unclear:\n${response.unknown.join("\n")}`,
-      `What may be influencing the AI interaction:\n${response.structural.join("\n")}`,
-    ];
-
-    if (response.orientation.trim()) {
-      sections.push(response.orientation.trim());
-    }
-
-    if (response.question) {
-      sections.push(`Clarifying question:\n${response.question}`);
-    }
-
-    if (distinctSuggestedQuestions.length) {
-      sections.push(
-        `Suggested questions:\n${distinctSuggestedQuestions.join("\n")}`
-      );
-    }
-
-    return sections.join("\n\n");
+  if (response.mode === "close") {
+    return response.message;
   }
 
+  if (response.mode === "integrated_view") {
+    return response.message;
+  }
+
+  const distinctSuggestedQuestions = getDistinctSuggestedQuestions(response);
+
+  const sections = [
+    `What appears to be happening:\n${response.observable.join("\n")}`,
+    `What may be assumed:\n${response.interpretive.join("\n")}`,
+    `What may remain unclear:\n${response.unknown.join("\n")}`,
+    `What may be influencing the AI interaction:\n${response.structural.join("\n")}`,
+  ];
+
+  if (response.orientation.trim()) {
+    sections.push(response.orientation.trim());
+  }
+
+  if (response.question) {
+    sections.push(`Clarifying question:\n${response.question}`);
+  }
+
+  if (distinctSuggestedQuestions.length) {
+    sections.push(
+      `Suggested questions:\n${distinctSuggestedQuestions.join("\n")}`
+    );
+  }
+
+  return sections.join("\n\n");
+}
+  
   async function submitToClarify(
     action: RequestAction,
     source: "top" | "followup",

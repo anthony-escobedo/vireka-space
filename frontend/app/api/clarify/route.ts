@@ -3,8 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-type ResponseMode = "clarify" | "plain_language" | "close";
-type RequestAction = "clarify" | "plain_language";
+type ResponseMode = "clarify" | "integrated_view" | "close";
+type RequestAction = "clarify" | "integrated_view";
 type RequestContext = "clarify" | "ai-interaction";
 
 type ConversationTurn = {
@@ -23,8 +23,8 @@ type ClarifyResponse = {
   suggestedQuestions?: string[];
 };
 
-type PlainLanguageResponse = {
-  mode: "plain_language";
+type IntegratedViewResponse = {
+  mode: "integrated_view";
   message: string;
 };
 
@@ -35,7 +35,7 @@ type CloseResponse = {
 
 type VirekaResponse =
   | ClarifyResponse
-  | PlainLanguageResponse
+  | IntegratedViewResponse
   | CloseResponse;
 
 type VirekaRequest = {
@@ -184,7 +184,7 @@ Closure behavior:
 - Do not reopen interpretation unnecessarily.
 
 Integrated view behavior:
-- When the integrated-view mode is requested, synthesize the structural elements into a coherent description of how the situation currently appears when observations, assumptions, unknowns, and influences are considered together.
+- When integrated-view mode is requested, synthesize the structural elements into a coherent description of how the situation currently appears when observations, assumptions, unknowns, and influences are considered together.
 - This integrated view may also provide orientation to the situation by indicating how interpretation may be shaping perception, pressure, constraint, or perceived necessity.
 - Do not simply restate or paraphrase bullet points.
 - Do not repeat section labels.
@@ -197,7 +197,7 @@ Integrated view behavior:
 
 Output modes:
 1. clarify
-2. plain_language
+2. integrated_view
 3. close
 
 Return ONLY valid JSON matching one of the allowed response shapes.
@@ -227,19 +227,24 @@ Rules for mode "clarify":
 - do not use second-person references
 - do not use third-person references such as "the user"
 
-For mode "plain_language", use:
+For mode "integrated_view", use:
 {
-  "mode": "plain_language",
+  "mode": "integrated_view",
   "message": "..."
 }
 
-Rules for mode "plain_language":
-- message should function as an integrated view
-- message should be fluid, coherent, and reflective
-- message should not sound like bullet points turned into sentences
-- message should not repeat the orientation verbatim
-- message should not introduce new claims
+Rules for mode "integrated_view":
+- message should synthesize observable, interpretive, unknown, and structural elements into a coherent structural meaning
+- message should not restate bullet points
+- message should not function as a summary
+- message should express the overall orientation that becomes visible when the elements are considered together
 - message should remain neutral and observational
+- message should not introduce new analysis
+- message should not provide advice
+- message should not prescribe action
+- avoid second-person phrasing
+- avoid referring to "the user"
+- the goal is structural synthesis, not simplification
 
 For mode "close", use:
 {
@@ -403,13 +408,13 @@ function validateResponse(data: unknown): VirekaResponse {
     return validateClarifyResponse(data);
   }
 
-  if (data.mode === "plain_language") {
+  if (data.mode === "integrated_view") {
     if (!isNonEmptyString(data.message)) {
-      throw new Error("Plain language message required");
+      throw new Error("Integrated view message required");
     }
 
     return {
-      mode: "plain_language",
+      mode: "integrated_view",
       message: normalizeWhitespace(data.message),
     };
   }
@@ -451,7 +456,7 @@ Situation:
 ${input}`;
 }
 
-function buildPlainLanguageUserMessage(
+function buildIntegratedViewUserMessage(
   latestResult: ClarifyResponse,
   context: RequestContext
 ): string {
@@ -506,7 +511,7 @@ type ClarifySection =
   | "orientation"
   | "question"
   | "suggested_question"
-  | "plain_language"
+  | "integrated_view"
   | "close";
 
 function containsDisallowedFraming(text: string): boolean {
@@ -581,7 +586,7 @@ function fallbackForSection(section: ClarifySection): string {
       return "Which specific part of the situation remains least established?";
     case "suggested_question":
       return "Which part of the situation is directly observable?";
-    case "plain_language":
+    case "integrated_view":
       return "The situation may become easier to follow by seeing how observations, assumptions, unknowns, and influences fit together.";
     case "close":
       return "Acknowledged. A new situation can be started whenever needed.";
@@ -660,10 +665,10 @@ function enforceNeutralResponse(response: VirekaResponse): VirekaResponse {
     };
   }
 
-  if (response.mode === "plain_language") {
+  if (response.mode === "integrated_view") {
     return {
-      mode: "plain_language",
-      message: neutralizeTextBySection(response.message, "plain_language"),
+      mode: "integrated_view",
+      message: neutralizeTextBySection(response.message, "integrated_view"),
     };
   }
 
@@ -678,7 +683,7 @@ export async function POST(req: NextRequest) {
     const body = (await req.json()) as VirekaRequest;
 
     const action: RequestAction =
-      body.action === "plain_language" ? "plain_language" : "clarify";
+      body.action === "integrated_view" ? "integrated_view" : "clarify";
 
     const context: RequestContext =
       body.context === "ai-interaction" ? "ai-interaction" : "clarify";
@@ -691,9 +696,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Input required" }, { status: 400 });
     }
 
-    if (action === "plain_language" && !latestResult) {
+    if (action === "integrated_view" && !latestResult) {
       return NextResponse.json(
-        { error: "A prior clarification result is required for plain language." },
+        { error: "A prior clarification result is required for integrated view." },
         { status: 400 }
       );
     }
@@ -706,8 +711,8 @@ export async function POST(req: NextRequest) {
     }
 
     const userMessage =
-      action === "plain_language"
-        ? buildPlainLanguageUserMessage(
+      action === "integrated_view"
+        ? buildIntegratedViewUserMessage(
             latestResult as ClarifyResponse,
             context
           )

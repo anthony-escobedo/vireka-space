@@ -2,463 +2,244 @@ import Link from "next/link";
 
 export default function AboutPage() {
   return (
-    <main
+    <div
       style={{
         minHeight: "100vh",
         backgroundColor: "#f7f7f2",
-        overflowX: "hidden",
-        width: "100%",
         color: "#111111",
         fontFamily:
           'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+        width: "100%",
+        overflowX: "hidden",
       }}
     >
-      <header
+      <main
         style={{
           width: "100%",
-          padding: "20px 24px",
-          position: "sticky",
-          top: 0,
-          backgroundColor: "rgba(247,247,242,0.92)",
-          backdropFilter: "blur(8px)",
-          borderBottom: "1px solid rgba(0,0,0,0.05)",
+          maxWidth: "640px",
+          margin: "0 auto",
+          padding: "2rem 1.25rem 2.75rem",
+          lineHeight: 1.65,
+          boxSizing: "border-box",
         }}
       >
-        <div
-  style={{
-    maxWidth: "1100px",
-    margin: "0 auto",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    gap: "12px",
-    flexWrap: "wrap",
-    width: "100%",
-    boxSizing: "border-box",
-  }}
->
+        <div style={{ marginBottom: "1.5rem" }}>
           <Link
-  href="/"
-  style={{
-    fontSize: "18px",
-    fontWeight: 650,
-    letterSpacing: "-0.015em",
-    color: "#000",
-    textDecoration: "none",
-    display: "inline-block",
-    whiteSpace: "nowrap",
-    flexShrink: 0,
-  }}
->
-  VIREKA Space
-</Link>
-
-          <nav
-  style={{
-    display: "flex",
-    gap: "10px",
-    fontSize: "13px",
-    flexWrap: "wrap",
-    justifyContent: "flex-start",
-    width: "100%",
-    maxWidth: "100%",
-  }}
->
-  <Link
-    href="/about"
-    style={{ color: "#222", textDecoration: "none" }}
-  >
-    About
-  </Link>
-
-  <Link
-    href="/clarify"
-    style={{ color: "#222", textDecoration: "none" }}
-  >
-    Clarify
-  </Link>
-
-  <Link
-    href="/ai-interaction"
-    style={{ color: "#222", textDecoration: "none" }}
-  >
-    AI Interaction
-  </Link>
-</nav>
+            href="/"
+            style={{
+              color: "#444",
+              textDecoration: "none",
+              fontSize: "0.95rem",
+            }}
+          >
+            ← Back to home
+          </Link>
         </div>
-      </header>
 
-      <section
-        style={{
-          minHeight: "calc(100vh - 80px)",
-          display: "flex",
-          alignItems: "flex-start",
-          justifyContent: "center",
-          padding: "24px 24px 72px",
-        }}
-      >
-        <div
+        <h1
           style={{
-            maxWidth: "900px",
-            textAlign: "center",
+            fontSize: "1.9rem",
+            fontWeight: 600,
+            marginBottom: "0.5rem",
+            wordBreak: "break-word",
+            overflowWrap: "anywhere",
           }}
         >
-          <div
-            style={{
-              display: "inline-block",
-              padding: "8px 14px",
-              borderRadius: "999px",
-              border: "1px solid #e1e1da",
-              backgroundColor: "#ffffff",
-              fontSize: "13px",
-              fontWeight: 500,
-              letterSpacing: "0.03em",
-              marginBottom: "28px",
-              color: "#444",
-            }}
-          >
-            VIREKA SPACE
-          </div>
+          About VIREKA Space
+        </h1>
 
-          <h1
+        <p
+          style={{
+            color: "#444",
+            fontSize: "0.98rem",
+            marginBottom: "2.25rem",
+            wordBreak: "break-word",
+            overflowWrap: "anywhere",
+          }}
+        >
+          A structured approach to clarifying interpretation before decisions and
+          AI interaction occur.
+        </p>
+
+        <section style={{ marginBottom: "2.25rem" }}>
+          <h2
             style={{
-              fontSize: "clamp(2.35rem, 5.6vw, 4.4rem)",
-              lineHeight: 1.05,
-              letterSpacing: "-0.035em",
-              fontWeight: 700,
-              marginBottom: "36px",
+              fontSize: "0.95rem",
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              marginBottom: "0.75rem",
+              color: "#666",
             }}
           >
-            CLARITY BEFORE DECISION.
-            <br />
-            CLARITY BEFORE USING AI.
-          </h1>
+            Function
+          </h2>
 
           <p
             style={{
-              maxWidth: "720px",
-              margin: "0 auto",
-              fontSize: "clamp(1.05rem, 1.7vw, 1.28rem)",
-              lineHeight: 1.75,
-              color: "#2e2e2e",
-              marginBottom: "42px",
+              marginBottom: "1rem",
+              wordBreak: "break-word",
+              overflowWrap: "anywhere",
             }}
           >
-            VIREKA Space helps separate what is happening from what may be
-            assumed, so responses begin from clearer understanding.
+            VIREKA Space clarifies how situations are understood before decisions
+            are made or prompts are written.
           </p>
 
-          <div
+          <p
             style={{
-              display: "flex",
-              justifyContent: "center",
-              gap: "16px",
-              flexWrap: "wrap",
-              marginBottom: "30px",
+              marginBottom: "1rem",
+              wordBreak: "break-word",
+              overflowWrap: "anywhere",
             }}
           >
-            <Link
-  href="/clarify"
-  style={{
-    padding: "16px 26px",
-    fontSize: "16px",
-    fontWeight: 600,
-    borderRadius: "999px",
-    border: "1px solid #111",
-    backgroundColor: "#111",
-    color: "#fff",
-    textDecoration: "none",
-    minWidth: "210px",
-    display: "inline-block",
-    textAlign: "center",
-  }}
->
-  Clarify a situation
-</Link>
-            <Link
-  href="/ai-interaction"
-  style={{
-    padding: "16px 26px",
-    fontSize: "16px",
-    fontWeight: 600,
-    borderRadius: "999px",
-    border: "1px solid #d7d7cf",
-    backgroundColor: "#fff",
-    color: "#111",
-    textDecoration: "none",
-    minWidth: "210px",
-    display: "inline-block",
-    textAlign: "center",
-  }}
->
-  AI interaction
-</Link>
-          </div>
+            Most approaches focus on improving responses after conclusions have
+            already begun to form. VIREKA Space focuses on an earlier step by
+            helping distinguish what can be directly observed from what may be
+            assumed, so understanding becomes clearer before action is taken.
+          </p>
 
-          <div
+          <p
             style={{
-              fontSize: "14px",
+              marginBottom: "1rem",
+              wordBreak: "break-word",
+              overflowWrap: "anywhere",
+            }}
+          >
+            VIREKA Space helps create a more stable starting point by separating
+            observation from interpretation and identifying what remains unknown.
+            This supports decisions, conversations, and AI interactions that
+            benefit from clearer structure before conclusions are drawn.
+          </p>
+
+          <p
+            style={{
+              wordBreak: "break-word",
+              overflowWrap: "anywhere",
+            }}
+          >
+            The system does not provide advice or attempt to direct outcomes. It
+            supports clearer understanding so responses can emerge with greater
+            coherence and internal consistency.
+          </p>
+        </section>
+
+        <section style={{ marginBottom: "2.25rem" }}>
+          <h2
+            style={{
+              fontSize: "0.95rem",
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              marginBottom: "0.75rem",
               color: "#666",
-              lineHeight: 1.7,
             }}
           >
-            <div>Developed by Anthony Escobedo</div>
-            <div>
-              Based on <em>Beyond Thought: Awareness as Design Intelligence</em>
-            </div>
-          </div>
-        </div>
-      </section>
+            Relevance
+          </h2>
 
-      
-      <section
-        id="about"
-        style={{
-          padding: "0 24px 100px",
-        }}
-      >
-        <div
-          style={{
-            width: "100%",
-            maxWidth: "960px",
-            margin: "0 auto",
-          }}
-        >
-          <div
+          <p
             style={{
-              backgroundColor: "#ffffff",
-              border: "1px solid #e5e5de",
-              borderRadius: "28px",
-              padding: "42px 30px",
-              boxShadow: "0 1px 2px rgba(0,0,0,0.03)",
+              marginBottom: "1rem",
+              wordBreak: "break-word",
+              overflowWrap: "anywhere",
             }}
           >
-            <h2
-              style={{
-                fontSize: "clamp(1.7rem, 4vw, 2.4rem)",
-                lineHeight: 1.15,
-                letterSpacing: "-0.035em",
-                margin: "0 0 22px 0",
-              }}
-            >
-              WHEN INTERPRETATION BECOMES CLEARER, DECISIONS BECOME SIMPLER.
-            </h2>
+            In environments shaped by rapid information, complex decisions, and
+            increasingly capable AI systems, the quality of outcomes often
+            depends on the clarity of the starting point. When interpretation
+            forms too quickly, responses may appear confident while still
+            resting on unstable assumptions.
+          </p>
 
-            <p
-              style={{
-                fontSize: "18px",
-                lineHeight: 1.8,
-                color: "#2c2c2c",
-                margin: "0 0 22px 0",
-              }}
-            >
-              VIREKA Space helps clarify how situations are being understood
-              before conclusions form.
-            </p>
-
-            <p
-              style={{
-                fontSize: "18px",
-                lineHeight: 1.8,
-                color: "#2c2c2c",
-                margin: "0 0 14px 0",
-              }}
-            >
-              The system helps distinguish between:
-            </p>
-
-            <ul
-              style={{
-                margin: "0 0 28px 0",
-                paddingLeft: "24px",
-                fontSize: "18px",
-                lineHeight: 1.95,
-                color: "#2c2c2c",
-              }}
-            >
-              <li>what can be directly observed</li>
-              <li>what may be interpreted</li>
-              <li>what remains unknown</li>
-            </ul>
-
-            <p
-              style={{
-                fontSize: "18px",
-                lineHeight: 1.8,
-                color: "#2c2c2c",
-                margin: "0 0 28px 0",
-              }}
-            >
-              When these are clearer, decisions, conversations, and AI prompts
-              begin from a more stable starting point.
-            </p>
-
-            <h3
-              style={{
-                fontSize: "14px",
-                letterSpacing: "0.08em",
-                textTransform: "uppercase",
-                color: "#6a6a6a",
-                margin: "0 0 12px 0",
-              }}
-            >
-              Useful when
-            </h3>
-
-            <ul
-              style={{
-                margin: "0 0 28px 0",
-                paddingLeft: "24px",
-                fontSize: "18px",
-                lineHeight: 1.95,
-                color: "#2c2c2c",
-              }}
-            >
-              <li>thinking through an important decision</li>
-              <li>preparing a complex AI prompt</li>
-              <li>navigating uncertainty</li>
-              <li>separating what is known from what is assumed</li>
-              <li>identifying what information may be missing</li>
-            </ul>
-
-            <p
-              style={{
-                fontSize: "18px",
-                lineHeight: 1.8,
-                color: "#2c2c2c",
-                margin: "0 0 22px 0",
-              }}
-            >
-              The system does not provide advice.
-              <br />
-              It helps clarify understanding before responding or deciding.
-            </p>
-
-            <div
-              style={{
-                borderTop: "1px solid #ecece5",
-                paddingTop: "22px",
-                display: "grid",
-                gap: "8px",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: "18px",
-                  fontWeight: 600,
-                  letterSpacing: "-0.01em",
-                }}
-              >
-                Clarity before prompting.
-              </div>
-              <div
-                style={{
-                  fontSize: "18px",
-                  fontWeight: 600,
-                  letterSpacing: "-0.01em",
-                }}
-              >
-                Structure before response.
-              </div>
-              <div
-                style={{
-                  fontSize: "18px",
-                  fontWeight: 600,
-                  letterSpacing: "-0.01em",
-                }}
-              >
-                Understanding before decision.
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section
-        id="clarify"
-        style={{
-          padding: "0 24px 36px",
-        }}
-      >
-        <div
-          style={{
-            width: "100%",
-            maxWidth: "960px",
-            margin: "0 auto",
-          }}
-        >
-          <div
+          <p
             style={{
-              borderTop: "1px solid #e3e3db",
-              paddingTop: "28px",
+              marginBottom: "1rem",
+              wordBreak: "break-word",
+              overflowWrap: "anywhere",
             }}
           >
-            <h3
-              style={{
-                fontSize: "18px",
-                margin: "0 0 10px 0",
-              }}
-            >
-              Clarify
-            </h3>
-            <p
-              style={{
-                fontSize: "16px",
-                lineHeight: 1.75,
-                color: "#555555",
-                margin: 0,
-              }}
-            >
-              This path will help users examine a real situation by separating
-              observable facts, interpretations, and unknowns before deciding
-              how to respond.
-            </p>
-          </div>
-        </div>
-      </section>
+            Many situations feel unclear not because information is absent, but
+            because observation, interpretation, and uncertainty have not yet
+            been separated.
+          </p>
 
-      <section
-        id="ai-interaction"
-        style={{
-          padding: "0 24px 96px",
-        }}
-      >
-        <div
-          style={{
-            width: "100%",
-            maxWidth: "960px",
-            margin: "0 auto",
-          }}
-        >
-          <div
+          <p
             style={{
-              borderTop: "1px solid #e3e3db",
-              paddingTop: "28px",
+              marginBottom: "1rem",
+              wordBreak: "break-word",
+              overflowWrap: "anywhere",
             }}
           >
-            <h3
-              style={{
-                fontSize: "18px",
-                margin: "0 0 10px 0",
-              }}
-            >
-              AI Interaction
-            </h3>
-            <p
-              style={{
-                fontSize: "16px",
-                lineHeight: 1.75,
-                color: "#555555",
-                margin: 0,
-              }}
-            >
-              This path will help users shape prompts from clearer structure, so
-              interactions with AI begin from better framing rather than rushed
-              interpretation.
-            </p>
-          </div>
-        </div>
-      </section>
-    </main>
+            As AI systems increasingly participate in reasoning processes, the
+            clarity of human interpretation becomes part of the design
+            environment itself. The way situations are understood begins to
+            influence not only individual decisions, but also how prompts are
+            written, how systems are guided, and how outcomes are shaped.
+          </p>
+
+          <p
+            style={{
+              wordBreak: "break-word",
+              overflowWrap: "anywhere",
+            }}
+          >
+            Although simple to use, the approach applies across domains
+            including everyday decisions, research, policy, organizational
+            environments, and AI development, anywhere interpretation
+            influences action.
+          </p>
+        </section>
+
+        <section>
+          <h2
+            style={{
+              fontSize: "0.95rem",
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              marginBottom: "0.75rem",
+              color: "#666",
+            }}
+          >
+            Origin
+          </h2>
+
+          <p
+            style={{
+              marginBottom: "1rem",
+              wordBreak: "break-word",
+              overflowWrap: "anywhere",
+            }}
+          >
+            The ideas underlying VIREKA Space are introduced in{" "}
+            <em>Beyond Thought: Awareness as Design Intelligence</em>, which
+            explores how awareness influences reasoning, interpretation, and
+            design. The work examines how perception shapes the structure of
+            thought, and why that structure increasingly matters in human-AI
+            interaction.
+          </p>
+
+          <p
+            style={{
+              marginBottom: "1rem",
+              wordBreak: "break-word",
+              overflowWrap: "anywhere",
+            }}
+          >
+            VIREKA Space demonstrates how structured awareness can function as a
+            practical support for clearer thinking in complex environments.
+          </p>
+
+          <p
+            style={{
+              wordBreak: "break-word",
+              overflowWrap: "anywhere",
+            }}
+          >
+            Further writing explores how awareness influences interpretation,
+            and how clearer interpretation shapes reasoning, decision
+            environments, and interaction with AI systems.
+          </p>
+        </section>
+      </main>
+    </div>
   );
 }

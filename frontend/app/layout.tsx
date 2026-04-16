@@ -1,10 +1,10 @@
 import "./globals.css";
 
-3 export const metadata = {
-4   title: "VIREKA Space",
-5   description: "Clarity before decision. Clarity before prompting.",
-6   themeColor: "#F5F5F2"
-7 }
+export const metadata = {
+   title: "VIREKA Space",
+   description: "Clarity before decision. Clarity before prompting.",
+   themeColor: "#F5F5F2"
+ }
 
 export default function RootLayout({
   children,

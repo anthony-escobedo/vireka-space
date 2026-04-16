@@ -602,6 +602,7 @@ function handleDone(): void {
   const panels = getPanels();
   const archivedPanels = panels.slice(0, -1);
   const activePanel = panels.length > 0 ? panels[panels.length - 1] : null;
+  const hasClarificationHistory = iterations.length > 0;
 
   const isTopClarifyDisabled = loading || !topInput.trim();
   const isFollowupClarifyDisabled = loading || !followupInput.trim();
@@ -1453,79 +1454,87 @@ function handleDone(): void {
             boxSizing: "border-box",
           }}
         >
-          <label
-            htmlFor="clarify-input"
-            style={{
-              display: "block",
-              fontSize: "0.875rem",
-              fontWeight: 600,
-              color: "#111",
-              marginBottom: "0.875rem",
-            }}
-          >
-            Situation
-          </label>
+          {!hasClarificationHistory && (
+<>
+  <label
+    htmlFor="clarify-input"
+    style={{
+      display: "block",
+      fontSize: "0.875rem",
+      fontWeight: 600,
+      color: "#111",
+      marginBottom: "0.875rem",
+    }}
+  >
+    Situation
+  </label>
 
-            <textarea
-            ref={topInputRef}
-            id="clarify-input"
-            value={topInput}
-            onChange={(e) => setTopInput(e.target.value)}
-            disabled={loading}
-            placeholder="Example: The situation suggests a need for action, but the factors shaping the outcome are not yet fully clear."
-            rows={8}
-            style={{
-              display: "block",
-              width: "100%",
-              maxWidth: "100%",
-              minWidth: 0,
-              boxSizing: "border-box",
-              backgroundColor: "#fafafa",
-              color: "#111",
-              border: "1px solid #e7e5e4",
-              borderRadius: "10px",
-              padding: "1rem 1.125rem",
-              fontSize: "0.925rem",
-              lineHeight: 1.65,
-              resize: "vertical",
-              outline: "none",
-              fontFamily: "inherit",
-              transition: "border-color 0.15s",
-              opacity: loading ? 0.6 : 1,
-              overflowWrap: "anywhere",
-              wordBreak: "break-word",
-            }}
-            onFocus={(e) => { e.currentTarget.style.borderColor = "#aaa"; }}
-            onBlur={(e) => { e.currentTarget.style.borderColor = "#e7e5e4"; }}
-          />
+  <textarea
+    ref={topInputRef}
+    id="clarify-input"
+    value={topInput}
+    onChange={(e) => setTopInput(e.target.value)}
+    disabled={loading}
+    placeholder="Example: The situation suggests a need for action, but the factors shaping the outcome are not yet clear."
+    rows={8}
+    style={{
+      display: "block",
+      width: "100%",
+      maxWidth: "100%",
+      minWidth: 0,
+      boxSizing: "border-box",
+      backgroundColor: "#fafafa",
+      color: "#111",
+      border: "1px solid #e7e5e4",
+      borderRadius: "10px",
+      padding: "1rem 1.125rem",
+      fontSize: "0.925rem",
+      lineHeight: 1.65,
+      resize: "vertical",
+      outline: "none",
+      fontFamily: "inherit",
+      transition: "border-color 0.15s",
+      opacity: loading ? 0.6 : 1,
+      overflowWrap: "anywhere",
+      wordBreak: "break-word",
+    }}
+    onFocus={(e) => {
+      e.currentTarget.style.borderColor = "#aaa";
+    }}
+    onBlur={(e) => {
+      e.currentTarget.style.borderColor = "#e7e5e4";
+    }}
+  />
 
-          <div
-            style={{
-              display: "flex",
-              alignItems: "flex-end",
-              justifyContent: "space-between",
-              gap: "1.5rem",
-              marginTop: "1rem",
-              flexWrap: "wrap",
-              minWidth: 0,
-            }}
-          >
-            <p
-              style={{
-                fontSize: "0.8rem",
-                color: "#888",
-                lineHeight: 1.55,
-                margin: 0,
-                maxWidth: "480px",
-                flex: "1 1 260px",
-                minWidth: 0,
-              }}
-            >
-              Include the situation as it currently appears, even if interpretation or
-              uncertainty are present.
-            </p>
-            {renderTopActionRow()}
-          </div>
+  <div
+    style={{
+      display: "flex",
+      alignItems: "flex-end",
+      justifyContent: "space-between",
+      gap: "1.5rem",
+      marginTop: "1rem",
+      flexWrap: "wrap",
+      minWidth: 0,
+    }}
+  >
+    <p
+      style={{
+        fontSize: "0.8rem",
+        color: "#888",
+        lineHeight: 1.55,
+        margin: 0,
+        maxWidth: "480px",
+        flex: "1 1 260px",
+        minWidth: 0,
+      }}
+    >
+      Include the situation as it currently appears, even if interpretation or uncertainty are present.
+    </p>
+
+    {renderTopActionRow()}
+  </div>
+</>
+)}
         </div>
 
         {error && (

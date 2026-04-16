@@ -71,8 +71,7 @@ export default function OnboardingModal({
           {body ?? (
             <>
               <p style={{ margin: "0 0 0.9rem 0" }}>
-                Vireka Space helps clarify how situations are being understood
-                before conclusions form.
+                Vireka Space clarifies how situations are interpreted before conclusions guide response.
               </p>
 
               <div style={{ margin: "0 0 0.9rem 0" }}>
@@ -94,16 +93,16 @@ export default function OnboardingModal({
                     a response is being considered
                   </li>
                   <li style={{ marginBottom: "0.35rem" }}>
-                    assumptions may be present
+                    assumptions may be influencing interpretation
                   </li>
                   <li>an AI prompt needs clearer structure</li>
                 </ul>
               </div>
 
               <p style={{ margin: "0 0 0.35rem 0" }}>
-                Start with a simple description of the situation.
+                Begin with a simple description.
               </p>
-              <p style={{ margin: 0 }}>Clarity develops through structure.</p>
+              <p style={{ margin: 0 }}>Structure helps separate what is happening from what may be assumed.</p>
             </>
           )}
         </div>

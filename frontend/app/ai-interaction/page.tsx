@@ -709,24 +709,68 @@ function handleDismissOnboarding(): void {
         {renderList(response.structural, "What may be influencing the AI interaction")}
 
         {response.orientation.trim().length > 0 && (
-          <p
-            style={{
-              color: "#333",
-              margin: 0,
-              marginBottom: response.question
-                ? "1.75rem"
-                : refinementQuestions.length > 0
-                  ? "1.65rem"
-                  : 0,
-              fontSize: "0.95rem",
-              lineHeight: 1.65,
-              overflowWrap: "anywhere",
-              wordBreak: "break-word",
-            }}
-          >
-            {response.orientation}
-          </p>
-        )}
+  <div
+    style={{
+      marginBottom: response.question
+        ? "1.75rem"
+        : refinementQuestions.length > 0
+          ? "1.65rem"
+          : 0,
+      backgroundColor: "#f7f4ee",
+      border: "1px solid #ebe5db",
+      borderRadius: "14px",
+      padding: "1rem 1.1rem 1.05rem",
+      maxWidth: "100%",
+      minWidth: 0,
+      boxSizing: "border-box",
+    }}
+  >
+    <div
+      style={{
+        maxWidth: "41rem",
+      }}
+    >
+      <h3
+        style={{
+          fontSize: "0.72rem",
+          fontWeight: 700,
+          letterSpacing: "0.1em",
+          textTransform: "uppercase",
+          color: "#8e8a84",
+          margin: 0,
+        }}
+      >
+        Integrated View
+      </h3>
+
+      <p
+        style={{
+          margin: "0.3rem 0 0 0",
+          fontSize: "0.84rem",
+          lineHeight: 1.55,
+          color: "#7a756f",
+          overflowWrap: "anywhere",
+          wordBreak: "break-word",
+        }}
+      >
+        How the situation reads as a whole
+      </p>
+
+      <p
+        style={{
+          color: "#333",
+          margin: "0.9rem 0 0 0",
+          fontSize: "0.95rem",
+          lineHeight: 1.8,
+          overflowWrap: "anywhere",
+          wordBreak: "break-word",
+        }}
+      >
+        {response.orientation}
+      </p>
+    </div>
+  </div>
+)}
 
         {response.question && (
           <div

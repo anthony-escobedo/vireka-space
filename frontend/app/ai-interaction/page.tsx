@@ -915,19 +915,6 @@ function handleDismissOnboarding(): void {
   );
 }
 
-function renderIterationDivider() {
-  return (
-    <div
-      aria-hidden="true"
-      style={{
-        marginTop: "1.75rem",
-        paddingTop: "1.75rem",
-        borderTop: "1px solid rgba(231, 229, 228, 0.9)",
-      }}
-    />
-  );
-}
-
 function renderActiveResponse(panel: ClarificationPanel) {
     const showYourInput =
       panel.kind === "refinement" ? panel.iteration.submittedInput : undefined;
@@ -994,21 +981,11 @@ function renderActiveResponse(panel: ClarificationPanel) {
       boxSizing: "border-box",
     }}
   >
-    {archivedPanels.map((panel, index) => (
-      <div key={panel.id}>
-        {index > 0 && renderIterationDivider()}
-        {renderCollapsiblePanel(panel)}
-      </div>
-    ))}
+    {archivedPanels.map((panel) => renderCollapsiblePanel(panel))}
   </div>
 )}
 
-        {activePanel && (
-  <>
-    {archivedPanels.length > 0 && renderIterationDivider()}
-    {renderActiveResponse(activePanel)}
-  </>
-)}
+        {activePanel && renderActiveResponse(activePanel)}
       </div>
     );
   }

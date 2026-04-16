@@ -102,7 +102,8 @@ export default function OnboardingModal({
               <p style={{ margin: "0 0 0.35rem 0" }}>
                 Begin with a simple description.
               </p>
-              <p style={{ margin: 0 }}>Structure helps separate what is happening from what may be assumed.</p>
+              <p style={{ margin: 0 }}>The system does not search for answers. It helps clarify how situations are being understood.
+              </p>
             </>
           )}
         </div>

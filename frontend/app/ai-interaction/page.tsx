@@ -42,7 +42,7 @@ declare global {
   }
 }
 
-type RequestAction = "clarify" | "plain_language";
+type RequestAction = "clarify";
 
 type ConversationTurn = {
   role: "user" | "assistant";
@@ -60,17 +60,12 @@ type ClarifyResponse = {
   suggestedQuestions?: string[];
 };
 
-type PlainLanguageResponse = {
-  mode: "plain_language";
-  message: string;
-};
-
 type CloseResponse = {
   mode: "close";
   message: string;
 };
 
-type VirekaResponse = ClarifyResponse | PlainLanguageResponse | CloseResponse;
+type VirekaResponse = ClarifyResponse | CloseResponse;
 
 type ClarificationIteration = {
   id: string;
@@ -107,13 +102,10 @@ export default function AIInteractionPage() {
   const [iterations, setIterations] = useState<ClarificationIteration[]>([]);
   const [openPanelIds, setOpenPanelIds] = useState<string[]>([]);
   const [latestPanelId, setLatestPanelId] = useState<string | null>(null);
-  const [plainLanguageByPanelId, setPlainLanguageByPanelId] = useState<
-    Record<string, string>
-  >({});
   const [copyLabel, setCopyLabel] = useState("Copy result");
   const [showOnboarding, setShowOnboarding] = useState<boolean>(false);
   const [checkedOnboarding, setCheckedOnboarding] = useState(false);
-  
+  const pathTopRef = useRef<HTMLDivElement | null>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const resultRef = useRef<HTMLDivElement | null>(null);
   const copyResetTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -303,7 +295,7 @@ export default function AIInteractionPage() {
   }
 
   function formatResponseForHistory(response: VirekaResponse): string {
-    if (response.mode === "close" || response.mode === "plain_language") {
+    if (response.mode === "close") {
       return response.message;
     }
 
@@ -314,8 +306,11 @@ export default function AIInteractionPage() {
       `What may be assumed:\n${response.interpretive.join("\n")}`,
       `What may remain unclear:\n${response.unknown.join("\n")}`,
       `What may be influencing the AI interaction:\n${response.structural.join("\n")}`,
-      `Orientation:\n${response.orientation}`,
     ];
+
+    if (response.orientation.trim()) {
+      sections.push(response.orientation.trim());
+    }
 
     if (response.question) {
       sections.push(`Clarifying question:\n${response.question}`);
@@ -345,30 +340,17 @@ export default function AIInteractionPage() {
       return;
     }
 
-    if (action === "plain_language" && !lastClarifyResult) {
-      setError("There is nothing to restate in plain language yet.");
-      return;
-    }
-
     setLoading(true);
     setError(null);
     setIsDone(false);
 
     try {
-      const payload =
-        action === "plain_language"
-          ? {
-              action,
-              history,
-              latestResult: lastClarifyResult,
-              context: "ai-interaction",
-            }
-          : {
-              input: trimmed,
-              action,
-              history,
-              context: "ai-interaction",
-            };
+      const payload = {
+        input: trimmed,
+        action,
+        history,
+        context: "ai-interaction",
+      };
 
       const res = await fetch("/api/clarify", {
         method: "POST",
@@ -427,26 +409,6 @@ export default function AIInteractionPage() {
         }
       }
 
-      if (action === "plain_language") {
-        const assistantTurn: ConversationTurn = {
-          role: "assistant",
-          content: formatResponseForHistory(typedData),
-        };
-
-        setHistory((prev) => [...prev, assistantTurn]);
-
-        if (
-          typedData.mode === "plain_language" &&
-          latestPanelId &&
-          latestPanelId.trim()
-        ) {
-          setPlainLanguageByPanelId((prev) => ({
-            ...prev,
-            [latestPanelId]: typedData.message,
-          }));
-        }
-      }
-
       setResult(typedData);
 
       // auto-redirect when conversation is complete
@@ -460,7 +422,8 @@ export default function AIInteractionPage() {
 }
       
       setTimeout(() => {
-        resultRef.current?.scrollIntoView({
+        const target = pathTopRef.current ?? resultRef.current;
+        target?.scrollIntoView({
           behavior: "smooth",
           block: "start",
         });
@@ -478,15 +441,11 @@ export default function AIInteractionPage() {
     void submitToClarify("clarify", source);
   }
 
-  function handlePlainLanguage(): void {
-    void submitToClarify("plain_language", "followup");
-  }
-
   function handleCopyResult(): void {
   if (!result) return;
 
   const text =
-    result.mode === "close" || result.mode === "plain_language"
+    result.mode === "close"
       ? result.message
       : [
           "What appears to be happening:",
@@ -500,9 +459,9 @@ export default function AIInteractionPage() {
           "",
           "What may be influencing the AI interaction:",
           ...result.structural,
-          "",
-          "Orientation:",
-          result.orientation,
+          ...(result.orientation.trim()
+            ? ["", result.orientation.trim()]
+            : []),
           ...(result.question ? ["", "Clarifying question:", result.question] : []),
           ...(
             result.suggestedQuestions?.length
@@ -608,7 +567,6 @@ function handleDismissOnboarding(): void {
 
   const isTopClarifyDisabled = loading || !topInput.trim();
   const isFollowupClarifyDisabled = loading || !followupInput.trim();
-  const isPlainLanguageDisabled = loading || !lastClarifyResult || isDone;
   const isTopMicDisabled =
     loading || listeningTarget === "top" || listeningTarget === "followup";
   const isFollowupMicDisabled =
@@ -649,58 +607,6 @@ function handleDismissOnboarding(): void {
             </li>
           ))}
         </ul>
-      </div>
-    );
-  }
-
-  function renderPlainLanguageButton(show: boolean) {
-    if (!show) return null;
-
-    return (
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "flex-start",
-          marginBottom: "1.65rem",
-        }}
-      >
-        <button
-          type="button"
-          onClick={handlePlainLanguage}
-          disabled={isPlainLanguageDisabled}
-          style={{
-            display: "inline-flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            minWidth: "96px",
-            minHeight: "56px",
-            padding: "0.55rem 0.85rem",
-            backgroundColor: isPlainLanguageDisabled ? "#ccc" : "#111",
-            color: "#fff",
-            border: "none",
-            borderRadius: "14px",
-            fontSize: "0.76rem",
-            fontWeight: 600,
-            lineHeight: 1.05,
-            textAlign: "center",
-            cursor: isPlainLanguageDisabled ? "not-allowed" : "pointer",
-            opacity: isPlainLanguageDisabled ? 0.6 : 1,
-            transition: "background-color 0.15s",
-            letterSpacing: "-0.01em",
-          }}
-          onMouseEnter={(e) => {
-            if (!isPlainLanguageDisabled)
-              e.currentTarget.style.backgroundColor = "#333";
-          }}
-          onMouseLeave={(e) => {
-            if (!isPlainLanguageDisabled)
-              e.currentTarget.style.backgroundColor = "#111";
-          }}
-        >
-          <span>Plain</span>
-          <span>Language</span>
-        </button>
       </div>
     );
   }
@@ -755,13 +661,6 @@ function handleDismissOnboarding(): void {
   ) {
     const response = panel.iteration.response;
     const refinementQuestions = getDistinctSuggestedQuestions(response);
-    const shouldShowPlainLanguageButton =
-      panel.id === latestPanelId &&
-      response === lastClarifyResult &&
-      !plainLanguageByPanelId[panel.id];
-
-    const plainLanguageMessage = plainLanguageByPanelId[panel.id];
-
     return (
       <div style={{ padding: "0 0 0.1rem 0", minWidth: 0, maxWidth: "100%" }}>
         {showYourInput && (
@@ -804,61 +703,21 @@ function handleDismissOnboarding(): void {
           </div>
         )}
 
-        {renderPlainLanguageButton(shouldShowPlainLanguageButton)}
+        {renderList(response.observable, "What appears to be happening")}
+        {renderList(response.interpretive, "What may be assumed")}
+        {renderList(response.unknown, "What may remain unclear")}
+        {renderList(response.structural, "What may be influencing the AI interaction")}
 
-        {plainLanguageMessage ? (
-          <div style={{ marginBottom: "1.9rem" }}>
-            <h3
-              style={{
-                fontSize: "0.72rem",
-                fontWeight: 700,
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                color: "#8e8a84",
-                margin: "0 0 0.7rem 0",
-              }}
-            >
-              Plain language
-            </h3>
-            <p
-              style={{
-                color: "#333",
-                margin: 0,
-                fontSize: "0.95rem",
-                lineHeight: 1.7,
-                overflowWrap: "anywhere",
-                wordBreak: "break-word",
-              }}
-            >
-              {plainLanguageMessage}
-            </p>
-          </div>
-        ) : (
-          <>
-            {renderList(response.observable, "What appears to be happening")}
-            {renderList(response.interpretive, "What may be assumed")}
-            {renderList(response.unknown, "What may remain unclear")}
-            {renderList(response.structural, "What may be influencing the AI interaction")}
-          </>
-        )}
-
-        <div style={{ marginBottom: response.question ? "1.75rem" : 0 }}>
-          <h3
-            style={{
-              fontSize: "0.72rem",
-              fontWeight: 700,
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              color: "#8e8a84",
-              margin: "0 0 0.7rem 0",
-            }}
-          >
-            Orientation
-          </h3>
+        {response.orientation.trim().length > 0 && (
           <p
             style={{
               color: "#333",
               margin: 0,
+              marginBottom: response.question
+                ? "1.75rem"
+                : refinementQuestions.length > 0
+                  ? "1.65rem"
+                  : 0,
               fontSize: "0.95rem",
               lineHeight: 1.65,
               overflowWrap: "anywhere",
@@ -867,7 +726,7 @@ function handleDismissOnboarding(): void {
           >
             {response.orientation}
           </p>
-        </div>
+        )}
 
         {response.question && (
           <div
@@ -1013,7 +872,7 @@ function handleDismissOnboarding(): void {
     if (panels.length === 0) return null;
 
     return (
-      <div style={{ marginTop: "2rem", minWidth: 0, maxWidth: "100%" }}>
+      <div ref={pathTopRef} style={{ marginTop: "2rem", minWidth: 0, maxWidth: "100%" }}>
         <h2
           style={{
             fontSize: "0.9rem",
@@ -1062,7 +921,7 @@ function handleDismissOnboarding(): void {
   }
 
   function renderSupplementaryResult(response: VirekaResponse) {
-    if (response.mode === "clarify" || response.mode === "plain_language") {
+    if (response.mode === "clarify") {
       return null;
     }
 
@@ -1345,11 +1204,10 @@ function handleDismissOnboarding(): void {
     setIterations([]);
     setOpenPanelIds([]);
     setLatestPanelId(null);
-    setPlainLanguageByPanelId({});
   }
 
   return (
-  <>
+  <div>
     {checkedOnboarding && (
       <OnboardingModal
         isOpen={showOnboarding}
@@ -1467,6 +1325,7 @@ function handleDismissOnboarding(): void {
           }}
         />
 
+        {iterations.length === 0 && (
         <div
           style={{
             backgroundColor: "#ffffff",
@@ -1551,6 +1410,7 @@ function handleDismissOnboarding(): void {
             {renderTopActionRow()}
           </div>
         </div>
+        )}
 
         {error && (
           <div
@@ -1577,6 +1437,6 @@ function handleDismissOnboarding(): void {
           </div>
         )}
       </main>
-    </>
+    </div>
   );
 }

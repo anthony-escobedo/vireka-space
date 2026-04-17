@@ -1173,12 +1173,15 @@ function handleDone(): void {
           <div
             style={{
               display: "flex",
-              gap: "0.75rem",
+              justifyContent: "space-between",
               alignItems: "center",
-              flexWrap: "wrap",
               marginTop: "0.35rem",
+              gap: "0.75rem",
             }}
           >
+          
+            <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
+            
             <button
               type="button"
               onClick={() => startListening("followup")}
@@ -1228,6 +1231,7 @@ function handleDone(): void {
             >
               {loading ? "Clarifying…" : "Clarify"}
             </button>
+            </div>
 
             <button
               type="button"

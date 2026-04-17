@@ -1231,9 +1231,55 @@ function renderActiveResponse(panel: ClarificationPanel) {
               }}
             >
 
-                Mic button
+                    <button
+      type="button"
+      onClick={() => startListening("followup")}
+      disabled={isFollowupMicDisabled}
+      style={{
+        padding: "0.7rem 1rem",
+        backgroundColor: "#fff",
+        color: "#111",
+        border: "1px solid #d6d3d1",
+        borderRadius: "999px",
+        fontSize: "0.9rem",
+        fontWeight: 600,
+        cursor: isFollowupMicDisabled ? "not-allowed" : "pointer",
+        whiteSpace: "nowrap",
+        opacity: isFollowupMicDisabled ? 0.6 : 1,
+      }}
+    >
+      {listeningTarget === "followup" ? "Listening…" : "Mic"}
+    </button>
 
-                Clarify button
+    <button
+      type="button"
+      onClick={() => handleClarify("followup")}
+      disabled={isFollowupClarifyDisabled}
+      style={{
+        flexShrink: 0,
+        padding: "0.7rem 1.75rem",
+        backgroundColor: isFollowupClarifyDisabled ? "#ccc" : "#111",
+        color: "#fff",
+        border: "none",
+        borderRadius: "999px",
+        fontSize: "0.9rem",
+        fontWeight: 600,
+        cursor: isFollowupClarifyDisabled ? "not-allowed" : "pointer",
+        transition: "background-color 0.15s",
+        letterSpacing: "-0.01em",
+        whiteSpace: "nowrap",
+      }}
+      onMouseEnter={(e) => {
+        if (!isFollowupClarifyDisabled)
+          e.currentTarget.style.backgroundColor = "#333";
+      }}
+      onMouseLeave={(e) => {
+        if (!isFollowupClarifyDisabled)
+          e.currentTarget.style.backgroundColor = "#111";
+      }}
+    >
+      {loading ? "Clarifying…" : "Clarify"}
+    </button>
 
               </div>
 
@@ -1246,7 +1292,7 @@ function renderActiveResponse(panel: ClarificationPanel) {
                 padding: "0.7rem 1.15rem",
                 backgroundColor: "#fff",
                 color: "#111",
-                border: "1px solid #d6d3d1",
+                border: "1px solid #c9c9c6",
                 borderRadius: "999px",
                 fontSize: "0.9rem",
                 fontWeight: 600,

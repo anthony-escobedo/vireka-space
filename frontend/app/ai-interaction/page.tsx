@@ -1419,7 +1419,7 @@ function renderActiveResponse(panel: ClarificationPanel) {
           </p>
           <p style={{ fontSize: "0.95rem", color: "#444", lineHeight: 1.65, margin: 0 }}>
             VIREKA Space helps separate what is happening from what may be assumed, improving
-            the quality of interaction with AI.
+            the clarity of interaction with AI.
           </p>
         </div>
 

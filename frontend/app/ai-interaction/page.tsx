@@ -1260,6 +1260,7 @@ function renderActiveResponse(panel: ClarificationPanel) {
           </div>
         </div>
       </div>
+    </div>
     );
   }
 

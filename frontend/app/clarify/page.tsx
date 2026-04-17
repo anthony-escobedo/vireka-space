@@ -1242,7 +1242,7 @@ function handleDone(): void {
                 padding: "0.7rem 1.15rem",
                 backgroundColor: "#fff",
                 color: "#111",
-                border: "1px solid #c9c9c6;
+                border: 1px solid #c9c9c6;
                 borderRadius: "999px",
                 fontSize: "0.9rem",
                 fontWeight: 600,

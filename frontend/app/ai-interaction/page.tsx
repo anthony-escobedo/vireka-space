@@ -1213,6 +1213,9 @@ function renderActiveResponse(panel: ClarificationPanel) {
               marginTop: "0.35rem",
             }}
           >
+            
+          <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
+            
             <button
               type="button"
               onClick={() => startListening("followup")}
@@ -1262,6 +1265,7 @@ function renderActiveResponse(panel: ClarificationPanel) {
             >
               {loading ? "Clarifying…" : "Clarify"}
             </button>
+            </div>
 
             <button
               type="button"
@@ -1272,7 +1276,7 @@ function renderActiveResponse(panel: ClarificationPanel) {
                 padding: "0.7rem 1.15rem",
                 backgroundColor: "#fff",
                 color: "#111",
-                border: "1px solid #b8b5b0",
+                border: "1px solid #c9c9c6",
                 borderRadius: "999px",
                 fontSize: "0.9rem",
                 fontWeight: 600,

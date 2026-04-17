@@ -34,7 +34,7 @@ fontSize: "0.95rem",
 >
 ← Back to home </Link> </div>
 
-```
+
     <h1
       style={{
         fontSize: "1.9rem",
@@ -369,7 +369,7 @@ fontSize: "0.95rem",
     </section>
   </main>
 </div>
-```
+
 
 );
 }

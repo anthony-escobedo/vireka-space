@@ -787,18 +787,44 @@ function handleDone(): void {
               boxSizing: "border-box",
             }}
           >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "baseline",
+              justifyContent: "space-between",
+              gap: "0.75rem",
+              margin: "0 0 0.55rem 0",
+              flexWrap: "wrap",
+          }}
+          >
             <h3
-              style={{
-                fontSize: "0.72rem",
-                fontWeight: 700,
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                color: "#8e8a84",
-                margin: "0 0 0.55rem 0",
-              }}
+            style={{
+              fontSize: "0.72rem",
+              fontWeight: 700,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              color: "#8e8a84",
+              margin: 0,
+          }}
             >
               Clarifying question
             </h3>
+
+            <span
+              style={{
+              fontSize: "0.72rem",
+              fontWeight: 600,
+              letterSpacing: "0.04em",
+              color: "#8e8a84",
+              opacity: 0.85,
+              margin: 0,
+              whiteSpace: "nowrap",
+          }}
+        >
+            Optional
+          </span>
+        </div>
+            
             <p
               style={{
                 color: "#111",

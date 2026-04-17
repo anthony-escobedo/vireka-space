@@ -48,20 +48,17 @@ fontSize: "0.95rem",
     </h1>
 
     <h2
-        style={{
-            fontSize: "1.4rem",
-            fontWeight: 500,
-            letterSpacing: "-0.01em",
-            color: "#444",
-            marginTop: "0.25rem",
-            marginBottom: "2.25rem",
-        }}
-    >
-          Where interpretation becomes clear
-        </h2>
-
-    <section style={{ marginBottom: "2.25rem" }}>
-      <h2
+  style={{
+    fontSize: "1.5rem",
+    fontWeight: 500,
+    letterSpacing: "-0.01em",
+    color: "#333",
+    marginTop: "0.35rem",
+    marginBottom: "2.75rem",
+  }}
+>
+  Where interpretation becomes clear
+</h2>
         style={{
           fontSize: "0.95rem",
           letterSpacing: "0.08em",

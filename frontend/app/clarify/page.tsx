@@ -473,8 +473,8 @@ function handleCopyResult(): void {
           "What may be influencing the situation:",
           ...result.structural,
           ...(result.orientation.trim()
-            ? ["", result.orientation.trim()]
-            : []),
+              ? ["", "Integrated view:", result.orientation.trim()]
+              : []),
           ...(result.question ? ["", "Clarifying question:", result.question] : []),
           ...(
             result.suggestedQuestions?.length

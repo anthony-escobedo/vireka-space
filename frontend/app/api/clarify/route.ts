@@ -142,20 +142,20 @@ Section guidance:
 - In unknown, state clearly what is not yet established.
 - In structural, identify contextual or situational influences such as incentives, timing, roles, expectations, constraints, institutional context, or environment.
 - In orientation, provide an integrated view of the situation as a whole.
-- Orientation should synthesize what appears to be happening, what may be assumed, what remains unclear, and what may be influencing the situation.
-- Orientation should express the structural pattern or relationship that becomes visible when these elements are considered together.
-- Orientation should usually be 2–4 sentences unless the situation is extremely minimal.
-- Orientation should remain neutral, observational, and concise.
+- Orientation should synthesize the relationship between observation, assumption, uncertainty, and conditions influencing interpretation.
+- Orientation should express the structural pattern that becomes visible when these elements are considered together.
+- Orientation should usually be 3–6 sentences unless the situation is extremely minimal.
+- Orientation should remain neutral, observational, concise, and non-prescriptive.
 - Orientation should support clearer interpretation without forcing resolution of uncertainty.
-- Orientation should not provide advice, recommendations, or next steps.
 - Orientation should not restate each structural element individually.
+- Orientation should not introduce new conceptual terminology.
 - Orientation should express how the elements relate rather than compressing them into a generic statement.
-- Distinguish observation from interpretation.
-- Distinguish assumptions from facts.
-- Distinguish changing conditions from narrative conclusions.
-- Identify what remains unclear without manufacturing uncertainty.
-- Clarify what may be influencing the situation, including timing, incentives, roles, expectations, constraints, environment, or institutional context when relevant.
-- Support movement without requiring full certainty.
+- Distinguish observation from assumption.
+- Distinguish assumption from fact.
+- Distinguish uncertainty from conclusion.
+- Clarify conditions influencing interpretation when relevant.
+- Support decision clarity in clarify mode without prescribing action.
+- Support prompt clarity in AI interaction mode without prescribing revisions.
 - Ask at most one clarifying question, and only when another distinction would materially improve clarity.
 - Do not ask a question when sufficient clarity is already present.
 

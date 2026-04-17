@@ -1383,7 +1383,15 @@ function handleDone(): void {
             what may remain unclear so response can begin from clearer structure.
           </p>
         </div>
-
+        
+        <div
+            style={{
+              borderTop: "1px solid #e7e5e4",
+              marginTop: "2.25rem",
+              marginBottom: "2.25rem",
+      }}
+      />
+          
         {iterations.length === 0 && (
   <div
     style={{

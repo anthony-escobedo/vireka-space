@@ -58,6 +58,7 @@ fontSize: "0.95rem",
 >
   Where interpretation becomes clear
 </h2>
+    <section style={{ marginBottom: "2.25rem" }}>
       <h2
         style={{
           fontSize: "0.95rem",

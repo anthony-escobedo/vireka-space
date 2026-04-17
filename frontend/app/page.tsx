@@ -56,12 +56,11 @@ export default function HomePage() {
           <nav
             style={{
               display: "flex",
-              gap: "10px",
-              fontSize: "13px",
+              gap: "18px",
+              fontSize: "14px",
               flexWrap: "wrap",
               justifyContent: "flex-start",
-              width: "100%",
-              maxWidth: "100%",
+              alignItems: "center",
             }}
           >
             <Link
@@ -72,17 +71,10 @@ export default function HomePage() {
             </Link>
 
             <Link
-              href="/clarify"
+              href="/faq"
               style={{ color: "#222", textDecoration: "none" }}
             >
-              Clarify
-            </Link>
-
-            <Link
-              href="/ai-interaction"
-              style={{ color: "#222", textDecoration: "none" }}
-            >
-              AI Interaction
+              FAQ
             </Link>
           </nav>
         </div>
@@ -208,7 +200,7 @@ export default function HomePage() {
             </div>
           </div>
         </div>
-      </section> 
+      </section>
     </main>
   );
 }

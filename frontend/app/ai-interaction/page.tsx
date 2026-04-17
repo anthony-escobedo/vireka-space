@@ -1214,52 +1214,51 @@ function renderActiveResponse(panel: ClarificationPanel) {
             }}
           >
             
-         <div
-  style={{
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginTop: "0.35rem",
-  }}
->
-  <div
-    style={{
-      display: "flex",
-      gap: "0.75rem",
-      alignItems: "center",
-      flexWrap: "wrap",
-    }}
-  >
+           <div
+              style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginTop: "0.35rem",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                gap: "0.75rem",
+                alignItems: "center",
+                flexWrap: "wrap",
+              }}
+            >
 
-    Mic button
+                Mic button
 
-    Clarify button
+                Clarify button
 
-  </div>
+              </div>
 
-  <button
-    type="button"
-    onClick={handleDone}
-    disabled={isDoneDisabled}
-    style={{
-      flexShrink: 0,
-      padding: "0.7rem 1.15rem",
-      backgroundColor: "#fff",
-      color: "#111",
-      border: "1px solid #d6d3d1",
-      borderRadius: "999px",
-      fontSize: "0.9rem",
-      fontWeight: 600,
-      cursor: isDoneDisabled ? "not-allowed" : "pointer",
-      whiteSpace: "nowrap",
-      opacity: isDoneDisabled ? 0.6 : 1,
-    }}
-  >
-    Done
-  </button>
-</div>
+              <button
+                type="button"
+                onClick={handleDone}
+                disabled={isDoneDisabled}
+                style={{
+                flexShrink: 0,
+                padding: "0.7rem 1.15rem",
+                backgroundColor: "#fff",
+                color: "#111",
+                border: "1px solid #d6d3d1",
+                borderRadius: "999px",
+                fontSize: "0.9rem",
+                fontWeight: 600,
+                cursor: isDoneDisabled ? "not-allowed" : "pointer",
+                whiteSpace: "nowrap",
+                opacity: isDoneDisabled ? 0.6 : 1,
+            }}
+          >
+              Done
+            </button>
+          </div>
         </div>
-      </div>
     );
   }
 

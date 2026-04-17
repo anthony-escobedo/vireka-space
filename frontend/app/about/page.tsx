@@ -7,8 +7,7 @@ style={{
 minHeight: "100vh",
 backgroundColor: "#f7f7f2",
 color: "#111111",
-fontFamily:
-'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+fontFamily: 'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
 width: "100%",
 overflowX: "hidden",
 }}

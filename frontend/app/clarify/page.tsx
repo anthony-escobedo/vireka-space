@@ -1423,7 +1423,7 @@ function handleDone(): void {
       value={topInput}
       onChange={(e) => setTopInput(e.target.value)}
       disabled={loading}
-      placeholder="Example: The situation suggests a need for action, but the factors shaping the outcome are not yet clear."
+      placeholder="Example: The situation appears to call for action, but it is not yet clear which factors are influencing the outcome."
       rows={8}
       style={{
         display: "block",

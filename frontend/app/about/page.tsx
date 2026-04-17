@@ -58,6 +58,7 @@ fontSize: "0.95rem",
 >
   Where interpretation becomes clear
 </h2>
+      <h2
         style={{
           fontSize: "0.95rem",
           letterSpacing: "0.08em",

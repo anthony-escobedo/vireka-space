@@ -1205,11 +1205,12 @@ function renderActiveResponse(panel: ClarificationPanel) {
           </p>
 
           <div
-            style={{
+             style={{
               display: "flex",
               gap: "0.75rem",
               alignItems: "center",
               flexWrap: "wrap",
+              marginTop: "0.35rem",
             }}
           >
             <button

@@ -208,30 +208,7 @@ export default function HomePage() {
             </div>
           </div>
         </div>
-      </section>
-
-      <section
-        id="about"
-        style={{
-          padding: "0 24px 100px",
-        }}
-      >
-        <div
-          style={{
-            width: "100%",
-            maxWidth: "960px",
-            margin: "0 auto",
-          }}
-        >
-          <div
-            style={{
-              backgroundColor: "#ffffff",
-              border: "1px solid #e5e5de",
-              borderRadius: "28px",
-              padding: "42px 30px",
-              boxShadow: "0 1px 2px rgba(0,0,0,0.03)",
-            }}
-          >
+      
     </main>
   );
 }

@@ -1170,7 +1170,15 @@ function handleDone(): void {
             Additional detail may help separate observation from interpretation.
           </p>
 
-          <div style={{ display: "flex", gap: "0.75rem", alignItems: "center", flexWrap: "wrap" }}>
+          <div
+            style={{
+              display: "flex",
+              gap: "0.75rem",
+              alignItems: "center",
+              flexWrap: "wrap",
+              marginTop: "0.35rem",
+            }}
+          >
             <button
               type="button"
               onClick={() => startListening("followup")}

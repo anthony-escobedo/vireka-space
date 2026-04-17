@@ -47,17 +47,18 @@ fontSize: "0.95rem",
       About VIREKA Space
     </h1>
 
-    <p
-      style={{
-        color: "#444",
-        fontSize: "0.98rem",
-        marginBottom: "2.25rem",
-        wordBreak: "break-word",
-        overflowWrap: "anywhere",
-      }}
+    <h2
+        style={{
+            fontSize: "1.4rem",
+            fontWeight: 500,
+            letterSpacing: "-0.01em",
+            color: "#444",
+            marginTop: "0.25rem",
+            marginBottom: "2.25rem",
+        }}
     >
-      Where interpretation becomes clear
-    </p>
+          Where interpretation becomes clear
+        </h2>
 
     <section style={{ marginBottom: "2.25rem" }}>
       <h2

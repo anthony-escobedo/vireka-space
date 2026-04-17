@@ -144,7 +144,7 @@ export default function HomePage() {
               marginBottom: "42px",
             }}
           >
-            VIREKA Space helps separate what is happening from what may be
+            VIREKA Space helps distinguish what is happening from what may be
             assumed, so responses begin from clearer understanding.
           </p>
 

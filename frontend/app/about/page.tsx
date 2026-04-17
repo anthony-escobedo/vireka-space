@@ -56,8 +56,7 @@ fontSize: "0.95rem",
         overflowWrap: "anywhere",
       }}
     >
-      A structured environment for clarifying how situations are being
-      understood before decisions are made or AI prompts are written.
+      Where interpretation becomes clear
     </p>
 
     <section style={{ marginBottom: "2.25rem" }}>
@@ -80,9 +79,7 @@ fontSize: "0.95rem",
           overflowWrap: "anywhere",
         }}
       >
-        Vireka Space is a structured environment for clarifying how
-        situations are being understood before decisions are made or AI
-        prompts are written.
+        Vireka Space is a structured environment for clarifying how situations are being understood before decisions are made or AI prompts are written.
       </p>
 
       <p

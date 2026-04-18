@@ -55,7 +55,7 @@ export default function FAQPage() {
             letterSpacing: "-0.01em",
             color: "#333",
             marginTop: "0.35rem",
-            marginBottom: "2.75rem",
+            marginBottom: "3rem",
           }}
         >
           Questions about VIREKA Space

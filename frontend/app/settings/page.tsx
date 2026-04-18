@@ -1,6 +1,7 @@
 import Link from "next/link";
+import type { CSSProperties } from "react";
 
-const pageStyle: React.CSSProperties = {
+const pageStyle: CSSProperties = {
   minHeight: "100vh",
   backgroundColor: "#f7f7f2",
   width: "100%",
@@ -9,13 +10,13 @@ const pageStyle: React.CSSProperties = {
     'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
 };
 
-const containerStyle: React.CSSProperties = {
+const containerStyle: CSSProperties = {
   maxWidth: "860px",
   margin: "0 auto",
   padding: "40px 24px 90px",
 };
 
-const backLinkStyle: React.CSSProperties = {
+const backLinkStyle: CSSProperties = {
   display: "inline-flex",
   alignItems: "center",
   gap: "10px",
@@ -25,7 +26,7 @@ const backLinkStyle: React.CSSProperties = {
   marginBottom: "36px",
 };
 
-const capsuleStyle: React.CSSProperties = {
+const capsuleStyle: CSSProperties = {
   display: "inline-block",
   padding: "8px 14px",
   borderRadius: "999px",
@@ -38,7 +39,7 @@ const capsuleStyle: React.CSSProperties = {
   marginBottom: "24px",
 };
 
-const titleStyle: React.CSSProperties = {
+const titleStyle: CSSProperties = {
   fontSize: "clamp(2rem, 4vw, 3.2rem)",
   lineHeight: 1.08,
   letterSpacing: "-0.03em",
@@ -46,7 +47,7 @@ const titleStyle: React.CSSProperties = {
   margin: "0 0 18px",
 };
 
-const introStyle: React.CSSProperties = {
+const introStyle: CSSProperties = {
   fontSize: "19px",
   lineHeight: 1.75,
   color: "#3f3f3f",
@@ -54,32 +55,32 @@ const introStyle: React.CSSProperties = {
   maxWidth: "760px",
 };
 
-const sectionStyle: React.CSSProperties = {
+const sectionStyle: CSSProperties = {
   marginBottom: "24px",
 };
 
-const cardStyle: React.CSSProperties = {
+const cardStyle: CSSProperties = {
   border: "1px solid rgba(0,0,0,0.08)",
   backgroundColor: "rgba(255,255,255,0.65)",
   borderRadius: "24px",
   padding: "24px 24px",
 };
 
-const sectionTitleStyle: React.CSSProperties = {
+const sectionTitleStyle: CSSProperties = {
   fontSize: "24px",
   fontWeight: 600,
   letterSpacing: "-0.02em",
   margin: "0 0 14px",
 };
 
-const bodyStyle: React.CSSProperties = {
+const bodyStyle: CSSProperties = {
   fontSize: "16px",
   lineHeight: 1.8,
   color: "#444",
   margin: 0,
 };
 
-const listLinkStyle: React.CSSProperties = {
+const listLinkStyle: CSSProperties = {
   display: "block",
   textDecoration: "none",
   color: "#222",
@@ -89,6 +90,7 @@ const listLinkStyle: React.CSSProperties = {
   marginBottom: "6px",
   backgroundColor: "transparent",
   border: "1px solid transparent",
+  transition: "background-color 0.2s ease, border-color 0.2s ease",
 };
 
 export default function SettingsPage() {
@@ -134,29 +136,11 @@ export default function SettingsPage() {
         <section style={sectionStyle}>
           <h2 style={sectionTitleStyle}>Legal</h2>
           <div style={cardStyle}>
-            <Link
-              href="/privacy"
-              style={listLinkStyle}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "rgba(0,0,0,0.04)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "transparent";
-              }}
-            >
+            <Link href="/privacy" style={listLinkStyle}>
               Privacy
             </Link>
 
-            <Link
-              href="/terms"
-              style={listLinkStyle}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "rgba(0,0,0,0.04)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "transparent";
-              }}
-            >
+            <Link href="/terms" style={listLinkStyle}>
               Terms
             </Link>
           </div>

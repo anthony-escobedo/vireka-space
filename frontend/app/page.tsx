@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import Footer from "../components/footer";
 
 export default function HomePage() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -417,6 +418,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+      <Footer />
     </main>
   );
 }

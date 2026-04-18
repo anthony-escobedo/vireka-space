@@ -61,32 +61,39 @@ export default function HomePage() {
               flexWrap: "wrap",
               justifyContent: "flex-start",
               alignItems: "center",
-            }}
-          >
-            <Link
-              href="/about"
-              style={{ color: "#333", textDecoration: "none" }}
-            >
-              About
-            </Link>
+        }}
+      >
+      <Link
+          href="/about"
+            style={{ color: "#333", textDecoration: "none" }}
+      >
+      About
+      </Link>
 
-            <Link
-              href="/faq"
-              style={{ color: "#333", textDecoration: "none" }}
-            >
-              FAQ
-            </Link>
-          </nav>
+      <Link
+        href="/faq"
+          style={{ color: "#333", textDecoration: "none" }}
+      >
+      FAQ
+      </Link>
+
+      <Link
+        href="/settings"
+          style={{ color: "#333", textDecoration: "none" }}
+      >
+      Settings
+      </Link>
+      </nav>
         </div>
       </header>
 
       <section
-        style={{
-          minHeight: "calc(100vh - 80px)",
-          display: "flex",
-          alignItems: "flex-start",
-          justifyContent: "center",
-          padding: "24px 24px 72px",
+          style={{
+            minHeight: "calc(100vh - 80px)",
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "center",
+            padding: "24px 24px 72px",
         }}
       >
         <div
@@ -192,13 +199,26 @@ export default function HomePage() {
               fontSize: "14px",
               color: "#666",
               lineHeight: 1.7,
-            }}
-          >
-            <div>Developed by Anthony Escobedo</div>
-            <div>
-              Based on <em>Beyond Thought: Awareness as Design Intelligence</em>
-            </div>
-          </div>
+        }}
+      >
+
+        <div>Developed by Anthony Escobedo</div>
+
+        <div>
+            Based on <em>Beyond Thought: Awareness as Design Intelligence</em>
+        </div>
+
+        <div
+          style={{
+            marginTop: "18px",
+            fontSize: "12px",
+            color: "#999",
+        }}
+      >
+        © 2026 VIREKA Space. All rights reserved.
+      </div>
+
+      </div>
         </div>
       </section>
     </main>

@@ -1531,10 +1531,10 @@ function renderActiveResponse(panel: ClarificationPanel) {
             style={{
               marginTop: "1rem",
               padding: "0.9rem 1rem",
-              backgroundColor: "#fff4f4",
-              border: "1px solid #f0caca",
+              backgroundColor: "#f7f6f3",
+              border: "1px solid #e7e5e4",
               borderRadius: "10px",
-              color: "#8a2d2d",
+              color: "#333",
               fontSize: "0.9rem",
               overflowWrap: "anywhere",
               wordBreak: "break-word",

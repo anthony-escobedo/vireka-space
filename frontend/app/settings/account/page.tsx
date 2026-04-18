@@ -65,7 +65,7 @@ const cardStyle: CSSProperties = {
 
 const bodyStyle: CSSProperties = {
   fontSize: "16px",
-  lineHeight: 1.9,
+  lineHeight: 1.85,
   color: "#444",
   margin: 0,
 };
@@ -84,8 +84,8 @@ export default function AccountPage() {
         <h1 style={titleStyle}>Account access in VIREKA Space</h1>
 
         <p style={introStyle}>
-          Account access becomes relevant when subscription or persistent plan
-          management is needed.
+            Account access becomes relevant when subscription or ongoing plan
+            management is required.
         </p>
 
         <section style={cardStyle}>

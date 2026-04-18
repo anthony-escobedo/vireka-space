@@ -25,7 +25,7 @@ const navStyle: CSSProperties = {
 
 const linkStyle: CSSProperties = {
   fontSize: "13px",
-  color: "#111",
+  color: "#6f6a64",
   textDecoration: "none",
 };
 

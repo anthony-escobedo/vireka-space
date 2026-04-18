@@ -2,8 +2,8 @@ import Link from "next/link";
 import type { CSSProperties } from "react";
 
 const footerStyle: CSSProperties = {
-  marginTop: "80px",
-  padding: "0 24px 40px",
+  marginTop: "24px",
+  padding: "0 24px 24px",
 };
 
 const innerStyle: CSSProperties = {

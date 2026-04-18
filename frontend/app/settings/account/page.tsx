@@ -1,111 +1,32 @@
-import Link from "next/link";
-import type { CSSProperties } from "react";
-
-const pageStyle: CSSProperties = {
-  minHeight: "100vh",
-  backgroundColor: "#f7f7f2",
-  width: "100%",
-  color: "#111111",
-  fontFamily:
-    'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-};
-
-const containerStyle: CSSProperties = {
-  maxWidth: "860px",
-  margin: "0 auto",
-  padding: "56px 24px 90px",
-};
-
-const backLinkStyle: CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: "10px",
-  textDecoration: "none",
-  color: "#555",
-  fontSize: "16px",
-  marginBottom: "22px",
-};
-
-const capsuleStyle: CSSProperties = {
-  display: "inline-block",
-  padding: "8px 14px",
-  borderRadius: "999px",
-  border: "1px solid #dfdfd7",
-  backgroundColor: "#ffffff",
-  fontSize: "13px",
-  fontWeight: 500,
-  letterSpacing: "0.08em",
-  color: "#555",
-  marginBottom: "30px",
-};
-
-const titleStyle: CSSProperties = {
-  fontSize: "clamp(2.6rem, 5.6vw, 4.15rem)",
-  lineHeight: 1.02,
-  letterSpacing: "-0.055em",
-  fontWeight: 700,
-  margin: "0 0 24px",
-  maxWidth: "760px",
-};
-
-const introStyle: CSSProperties = {
-  fontSize: "18px",
-  lineHeight: 1.75,
-  color: "#3f3f3f",
-  marginBottom: "46px",
-  maxWidth: "760px",
-};
-
-const cardStyle: CSSProperties = {
-  border: "1px solid rgba(0,0,0,0.08)",
-  backgroundColor: "rgba(255,255,255,0.65)",
-  borderRadius: "24px",
-  padding: "24px 24px",
-};
-
-const bodyStyle: CSSProperties = {
-  fontSize: "16px",
-  lineHeight: 1.85,
-  color: "#444",
-  margin: 0,
-};
+import StaticPageShell, {
+  staticBodyStyle,
+  staticCardStyle,
+} from "@/components/StaticPageShell";
 
 export default function AccountPage() {
   return (
-    <main style={pageStyle}>
-      <div style={containerStyle}>
-        <Link href="/" style={backLinkStyle}>
-          <span aria-hidden="true">←</span>
-          <span>Back to home</span>
-        </Link>
-
-        <div style={capsuleStyle}>ACCOUNT</div>
-
-        <h1 style={titleStyle}>Account access in VIREKA Space</h1>
-
-        <p style={introStyle}>
-          Account access becomes relevant when subscription or ongoing plan
-          management is required.
+    <StaticPageShell
+      pill="ACCOUNT"
+      title="Account access in VIREKA Space"
+      intro="Account access becomes relevant when subscription or ongoing plan management is required."
+    >
+      <section style={staticCardStyle}>
+        <p style={staticBodyStyle}>
+          Free usage does not currently require sign-in.
+          <br />
+          <br />
+          An account is only required when subscribing to extended access.
+          Sign-in allows subscription status, usage allowances, and access
+          continuity to be associated with the same user.
+          <br />
+          <br />
+          Authentication may be completed using a supported sign-in provider or
+          email verification.
+          <br />
+          <br />
+          Account functionality may expand as the service develops.
         </p>
-
-        <section style={cardStyle}>
-          <p style={bodyStyle}>
-            Free usage does not currently require sign-in.
-            <br />
-            <br />
-            An account is only required when subscribing to extended access.
-            Sign-in allows subscription status, usage allowances, and access
-            continuity to be associated with the same user.
-            <br />
-            <br />
-            Authentication may be completed using a supported sign-in provider
-            or email verification.
-            <br />
-            <br />
-            Account functionality may expand as the service develops.
-          </p>
-        </section>
-      </div>
-    </main>
+      </section>
+    </StaticPageShell>
   );
 }

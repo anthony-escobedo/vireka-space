@@ -1526,9 +1526,9 @@ function renderActiveResponse(panel: ClarificationPanel) {
         </div>
         )}
 
-        {error && (
+       {error && (
   <div style={{ marginTop: "1rem" }}>
-
+    
     <div
       style={{
         fontSize: "0.68rem",
@@ -1539,7 +1539,11 @@ function renderActiveResponse(panel: ClarificationPanel) {
         fontWeight: 600
       }}
     >
-      Usage limit reached
+      {error.toLowerCase().includes("speech")
+        ? "Microphone unavailable"
+        : error.toLowerCase().includes("limit")
+        ? "Usage limit reached"
+        : "Notice"}
     </div>
 
     <div

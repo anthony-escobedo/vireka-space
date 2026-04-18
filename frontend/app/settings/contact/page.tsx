@@ -93,10 +93,9 @@ export default function ContactPage() {
         <h1 style={titleStyle}>Contact and feedback</h1>
 
         <p style={introStyle}>
-          Questions, feedback, and technical issues may be directed using the
-          contact information below.
+            Questions, feedback, and technical issues may be directed using the contact information below.
         </p>
-
+        
         <section style={cardStyle}>
           <a href="mailto:admin@vireka.space" style={emailStyle}>
             admin@vireka.space
@@ -104,13 +103,12 @@ export default function ContactPage() {
         </section>
 
         <section style={cardStyle}>
-          <p style={bodyStyle}>
-            Feedback helps improve clarity, reliability, and usability over
-            time.
-            <br />
-            <br />
+         <p style={bodyStyle}>
+            Feedback helps improve clarity, reliability, and usability over time.
+        <br />
+        <br />
             Messages are reviewed as availability allows.
-          </p>
+        </p>
         </section>
       </div>
     </main>

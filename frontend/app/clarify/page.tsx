@@ -253,9 +253,11 @@ export default function ClarifyPage() {
       window.SpeechRecognition || window.webkitSpeechRecognition;
 
     if (!SpeechRecognitionCtor) {
-      setError("Speech recognition is not supported in this browser.");
-      return;
-    }
+  setError(
+    "Speech recognition is not supported in this browser. Try Chrome, Edge, or Safari."
+  );
+  return;
+}
 
     if (recognitionRef.current) {
       recognitionRef.current.stop();

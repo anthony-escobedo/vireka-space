@@ -13,7 +13,7 @@ const pageStyle: CSSProperties = {
 const containerStyle: CSSProperties = {
   maxWidth: "860px",
   margin: "0 auto",
-  padding: "40px 24px 90px",
+  padding: "56px 24px 90px",
 };
 
 const backLinkStyle: CSSProperties = {
@@ -23,7 +23,7 @@ const backLinkStyle: CSSProperties = {
   textDecoration: "none",
   color: "#555",
   fontSize: "16px",
-  marginBottom: "18px",
+  marginBottom: "22px",
 };
 
 const capsuleStyle: CSSProperties = {
@@ -36,23 +36,23 @@ const capsuleStyle: CSSProperties = {
   fontWeight: 500,
   letterSpacing: "0.08em",
   color: "#555",
-  marginBottom: "24px",
+  marginBottom: "30px",
 };
 
 const titleStyle: CSSProperties = {
-  fontSize: "clamp(2.8rem, 6vw, 4.4rem)",
+  fontSize: "clamp(2.6rem, 5.6vw, 4.15rem)",
   lineHeight: 1.02,
-  letterSpacing: "-0.05em",
+  letterSpacing: "-0.055em",
   fontWeight: 700,
-  margin: "0 0 20px",
+  margin: "0 0 24px",
   maxWidth: "760px",
 };
 
 const introStyle: CSSProperties = {
   fontSize: "18px",
-  lineHeight: 1.7,
+  lineHeight: 1.75,
   color: "#3f3f3f",
-  marginBottom: "40px",
+  marginBottom: "46px",
   maxWidth: "760px",
 };
 
@@ -84,8 +84,8 @@ export default function AccountPage() {
         <h1 style={titleStyle}>Account access in VIREKA Space</h1>
 
         <p style={introStyle}>
-            Account access becomes relevant when subscription or ongoing plan
-            management is required.
+          Account access becomes relevant when subscription or ongoing plan
+          management is required.
         </p>
 
         <section style={cardStyle}>

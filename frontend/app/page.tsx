@@ -224,7 +224,7 @@ export default function HomePage() {
                   </Link>
 
                   <Link
-                    href="/settings#plan"
+                    href="/settings/plan"
                     style={menuLinkStyle}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.backgroundColor = "rgba(0,0,0,0.05)";
@@ -266,7 +266,7 @@ export default function HomePage() {
                   </Link>
 
                   <Link
-                    href="/settings#contact"
+                    href="/settings/contact"
                     style={menuLinkStyle}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.backgroundColor = "rgba(0,0,0,0.05)";

@@ -9,6 +9,8 @@ import OnboardingModal from "../../components/OnboardingModal";
 import DoneState from "../../components/DoneState";
 import Footer from "../../components/footer";
 
+import { getOrCreateAnonymousId } from "../../lib/anonymousSession";
+
 declare global {
   interface Window {
     SpeechRecognition?: new () => SpeechRecognition;
@@ -121,6 +123,10 @@ export default function AIInteractionPage() {
   const router = useRouter();
   const redirectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  useEffect(() => {
+  getOrCreateAnonymousId();
+}, []);
+  
   useEffect(() => {
   const accepted =
     typeof window !== "undefined" &&

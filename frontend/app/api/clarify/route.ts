@@ -46,6 +46,7 @@ type VirekaRequest = {
   latestResult?: ClarifyResponse;
   context?: RequestContext;
   anonymousId?: string | null;
+  conversationId?: string | null;
 };
 
 type ChatCompletionResponse = {
@@ -694,6 +695,39 @@ function enforceNeutralResponse(response: VirekaResponse): VirekaResponse {
   };
 }
 
+  function formatResponseForStorage(response: VirekaResponse): string {
+  if (response.mode === "close") {
+    return response.message;
+  }
+
+  if (response.mode === "integrated_view") {
+    return response.message;
+  }
+
+  const sections = [
+    `What appears to be happening:\n${response.observable.join("\n")}`,
+    `What may be assumed:\n${response.interpretive.join("\n")}`,
+    `What may remain unclear:\n${response.unknown.join("\n")}`,
+    `What may be influencing the situation:\n${response.structural.join("\n")}`,
+  ];
+
+  if (response.orientation.trim()) {
+    sections.push(`Integrated view:\n${response.orientation}`);
+  }
+
+  if (response.question) {
+    sections.push(`Clarifying question:\n${response.question}`);
+  }
+
+  if (response.suggestedQuestions?.length) {
+    sections.push(
+      `Suggested questions:\n${response.suggestedQuestions.join("\n")}`
+    );
+  }
+
+  return sections.join("\n\n");
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as VirekaRequest;
@@ -705,6 +739,7 @@ export async function POST(req: NextRequest) {
       body.context === "ai-interaction" ? "ai-interaction" : "clarify";
     
     const anonymousId = body.anonymousId ?? null;
+    const incomingConversationId = body.conversationId ?? null;
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -728,6 +763,48 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ error: "Missing anonymousId" }, { status: 400 });
 }
 
+    let conversationId = incomingConversationId;
+
+if (!conversationId) {
+  const { data: conversationData, error: conversationInsertError } = await supabase
+    .from("conversations")
+    .insert({
+      anonymous_id: anonymousId,
+      mode: context,
+    })
+    .select("id")
+    .single();
+
+  if (conversationInsertError || !conversationData) {
+    return NextResponse.json(
+      {
+        error: `Failed to create conversation: ${
+          conversationInsertError?.message || "Unknown error"
+        }`,
+      },
+      { status: 500 }
+    );
+  }
+
+  conversationId = conversationData.id;
+} else {
+  const { error: conversationUpdateError } = await supabase
+    .from("conversations")
+    .update({
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", conversationId);
+
+  if (conversationUpdateError) {
+    return NextResponse.json(
+      {
+        error: `Failed to update conversation: ${conversationUpdateError.message}`,
+      },
+      { status: 500 }
+    );
+  }
+}
+    
     if (action === "clarify" && !input) {
       return NextResponse.json({ error: "Input required" }, { status: 400 });
     }
@@ -802,6 +879,25 @@ if (existingUsage) {
       } satisfies CloseResponse);
     }
 
+      if (action === "clarify" && input && conversationId) {
+      const { error: userMessageInsertError } = await supabase
+      .from("messages")
+      .insert({
+      conversation_id: conversationId,
+      role: "user",
+      content: input,
+    });
+
+  if (userMessageInsertError) {
+    return NextResponse.json(
+      {
+        error: `Failed to save user message: ${userMessageInsertError.message}`,
+      },
+      { status: 500 }
+    );
+  }
+}
+    
     const userMessage =
       action === "integrated_view"
         ? buildIntegratedViewUserMessage(
@@ -858,7 +954,34 @@ if (existingUsage) {
     const validated = validateResponse(parsed);
     const neutralized = enforceNeutralResponse(validated);
 
-    return NextResponse.json(neutralized);
+    if (conversationId) {
+    const assistantContent =
+    neutralized.mode === "clarify"
+      ? formatResponseForStorage(neutralized)
+      : neutralized.message;
+
+    const { error: assistantMessageInsertError } = await supabase
+    .from("messages")
+    .insert({
+      conversation_id: conversationId,
+      role: "assistant",
+      content: assistantContent,
+    });
+
+    if (assistantMessageInsertError) {
+    return NextResponse.json(
+      {
+        error: `Failed to save assistant message: ${assistantMessageInsertError.message}`,
+      },
+      { status: 500 }
+    );
+  }
+}
+    
+    return NextResponse.json({
+  ...neutralized,
+  conversationId,
+});
   } catch {
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }

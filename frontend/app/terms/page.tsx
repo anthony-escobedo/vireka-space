@@ -23,7 +23,7 @@ const backLinkStyle: CSSProperties = {
   textDecoration: "none",
   color: "#555",
   fontSize: "16px",
-  marginBottom: "36px",
+  marginBottom: "18px",
 };
 
 const capsuleStyle: CSSProperties = {
@@ -34,24 +34,25 @@ const capsuleStyle: CSSProperties = {
   backgroundColor: "#ffffff",
   fontSize: "13px",
   fontWeight: 500,
-  letterSpacing: "0.03em",
+  letterSpacing: "0.08em",
   color: "#555",
   marginBottom: "24px",
 };
 
 const titleStyle: CSSProperties = {
-  fontSize: "clamp(2rem, 4vw, 3.2rem)",
-  lineHeight: 1.08,
-  letterSpacing: "-0.03em",
+  fontSize: "clamp(2.8rem, 6vw, 4.4rem)",
+  lineHeight: 1.02,
+  letterSpacing: "-0.05em",
   fontWeight: 700,
-  margin: "0 0 18px",
+  margin: "0 0 20px",
+  maxWidth: "760px",
 };
 
 const introStyle: CSSProperties = {
-  fontSize: "19px",
-  lineHeight: 1.75,
+  fontSize: "18px",
+  lineHeight: 1.7,
   color: "#3f3f3f",
-  marginBottom: "42px",
+  marginBottom: "40px",
   maxWidth: "760px",
 };
 

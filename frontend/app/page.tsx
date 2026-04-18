@@ -200,7 +200,7 @@ export default function HomePage() {
                   style={{
                     position: "absolute",
                     top: "52px",
-                    right: -10,
+                    right: -20,
                     minWidth: "220px",
                     padding: "8px",
                     borderRadius: "16px",

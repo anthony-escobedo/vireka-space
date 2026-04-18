@@ -200,11 +200,11 @@ export default function HomePage() {
                   style={{
                     position: "absolute",
                     top: "52px",
-                    right: 0,
+                    right: -10,
                     minWidth: "220px",
                     padding: "8px",
                     borderRadius: "16px",
-                    backgroundColor: "#fbfaf6",
+                    backgroundColor: "#f8f6f1",
                     border: "1px solid rgba(0,0,0,0.08)",
                     boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
                   }}
@@ -213,7 +213,7 @@ export default function HomePage() {
                     href="/settings#account"
                     style={menuLinkStyle}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = "rgba(0,0,0,0.05)";
+                      e.currentTarget.style.backgroundColor = "rgba(0,0,0,0.065)";
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.backgroundColor = "transparent";

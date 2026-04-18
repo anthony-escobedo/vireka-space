@@ -68,7 +68,9 @@ type CloseResponse = {
   message: string;
 };
 
-type VirekaResponse = ClarifyResponse | CloseResponse;
+type VirekaResponse =
+  | (ClarifyResponse & { conversationId?: string | null })
+  | (CloseResponse & { conversationId?: string | null });
 
 type ClarificationIteration = {
   id: string;
@@ -100,6 +102,7 @@ export default function ClarifyPage() {
     "top" | "followup" | null
   >(null);
   const [history, setHistory] = useState<ConversationTurn[]>([]);
+  const [conversationId, setConversationId] = useState<string | null>(null);
   const [isDone, setIsDone] = useState<boolean>(false);
   const [initialSituation, setInitialSituation] = useState<string>("");
   const [iterations, setIterations] = useState<ClarificationIteration[]>([]);
@@ -353,13 +356,15 @@ export default function ClarifyPage() {
     setIsDone(false);
 
     try {
-      const payload = {
-  input: trimmed,
-  action,
-  history,
-  context: "clarify",
-  anonymousId: getOrCreateAnonymousId(),
-};
+  
+    const payload = {
+    input: trimmed,
+    action,
+    history,
+    context: "clarify",
+    anonymousId: getOrCreateAnonymousId(),
+    conversationId,
+  };
 
       const res = await fetch("/api/clarify", {
     method: "POST",
@@ -376,7 +381,10 @@ export default function ClarifyPage() {
         );
       }
 
-      const typedData = data as VirekaResponse;
+        const typedData = data as VirekaResponse;
+        if (typedData.conversationId) {
+        setConversationId(typedData.conversationId);
+      }
 
       if (action === "clarify") {
         const userTurn: ConversationTurn = { role: "user", content: trimmed };
@@ -1271,19 +1279,20 @@ function handleDone(): void {
   }
 
   function resetSession(): void {
-    setTopInput("");
-    setFollowupInput("");
-    setResult(null);
-    setLastClarifyResult(null);
-    setHistory([]);
-    setError(null);
-    setIsDone(false);
-    setInitialSituation("");
-    setIterations([]);
-    setOpenPanelIds([]);
-    setLatestPanelId(null);
-  }
-
+  setTopInput("");
+  setFollowupInput("");
+  setResult(null);
+  setLastClarifyResult(null);
+  setHistory([]);
+  setConversationId(null);
+  setError(null);
+  setIsDone(false);
+  setInitialSituation("");
+  setIterations([]);
+  setOpenPanelIds([]);
+  setLatestPanelId(null);
+}
+  
   return (
   <div>
     {checkedOnboarding && (

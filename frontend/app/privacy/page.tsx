@@ -1,103 +1,21 @@
-import Link from "next/link";
-import type { CSSProperties } from "react";
-
-const pageStyle: CSSProperties = {
-  minHeight: "100vh",
-  backgroundColor: "#f7f7f2",
-  width: "100%",
-  color: "#111111",
-  fontFamily:
-    'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-};
-
-const containerStyle: CSSProperties = {
-  maxWidth: "860px",
-  margin: "0 auto",
-  padding: "40px 24px 90px",
-};
-
-const backLinkStyle: CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: "10px",
-  textDecoration: "none",
-  color: "#555",
-  fontSize: "16px",
-  marginBottom: "18px",
-};
-
-const capsuleStyle: CSSProperties = {
-  display: "inline-block",
-  padding: "8px 14px",
-  borderRadius: "999px",
-  border: "1px solid #dfdfd7",
-  backgroundColor: "#ffffff",
-  fontSize: "13px",
-  fontWeight: 500,
-  letterSpacing: "0.08em",
-  color: "#555",
-  marginBottom: "24px",
-};
-
-const titleStyle: CSSProperties = {
-  fontSize: "clamp(2.8rem, 6vw, 4.4rem)",
-  lineHeight: 1.02,
-  letterSpacing: "-0.05em",
-  fontWeight: 700,
-  margin: "0 0 20px",
-  maxWidth: "760px",
-};
-
-const introStyle: CSSProperties = {
-  fontSize: "18px",
-  lineHeight: 1.7,
-  color: "#3f3f3f",
-  marginBottom: "40px",
-  maxWidth: "760px",
-};
-
-const cardStyle: CSSProperties = {
-  border: "1px solid rgba(0,0,0,0.08)",
-  backgroundColor: "rgba(255,255,255,0.65)",
-  borderRadius: "24px",
-  padding: "24px 24px",
-  marginBottom: "18px",
-};
-
-const sectionTitleStyle: CSSProperties = {
-  fontSize: "24px",
-  fontWeight: 600,
-  letterSpacing: "-0.02em",
-  margin: "0 0 14px",
-};
-
-const bodyStyle: CSSProperties = {
-  fontSize: "16px",
-  lineHeight: 1.85,
-  color: "#444",
-  margin: 0,
-};
+import StaticPageShell, {
+  staticBodyStyle,
+  staticCardStyle,
+  staticSectionTitleStyle,
+  staticSectionWrapperStyle,
+} from "../../components/StaticPageShell";
 
 export default function PrivacyPage() {
   return (
-    <main style={pageStyle}>
-      <div style={containerStyle}>
-        <Link href="/" style={backLinkStyle}>
-          <span aria-hidden="true">←</span>
-          <span>Back to home</span>
-        </Link>
-
-        <div style={capsuleStyle}>PRIVACY</div>
-
-        <h1 style={titleStyle}>How information is handled in VIREKA Space</h1>
-
-        <p style={introStyle}>
-          This page explains how information is handled when using the service.
-        </p>
-
-        <section style={cardStyle}>
-          <h2 style={sectionTitleStyle}>Introduction</h2>
-          <p style={bodyStyle}>
+    <StaticPageShell
+      pill="PRIVACY"
+      title="How information is handled in VIREKA Space"
+      intro="This page explains how information is handled when using the service."
+    >
+      <section style={staticSectionWrapperStyle}>
+        <div style={staticCardStyle}>
+          <h2 style={staticSectionTitleStyle}>Introduction</h2>
+          <p style={staticBodyStyle}>
             This page describes how information is handled when using VIREKA Space.
             <br />
             <br />
@@ -110,11 +28,13 @@ export default function PrivacyPage() {
             The goal of this policy is to explain what information is involved in
             that process and how it is handled.
           </p>
-        </section>
+        </div>
+      </section>
 
-        <section style={cardStyle}>
-          <h2 style={sectionTitleStyle}>Information provided by users</h2>
-          <p style={bodyStyle}>
+      <section style={staticSectionWrapperStyle}>
+        <div style={staticCardStyle}>
+          <h2 style={staticSectionTitleStyle}>Information provided by users</h2>
+          <p style={staticBodyStyle}>
             Users may provide text describing situations, interpretations, or AI
             interactions.
             <br />
@@ -129,11 +49,13 @@ export default function PrivacyPage() {
             <br />
             Information is used only to support the functioning of the service.
           </p>
-        </section>
+        </div>
+      </section>
 
-        <section style={cardStyle}>
-          <h2 style={sectionTitleStyle}>Technical information</h2>
-          <p style={bodyStyle}>
+      <section style={staticSectionWrapperStyle}>
+        <div style={staticCardStyle}>
+          <h2 style={staticSectionTitleStyle}>Technical information</h2>
+          <p style={staticBodyStyle}>
             Basic technical information may be collected to maintain service
             reliability and performance.
             <br />
@@ -144,11 +66,13 @@ export default function PrivacyPage() {
             <br />
             This information is used in aggregated form where possible.
           </p>
-        </section>
+        </div>
+      </section>
 
-        <section style={cardStyle}>
-          <h2 style={sectionTitleStyle}>How information is used</h2>
-          <p style={bodyStyle}>
+      <section style={staticSectionWrapperStyle}>
+        <div style={staticCardStyle}>
+          <h2 style={staticSectionTitleStyle}>How information is used</h2>
+          <p style={staticBodyStyle}>
             Information provided through the service is used to generate structured
             interpretive responses, maintain system functionality, improve clarity
             and reliability, and understand general patterns of usage.
@@ -156,11 +80,13 @@ export default function PrivacyPage() {
             <br />
             Information is not sold to third parties.
           </p>
-        </section>
+        </div>
+      </section>
 
-        <section style={cardStyle}>
-          <h2 style={sectionTitleStyle}>AI processing</h2>
-          <p style={bodyStyle}>
+      <section style={staticSectionWrapperStyle}>
+        <div style={staticCardStyle}>
+          <h2 style={staticSectionTitleStyle}>AI processing</h2>
+          <p style={staticBodyStyle}>
             User input may be processed by AI systems in order to produce
             structured output.
             <br />
@@ -171,11 +97,13 @@ export default function PrivacyPage() {
             <br />
             Inputs are not treated as public content.
           </p>
-        </section>
+        </div>
+      </section>
 
-        <section style={cardStyle}>
-          <h2 style={sectionTitleStyle}>Data storage and third-party services</h2>
-          <p style={bodyStyle}>
+      <section style={staticSectionWrapperStyle}>
+        <div style={staticCardStyle}>
+          <h2 style={staticSectionTitleStyle}>Data storage and third-party services</h2>
+          <p style={staticBodyStyle}>
             Information may be stored as required to operate the service, maintain
             stability, and improve performance.
             <br />
@@ -187,11 +115,13 @@ export default function PrivacyPage() {
             order to operate. These providers may process information as necessary
             to support system functionality.
           </p>
-        </section>
+        </div>
+      </section>
 
-        <section style={cardStyle}>
-          <h2 style={sectionTitleStyle}>User control and updates</h2>
-          <p style={bodyStyle}>
+      <section style={staticSectionWrapperStyle}>
+        <div style={staticCardStyle}>
+          <h2 style={staticSectionTitleStyle}>User control and updates</h2>
+          <p style={staticBodyStyle}>
             Users control what information they choose to provide and may avoid
             including identifying details where not necessary.
             <br />
@@ -203,8 +133,8 @@ export default function PrivacyPage() {
             This Privacy Policy may be updated periodically to reflect improvements
             or changes to the service.
           </p>
-        </section>
-      </div>
-    </main>
+        </div>
+      </section>
+    </StaticPageShell>
   );
 }

@@ -210,7 +210,7 @@ export default function HomePage() {
                   }}
                 >
                   <Link
-                    href="/settings#account"
+                    href="/settings/account"
                     style={menuLinkStyle}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.backgroundColor = "rgba(0,0,0,0.065)";

@@ -62,7 +62,7 @@ export default function HomePage() {
       <header
         style={{
           width: "100%",
-          padding: "14px 24px",
+          padding: "10px 24px",
           position: "sticky",
           top: 0,
           backgroundColor: "rgba(247,247,242,0.92)",
@@ -291,11 +291,11 @@ export default function HomePage() {
 
       <section
         style={{
-          minHeight: "calc(100vh - 64px)",
+          minHeight: "calc(100vh - 56px)",
           display: "flex",
           alignItems: "flex-start",
           justifyContent: "center",
-          padding: "12px 24px 24px",
+          padding: "0px 24px 8px",
         }}
       >
         <div
@@ -314,7 +314,7 @@ export default function HomePage() {
               fontSize: "13px",
               fontWeight: 500,
               letterSpacing: "0.03em",
-              marginBottom: "18px",
+              marginBottom: "10px",
               color: "#444",
             }}
           >
@@ -327,7 +327,7 @@ export default function HomePage() {
               lineHeight: 1.05,
               letterSpacing: "-0.035em",
               fontWeight: 700,
-              marginBottom: "36px",
+              marginBottom: "20px",
             }}
           >
             CLARITY BEFORE DECISION.

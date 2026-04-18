@@ -1507,7 +1507,7 @@ function handleDone(): void {
         {!isDone && renderClarificationPath()}
         {!isDone && result && renderSupplementaryResult(result)}
         {!isDone && renderFollowupBox()}
-          <Footer />
+          <footer />
         </div>
       )}
     </main>

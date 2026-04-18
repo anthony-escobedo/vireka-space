@@ -66,7 +66,7 @@ const cardStyle: CSSProperties = {
 
 const bodyStyle: CSSProperties = {
   fontSize: "16px",
-  lineHeight: 1.9,
+  lineHeight: 1.85,
   color: "#444",
   margin: 0,
 };

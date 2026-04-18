@@ -31,7 +31,7 @@ export default function HomePage() {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            gap: "12px",
+            gap: "18px",
             flexWrap: "wrap",
             width: "100%",
             boxSizing: "border-box",

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -705,6 +706,20 @@ export async function POST(req: NextRequest) {
     
     const anonymousId = body.anonymousId ?? null;
 
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl || !supabaseServiceRoleKey) {
+    return NextResponse.json(
+    { error: "Missing Supabase environment variables" },
+    { status: 500 }
+  );
+}
+
+    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+
+    const today = new Date().toISOString().slice(0, 10);
+
     const history = sanitizeHistory(body.history);
     const input = normalizeWhitespace(body.input ?? "");
     const latestResult = sanitizeLatestResult(body.latestResult);
@@ -717,6 +732,62 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Input required" }, { status: 400 });
     }
 
+    const { data: existingUsage, error: usageReadError } = await supabase
+  .from("usage_tracking")
+  .select("id, interaction_count")
+  .eq("anonymous_id", anonymousId)
+  .eq("usage_date", today)
+  .maybeSingle();
+
+if (usageReadError) {
+  return NextResponse.json(
+    { error: `Failed to read usage tracking: ${usageReadError.message}` },
+    { status: 500 }
+  );
+}
+
+if (existingUsage && existingUsage.interaction_count >= 20) {
+  return NextResponse.json(
+    {
+      error:
+        "Daily limit reached. Free usage includes 20 interactions per day. Access resets tomorrow or can continue through subscription.",
+      limitReached: true,
+    },
+    { status: 429 }
+  );
+}
+
+if (existingUsage) {
+  const { error: usageUpdateError } = await supabase
+    .from("usage_tracking")
+    .update({
+      interaction_count: existingUsage.interaction_count + 1,
+    })
+    .eq("id", existingUsage.id);
+
+  if (usageUpdateError) {
+    return NextResponse.json(
+      { error: `Failed to update usage tracking: ${usageUpdateError.message}` },
+      { status: 500 }
+    );
+  }
+} else {
+  const { error: usageInsertError } = await supabase
+    .from("usage_tracking")
+    .insert({
+      anonymous_id: anonymousId,
+      usage_date: today,
+      interaction_count: 1,
+    });
+
+  if (usageInsertError) {
+    return NextResponse.json(
+      { error: `Failed to insert usage tracking: ${usageInsertError.message}` },
+      { status: 500 }
+    );
+  }
+}
+    
     if (action === "integrated_view" && !latestResult) {
       return NextResponse.json(
         { error: "A prior clarification result is required for integrated view." },

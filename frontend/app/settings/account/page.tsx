@@ -1,7 +1,7 @@
 import StaticPageShell, {
   staticBodyStyle,
   staticCardStyle,
-} from "@/components/StaticPageShell";
+} from "../../../components/StaticPageShell";
 
 export default function AccountPage() {
   return (

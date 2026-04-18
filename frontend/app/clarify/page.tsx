@@ -1494,24 +1494,21 @@ function handleDone(): void {
 )}
 
         {error && (
-          <div
-            style={{
-              marginTop: "1.5rem",
-              padding: "1rem 1.25rem",
-              backgroundColor: "#fff5f5",
-              border: "1px solid #fcc",
-              borderRadius: "12px",
-              color: "#c00",
-              fontSize: "0.9rem",
-              lineHeight: 1.5,
-              overflowWrap: "anywhere",
-              wordBreak: "break-word",
-            }}
-          >
-            {error}
-          </div>
-        )}
-
+  <div
+    style={{
+      marginTop: "1rem",
+      padding: "0.9rem 1rem",
+      backgroundColor: "#f7f6f3",
+      border: "1px solid #e7e5e4",
+      borderRadius: "10px",
+      color: "#333",
+      fontSize: "0.9rem",
+    }}
+  >
+    {error}
+  </div>
+)}
+          
         {!isDone && renderClarificationPath()}
         {!isDone && result && renderSupplementaryResult(result)}
         {!isDone && renderFollowupBox()}

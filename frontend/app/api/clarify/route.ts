@@ -746,7 +746,7 @@ if (usageReadError) {
   );
 }
 
-if (existingUsage && existingUsage.interaction_count >= 5) {
+if (existingUsage && existingUsage.interaction_count >= 20) {
   return NextResponse.json(
     {
       error:

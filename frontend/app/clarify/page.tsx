@@ -349,13 +349,13 @@ export default function ClarifyPage() {
     setIsDone(false);
 
     try {
-      const payload = { input: trimmed, action, history };
-
-      const res = await fetch("/api/clarify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const payload = {
+  input: trimmed,
+  action,
+  history,
+  context: "clarify",
+  anonymousId: getOrCreateAnonymousId(),
+};
 
       const data: unknown = await res.json().catch(() => null);
 

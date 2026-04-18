@@ -7,7 +7,7 @@ import CollapsibleLayer from "../../components/CollapsibleLayer";
 import OnboardingModal from "../../components/OnboardingModal";
 import { useRouter } from "next/navigation";
 import DoneState from "../../components/DoneState";
-import Footer from "../../components/footer";
+import footer from "../../components/footer";
 
 declare global {
   interface Window {

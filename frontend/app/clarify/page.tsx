@@ -1494,18 +1494,34 @@ function handleDone(): void {
 )}
 
         {error && (
-  <div
-    style={{
-      marginTop: "1rem",
-      padding: "0.9rem 1rem",
-      backgroundColor: "#f7f6f3",
-      border: "1px solid #e7e5e4",
-      borderRadius: "10px",
-      color: "#333",
-      fontSize: "0.9rem",
-    }}
-  >
-    {error}
+  <div style={{ marginTop: "1rem" }}>
+
+    <div
+      style={{
+        fontSize: "0.68rem",
+        letterSpacing: "0.08em",
+        textTransform: "uppercase",
+        color: "#8e8a84",
+        marginBottom: "0.35rem",
+        fontWeight: 600
+      }}
+    >
+      Usage limit reached
+    </div>
+
+    <div
+      style={{
+        padding: "0.9rem 1rem",
+        backgroundColor: "#f8f7f4",
+        border: "1px solid #e3e0da",
+        borderRadius: "10px",
+        color: "#333",
+        fontSize: "0.9rem",
+      }}
+    >
+      {error}
+    </div>
+
   </div>
 )}
           

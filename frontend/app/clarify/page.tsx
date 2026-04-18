@@ -1506,7 +1506,11 @@ function handleDone(): void {
         fontWeight: 600
       }}
     >
-      Usage limit reached
+      {error.toLowerCase().includes("speech")
+        ? "Microphone unavailable"
+        : error.toLowerCase().includes("limit")
+        ? "Usage limit reached"
+        : "Notice"}
     </div>
 
     <div

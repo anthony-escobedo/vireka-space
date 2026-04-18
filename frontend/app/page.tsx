@@ -65,14 +65,14 @@ export default function HomePage() {
           >
             <Link
               href="/about"
-              style={{ color: "#222", textDecoration: "none" }}
+              style={{ color: "#333", textDecoration: "none" }}
             >
               About
             </Link>
 
             <Link
               href="/faq"
-              style={{ color: "#222", textDecoration: "none" }}
+              style={{ color: "#333", textDecoration: "none" }}
             >
               FAQ
             </Link>

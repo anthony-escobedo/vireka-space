@@ -1,3 +1,4 @@
+
 import Link from "next/link";
 
 export default function SettingsPage() {
@@ -96,3 +97,4 @@ export default function SettingsPage() {
     </main>
   );
 }
+

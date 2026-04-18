@@ -9,6 +9,8 @@ import { useRouter } from "next/navigation";
 import DoneState from "../../components/DoneState";
 import Footer from "../../components/footer";
 
+import { getOrCreateAnonymousId } from "../../lib/anonymousSession";
+
 declare global {
   interface Window {
     SpeechRecognition?: new () => SpeechRecognition;

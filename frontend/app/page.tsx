@@ -1,6 +1,48 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 
 export default function HomePage() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(event.target as Node)
+      ) {
+        setMenuOpen(false);
+      }
+    }
+
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setMenuOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, []);
+
+  const menuLinkStyle: React.CSSProperties = {
+    display: "block",
+    padding: "10px 12px",
+    borderRadius: "10px",
+    color: "#222",
+    textDecoration: "none",
+    fontSize: "14px",
+    lineHeight: 1.4,
+    transition: "background-color 160ms ease, color 160ms ease",
+  };
+
   return (
     <main
       style={{
@@ -22,6 +64,7 @@ export default function HomePage() {
           backgroundColor: "rgba(247,247,242,0.92)",
           backdropFilter: "blur(8px)",
           borderBottom: "1px solid rgba(0,0,0,0.05)",
+          zIndex: 40,
         }}
       >
         <div
@@ -53,47 +96,202 @@ export default function HomePage() {
             VIREKA Space
           </Link>
 
-          <nav
+          <div
             style={{
               display: "flex",
-              gap: "18px",
-              fontSize: "14px",
-              flexWrap: "wrap",
-              justifyContent: "flex-start",
               alignItems: "center",
-        }}
-      >
-      <Link
-          href="/about"
-            style={{ color: "#333", textDecoration: "none" }}
-      >
-      About
-      </Link>
+              gap: "18px",
+            }}
+          >
+            <nav
+              style={{
+                display: "flex",
+                gap: "18px",
+                fontSize: "14px",
+                flexWrap: "wrap",
+                justifyContent: "flex-start",
+                alignItems: "center",
+              }}
+            >
+              <Link
+                href="/about"
+                style={{ color: "#333", textDecoration: "none" }}
+              >
+                About
+              </Link>
 
-      <Link
-        href="/faq"
-          style={{ color: "#333", textDecoration: "none" }}
-      >
-      FAQ
-      </Link>
+              <Link
+                href="/faq"
+                style={{ color: "#333", textDecoration: "none" }}
+              >
+                FAQ
+              </Link>
+            </nav>
 
-      <Link
-        href="/settings"
-          style={{ color: "#333", textDecoration: "none" }}
-      >
-      Settings
-      </Link>
-      </nav>
+            <div
+              ref={menuRef}
+              style={{
+                position: "relative",
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              <button
+                type="button"
+                aria-label="Open menu"
+                aria-expanded={menuOpen}
+                onClick={() => setMenuOpen((prev) => !prev)}
+                style={{
+                  appearance: "none",
+                  border: "1px solid rgba(0,0,0,0.08)",
+                  backgroundColor: "#ffffff",
+                  color: "#222",
+                  borderRadius: "999px",
+                  width: "42px",
+                  height: "42px",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  transition: "background-color 160ms ease, border-color 160ms ease",
+                  padding: 0,
+                }}
+              >
+                <span
+                  style={{
+                    display: "inline-flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    gap: "4px",
+                  }}
+                >
+                  <span
+                    style={{
+                      width: "16px",
+                      height: "1.5px",
+                      backgroundColor: "#222",
+                      display: "block",
+                      borderRadius: "999px",
+                    }}
+                  />
+                  <span
+                    style={{
+                      width: "16px",
+                      height: "1.5px",
+                      backgroundColor: "#222",
+                      display: "block",
+                      borderRadius: "999px",
+                    }}
+                  />
+                  <span
+                    style={{
+                      width: "16px",
+                      height: "1.5px",
+                      backgroundColor: "#222",
+                      display: "block",
+                      borderRadius: "999px",
+                    }}
+                  />
+                </span>
+              </button>
+
+              {menuOpen && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "52px",
+                    right: 0,
+                    minWidth: "220px",
+                    padding: "8px",
+                    borderRadius: "16px",
+                    backgroundColor: "#fbfaf6",
+                    border: "1px solid rgba(0,0,0,0.08)",
+                    boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
+                  }}
+                >
+                  <Link
+                    href="/settings#account"
+                    style={menuLinkStyle}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = "rgba(0,0,0,0.05)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = "transparent";
+                    }}
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    Account
+                  </Link>
+
+                  <Link
+                    href="/settings#plan"
+                    style={menuLinkStyle}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = "rgba(0,0,0,0.05)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = "transparent";
+                    }}
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    Plan
+                  </Link>
+
+                  <Link
+                    href="/privacy"
+                    style={menuLinkStyle}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = "rgba(0,0,0,0.05)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = "transparent";
+                    }}
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    Privacy
+                  </Link>
+
+                  <Link
+                    href="/terms"
+                    style={menuLinkStyle}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = "rgba(0,0,0,0.05)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = "transparent";
+                    }}
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    Terms
+                  </Link>
+
+                  <Link
+                    href="/settings#contact"
+                    style={menuLinkStyle}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = "rgba(0,0,0,0.05)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = "transparent";
+                    }}
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    Contact
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </header>
 
       <section
-          style={{
-            minHeight: "calc(100vh - 80px)",
-            display: "flex",
-            alignItems: "flex-start",
-            justifyContent: "center",
-            padding: "24px 24px 72px",
+        style={{
+          minHeight: "calc(100vh - 80px)",
+          display: "flex",
+          alignItems: "flex-start",
+          justifyContent: "center",
+          padding: "24px 24px 72px",
         }}
       >
         <div
@@ -199,28 +397,27 @@ export default function HomePage() {
               fontSize: "14px",
               color: "#666",
               lineHeight: 1.7,
-        }}
-      >
+            }}
+          >
+            <div>Developed by Anthony Escobedo</div>
 
-        <div>Developed by Anthony Escobedo</div>
+            <div>
+              Based on <em>Beyond Thought: Awareness as Design Intelligence</em>
+            </div>
 
-        <div>
-            Based on <em>Beyond Thought: Awareness as Design Intelligence</em>
-        </div>
-
-        <div
-          style={{
-            marginTop: "18px",
-            fontSize: "12px",
-            color: "#999",
-        }}
-      >
-        © 2026 VIREKA Space. All rights reserved.
-      </div>
-
-      </div>
+            <div
+              style={{
+                marginTop: "18px",
+                fontSize: "12px",
+                color: "#999",
+              }}
+            >
+              © 2026 VIREKA Space. All rights reserved.
+            </div>
+          </div>
         </div>
       </section>
     </main>
   );
 }
+

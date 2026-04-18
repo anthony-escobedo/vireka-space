@@ -62,7 +62,7 @@ export default function HomePage() {
       <header
         style={{
           width: "100%",
-          padding: "20px 24px",
+          padding: "14px 24px",
           position: "sticky",
           top: 0,
           backgroundColor: "rgba(247,247,242,0.92)",
@@ -291,11 +291,11 @@ export default function HomePage() {
 
       <section
         style={{
-          minHeight: "calc(100vh - 80px)",
+          minHeight: "calc(100vh - 64px)",
           display: "flex",
           alignItems: "flex-start",
           justifyContent: "center",
-          padding: "24px 24px 72px",
+          padding: "12px 24px 24px",
         }}
       >
         <div
@@ -314,7 +314,7 @@ export default function HomePage() {
               fontSize: "13px",
               fontWeight: 500,
               letterSpacing: "0.03em",
-              marginBottom: "28px",
+              marginBottom: "18px",
               color: "#444",
             }}
           >

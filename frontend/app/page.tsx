@@ -46,16 +46,19 @@ export default function HomePage() {
 
   return (
     <main
-      style={{
-        minHeight: "100vh",
-        backgroundColor: "#f7f7f2",
-        overflowX: "hidden",
-        width: "100%",
-        color: "#111111",
-        fontFamily:
-          'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-      }}
-    >
+    style={{
+      minHeight: "100vh",
+      display: "flex",
+      flexDirection: "column",
+      backgroundColor: "#f7f7f2",
+      overflowX: "hidden",
+      width: "100%",
+      color: "#111111",
+      fontFamily:
+     'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+   }}
+  >
+      <div style={{ flex: "1 0 auto" }}>
       <header
         style={{
           width: "100%",
@@ -405,19 +408,10 @@ export default function HomePage() {
             <div>
               Based on <em>Beyond Thought: Awareness as Design Intelligence</em>
             </div>
-
-            <div
-              style={{
-                marginTop: "18px",
-                fontSize: "12px",
-                color: "#999",
-              }}
-            >
-              © 2026 VIREKA Space. All rights reserved.
-            </div>
           </div>
         </div>
       </section>
+        </div>
       <Footer />
     </main>
   );

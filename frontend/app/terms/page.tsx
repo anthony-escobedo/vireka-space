@@ -1,125 +1,44 @@
-import Link from "next/link";
-import type { CSSProperties } from "react";
-
-const pageStyle: CSSProperties = {
-  minHeight: "100vh",
-  backgroundColor: "#f7f7f2",
-  width: "100%",
-  color: "#111111",
-  fontFamily:
-    'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-};
-
-const containerStyle: CSSProperties = {
-  maxWidth: "860px",
-  margin: "0 auto",
-  padding: "40px 24px 90px",
-};
-
-const backLinkStyle: CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: "10px",
-  textDecoration: "none",
-  color: "#555",
-  fontSize: "16px",
-  marginBottom: "18px",
-};
-
-const capsuleStyle: CSSProperties = {
-  display: "inline-block",
-  padding: "8px 14px",
-  borderRadius: "999px",
-  border: "1px solid #dfdfd7",
-  backgroundColor: "#ffffff",
-  fontSize: "13px",
-  fontWeight: 500,
-  letterSpacing: "0.08em",
-  color: "#555",
-  marginBottom: "24px",
-};
-
-const titleStyle: CSSProperties = {
-  fontSize: "clamp(2.8rem, 6vw, 4.4rem)",
-  lineHeight: 1.02,
-  letterSpacing: "-0.05em",
-  fontWeight: 700,
-  margin: "0 0 20px",
-  maxWidth: "760px",
-};
-
-const introStyle: CSSProperties = {
-  fontSize: "18px",
-  lineHeight: 1.7,
-  color: "#3f3f3f",
-  marginBottom: "40px",
-  maxWidth: "760px",
-};
-
-const cardStyle: CSSProperties = {
-  border: "1px solid rgba(0,0,0,0.08)",
-  backgroundColor: "rgba(255,255,255,0.65)",
-  borderRadius: "24px",
-  padding: "24px 24px",
-  marginBottom: "18px",
-};
-
-const sectionTitleStyle: CSSProperties = {
-  fontSize: "24px",
-  fontWeight: 600,
-  letterSpacing: "-0.02em",
-  margin: "0 0 14px",
-};
-
-const bodyStyle: CSSProperties = {
-  fontSize: "16px",
-  lineHeight: 1.85,
-  color: "#444",
-  margin: 0,
-};
+import StaticPageShell, {
+  staticBodyStyle,
+  staticCardStyle,
+  staticSectionTitleStyle,
+  staticSectionWrapperStyle,
+} from "../../components/StaticPageShell";
 
 export default function TermsPage() {
   return (
-    <main style={pageStyle}>
-      <div style={containerStyle}>
-        <Link href="/" style={backLinkStyle}>
-          <span aria-hidden="true">←</span>
-          <span>Back to home</span>
-        </Link>
-
-        <div style={capsuleStyle}>TERMS</div>
-
-        <h1 style={titleStyle}>Conditions of use for VIREKA Space</h1>
-
-        <p style={introStyle}>
-          These Terms govern the use of the service and clarify its role, limits,
-          and user responsibility.
-        </p>
-
-        <section style={cardStyle}>
-          <h2 style={sectionTitleStyle}>Introduction</h2>
-          <p style={bodyStyle}>
+    <StaticPageShell
+      pill="TERMS"
+      title="Conditions of use for VIREKA Space"
+      intro="These Terms govern the use of the service and clarify its role, limits, and user responsibility."
+    >
+      <section style={staticSectionWrapperStyle}>
+        <div style={staticCardStyle}>
+          <h2 style={staticSectionTitleStyle}>Introduction</h2>
+          <p style={staticBodyStyle}>
             These Terms govern the use of VIREKA Space.
             <br />
             <br />
             VIREKA Space provides a structured environment for clarifying how
-            situations are being understood before decisions are made or AI
-            prompts are written. By accessing or using the service, you agree to
-            these Terms. If you do not agree, please do not use the service.
+            situations are being understood before decisions are made or AI prompts
+            are written. By accessing or using the service, you agree to these
+            Terms. If you do not agree, please do not use the service.
             <br />
             <br />
             These Terms are intended to establish clarity regarding the nature of
-            the service, appropriate use, and the responsibilities of both the
-            user and the service provider.
+            the service, appropriate use, and the responsibilities of both the user
+            and the service provider.
           </p>
-        </section>
+        </div>
+      </section>
 
-        <section style={cardStyle}>
-          <h2 style={sectionTitleStyle}>Use of the service</h2>
-          <p style={bodyStyle}>
+      <section style={staticSectionWrapperStyle}>
+        <div style={staticCardStyle}>
+          <h2 style={staticSectionTitleStyle}>Use of the service</h2>
+          <p style={staticBodyStyle}>
             VIREKA Space may be used to explore how situations are interpreted,
-            including identifying what appears to be happening, what may be
-            assumed, and what may remain unclear.
+            including identifying what appears to be happening, what may be assumed,
+            and what may remain unclear.
             <br />
             <br />
             The service is provided for informational and interpretive support
@@ -129,71 +48,90 @@ export default function TermsPage() {
             Use of the service does not create a professional relationship of any
             kind.
           </p>
-        </section>
+        </div>
+      </section>
 
-        <section style={cardStyle}>
-          <h2 style={sectionTitleStyle}>Nature of the service</h2>
-          <p style={bodyStyle}>
-            VIREKA Space does not provide medical, psychological, legal,
-            financial, or other professional advice.
+      <section style={staticSectionWrapperStyle}>
+        <div style={staticCardStyle}>
+          <h2 style={staticSectionTitleStyle}>Nature of the service</h2>
+          <p style={staticBodyStyle}>
+            VIREKA Space does not provide medical, legal, financial, therapeutic, or
+            emergency advice.
             <br />
             <br />
-            The service does not diagnose, treat, or resolve personal, emotional,
-            relational, or technical problems. It is designed only to help
-            clarify how a situation is being understood.
+            The service does not guarantee correctness, completeness, or suitability
+            for any particular purpose.
             <br />
             <br />
-            Any decision, action, interpretation, or reliance based on the use of
-            the service remains the sole responsibility of the user.
+            Users remain responsible for their own interpretations, decisions, and
+            actions.
           </p>
-        </section>
+        </div>
+      </section>
 
-        <section style={cardStyle}>
-          <h2 style={sectionTitleStyle}>User responsibility</h2>
-          <p style={bodyStyle}>
-            Users are responsible for how they use the service and for any
-            actions taken after using it.
+      <section style={staticSectionWrapperStyle}>
+        <div style={staticCardStyle}>
+          <h2 style={staticSectionTitleStyle}>User responsibility</h2>
+          <p style={staticBodyStyle}>
+            Users agree to use the service lawfully and responsibly.
             <br />
             <br />
-            Users should exercise judgment and seek qualified professional
-            guidance where needed.
+            Users should not rely on the service as a substitute for professional
+            judgment, especially in situations involving risk, safety, health,
+            legality, or significant consequences.
             <br />
             <br />
-            The service should not be used as a substitute for professional care,
-            crisis support, emergency assistance, or expert evaluation.
+            Users are responsible for the content they submit and for how they use
+            any output generated by the service.
           </p>
-        </section>
+        </div>
+      </section>
 
-        <section style={cardStyle}>
-          <h2 style={sectionTitleStyle}>Availability, warranties, and liability</h2>
-          <p style={bodyStyle}>
-            VIREKA Space may be updated, modified, suspended, or discontinued at
-            any time, with or without notice.
+      <section style={staticSectionWrapperStyle}>
+        <div style={staticCardStyle}>
+          <h2 style={staticSectionTitleStyle}>Availability and changes</h2>
+          <p style={staticBodyStyle}>
+            The service may change, be updated, interrupted, or discontinued at any
+            time.
             <br />
             <br />
-            The service is provided on an “as is” and “as available” basis,
-            without warranties of any kind, express or implied.
+            Features, limits, and access conditions may evolve as the system
+            develops.
             <br />
             <br />
-            To the fullest extent permitted by law, VIREKA Space and its operator
-            shall not be liable for damages arising from or related to the use of,
-            or inability to use, the service.
+            VIREKA Space is not liable for temporary unavailability or for changes
+            to functionality.
           </p>
-        </section>
+        </div>
+      </section>
 
-        <section style={cardStyle}>
-          <h2 style={sectionTitleStyle}>Intellectual property and updates</h2>
-          <p style={bodyStyle}>
-            The design, structure, branding, and original content of VIREKA Space
-            are protected by applicable intellectual property laws.
+      <section style={staticSectionWrapperStyle}>
+        <div style={staticCardStyle}>
+          <h2 style={staticSectionTitleStyle}>Limitation of liability</h2>
+          <p style={staticBodyStyle}>
+            To the fullest extent permitted by law, VIREKA Space is provided “as is”
+            and without warranties of any kind.
             <br />
             <br />
-            These Terms may be updated from time to time. Continued use of the
-            service after changes are posted constitutes acceptance of the revised
-            Terms.
+            The service provider is not liable for any direct, indirect, incidental,
+            consequential, or reliance-based loss arising from use of the service.
           </p>
-        </section>
-      </div>
-    </main>
+        </div>
+      </section>
+
+      <section style={staticSectionWrapperStyle}>
+        <div style={staticCardStyle}>
+          <h2 style={staticSectionTitleStyle}>Updates to these Terms</h2>
+          <p style={staticBodyStyle}>
+            These Terms may be updated periodically to reflect changes in the
+            service, legal requirements, or operating practices.
+            <br />
+            <br />
+            Continued use of the service after updates constitutes acceptance of the
+            revised Terms.
+          </p>
+        </div>
+      </section>
+    </StaticPageShell>
   );
 }

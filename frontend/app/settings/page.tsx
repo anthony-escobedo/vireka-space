@@ -23,7 +23,7 @@ const backLinkStyle: CSSProperties = {
   textDecoration: "none",
   color: "#555",
   fontSize: "16px",
-  marginBottom: "36px",
+  marginBottom: "18px",
 };
 
 const capsuleStyle: CSSProperties = {
@@ -34,24 +34,25 @@ const capsuleStyle: CSSProperties = {
   backgroundColor: "#ffffff",
   fontSize: "13px",
   fontWeight: 500,
-  letterSpacing: "0.03em",
+  letterSpacing: "0.08em",
   color: "#555",
   marginBottom: "24px",
 };
 
 const titleStyle: CSSProperties = {
-  fontSize: "clamp(2rem, 4vw, 3.2rem)",
-  lineHeight: 1.08,
-  letterSpacing: "-0.03em",
+  fontSize: "clamp(2.8rem, 6vw, 4.4rem)",
+  lineHeight: 1.02,
+  letterSpacing: "-0.05em",
   fontWeight: 700,
-  margin: "0 0 18px",
+  margin: "0 0 20px",
+  maxWidth: "760px",
 };
 
 const introStyle: CSSProperties = {
-  fontSize: "19px",
-  lineHeight: 1.75,
+  fontSize: "18px",
+  lineHeight: 1.7,
   color: "#3f3f3f",
-  marginBottom: "42px",
+  marginBottom: "40px",
   maxWidth: "760px",
 };
 
@@ -71,13 +72,6 @@ const sectionTitleStyle: CSSProperties = {
   fontWeight: 600,
   letterSpacing: "-0.02em",
   margin: "0 0 14px",
-};
-
-const bodyStyle: CSSProperties = {
-  fontSize: "16px",
-  lineHeight: 1.8,
-  color: "#444",
-  margin: 0,
 };
 
 const listLinkStyle: CSSProperties = {
@@ -102,34 +96,28 @@ export default function SettingsPage() {
           <span>Back to home</span>
         </Link>
 
-        <div style={capsuleStyle}>MENU</div>
+        <div style={capsuleStyle}>SETTINGS</div>
 
-        <h1 style={titleStyle}>Account, plan, and support</h1>
+        <h1 style={titleStyle}>Settings and support</h1>
 
         <p style={introStyle}>
-          Core account access, plan information, legal pages, and contact details.
+          Account access, usage information, legal pages, and contact details.
         </p>
 
-        <section id="account" style={sectionStyle}>
-          <h2 style={sectionTitleStyle}>Account</h2>
+        <section style={sectionStyle}>
+          <h2 style={sectionTitleStyle}>Access</h2>
           <div style={cardStyle}>
-            <p style={bodyStyle}>
-              Signed in with email.
-              <br />
-              Account details can remain minimal at this stage and expand only as
-              needed.
-            </p>
-          </div>
-        </section>
+            <Link href="/settings/account" style={listLinkStyle}>
+              Account
+            </Link>
 
-        <section id="plan" style={sectionStyle}>
-          <h2 style={sectionTitleStyle}>Plan</h2>
-          <div style={cardStyle}>
-            <p style={bodyStyle}>
-              Free plan currently active.
-              <br />
-              Extended usage becomes relevant only if the daily limit is reached.
-            </p>
+            <Link href="/settings/plan" style={listLinkStyle}>
+              Plan
+            </Link>
+
+            <Link href="/settings/contact" style={listLinkStyle}>
+              Contact
+            </Link>
           </div>
         </section>
 
@@ -143,23 +131,6 @@ export default function SettingsPage() {
             <Link href="/terms" style={listLinkStyle}>
               Terms
             </Link>
-          </div>
-        </section>
-
-        <section id="contact" style={sectionStyle}>
-          <h2 style={sectionTitleStyle}>Contact</h2>
-          <div style={cardStyle}>
-            <a
-              href="mailto:admin@vireka.space"
-              style={{
-                ...bodyStyle,
-                textDecoration: "underline",
-                textUnderlineOffset: "4px",
-                color: "#222",
-              }}
-            >
-              admin@vireka.space
-            </a>
           </div>
         </section>
       </div>

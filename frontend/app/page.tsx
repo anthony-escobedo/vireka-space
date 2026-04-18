@@ -290,14 +290,14 @@ export default function HomePage() {
       </header>
 
       <section
-        style={{
-          minHeight: "calc(100vh - 56px)",
-          display: "flex",
-          alignItems: "flex-start",
-          justifyContent: "center",
-          padding: "0px 24px 8px",
-        }}
-      >
+  style={{
+    flex: 1,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "0px 24px 0px",
+  }}
+>
         <div
           style={{
             maxWidth: "900px",

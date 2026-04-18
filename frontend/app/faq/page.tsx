@@ -39,7 +39,7 @@ export default function FAQPage() {
         <h1
           style={{
             fontSize: "1.9rem",
-            fontWeight: 600,
+            fontWeight: 650,
             marginBottom: "0.5rem",
             wordBreak: "break-word",
             overflowWrap: "anywhere",
@@ -65,7 +65,7 @@ export default function FAQPage() {
           <h2
             style={{
               fontSize: "1.05rem",
-              fontWeight: 600,
+              fontWeight: 650,
               marginBottom: "0.75rem",
               wordBreak: "break-word",
               overflowWrap: "anywhere",
@@ -95,7 +95,7 @@ export default function FAQPage() {
           <h2
             style={{
               fontSize: "1.05rem",
-              fontWeight: 600,
+              fontWeight: 650,
               marginBottom: "0.75rem",
               wordBreak: "break-word",
               overflowWrap: "anywhere",
@@ -126,7 +126,7 @@ export default function FAQPage() {
           <h2
             style={{
               fontSize: "1.05rem",
-              fontWeight: 600,
+              fontWeight: 650,
               marginBottom: "0.75rem",
               wordBreak: "break-word",
               overflowWrap: "anywhere",
@@ -158,7 +158,7 @@ export default function FAQPage() {
           <h2
             style={{
               fontSize: "1.05rem",
-              fontWeight: 600,
+              fontWeight: 650,
               marginBottom: "0.75rem",
               wordBreak: "break-word",
               overflowWrap: "anywhere",
@@ -194,7 +194,7 @@ export default function FAQPage() {
           <h2
             style={{
               fontSize: "1.05rem",
-              fontWeight: 600,
+              fontWeight: 650,
               marginBottom: "0.75rem",
               wordBreak: "break-word",
               overflowWrap: "anywhere",
@@ -225,7 +225,7 @@ export default function FAQPage() {
           <h2
             style={{
               fontSize: "1.05rem",
-              fontWeight: 600,
+              fontWeight: 650,
               marginBottom: "0.75rem",
               wordBreak: "break-word",
               overflowWrap: "anywhere",
@@ -252,7 +252,7 @@ export default function FAQPage() {
           <h2
             style={{
               fontSize: "1.05rem",
-              fontWeight: 600,
+              fontWeight: 650,
               marginBottom: "0.75rem",
               wordBreak: "break-word",
               overflowWrap: "anywhere",

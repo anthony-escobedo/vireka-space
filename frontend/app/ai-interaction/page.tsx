@@ -7,6 +7,7 @@ import Link from "next/link";
 import CollapsibleLayer from "../../components/CollapsibleLayer";
 import OnboardingModal from "../../components/OnboardingModal";
 import DoneState from "../../components/DoneState";
+import Footer from "../../components/footer";
 
 declare global {
   interface Window {
@@ -1542,6 +1543,7 @@ function renderActiveResponse(panel: ClarificationPanel) {
           
           </div>
         )}
+        <Footer />
       </main>
     </div>
   );

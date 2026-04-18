@@ -1527,23 +1527,21 @@ function renderActiveResponse(panel: ClarificationPanel) {
         )}
 
         {error && (
-          <div
-            style={{
-              marginTop: "1rem",
-              padding: "0.9rem 1rem",
-              backgroundColor: "#f7f6f3",
-              border: "1px solid #e7e5e4",
-              borderRadius: "10px",
-              color: "#333",
-              fontSize: "0.9rem",
-              overflowWrap: "anywhere",
-              wordBreak: "break-word",
-            }}
-          >
-            {error}
-          </div>
-        )}
-
+  <div
+    style={{
+      marginTop: "1rem",
+      padding: "0.9rem 1rem",
+      backgroundColor: "#f7f6f3",
+      border: "1px solid #e7e5e4",
+      borderRadius: "10px",
+      color: "#333",
+      fontSize: "0.9rem",
+    }}
+  >
+    {error}
+  </div>
+)}
+          
         {!isDone && renderClarificationPath()}
         {!isDone && result && renderSupplementaryResult(result)}
         {!isDone && renderFollowupBox()}

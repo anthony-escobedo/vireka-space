@@ -357,6 +357,12 @@ export default function ClarifyPage() {
   anonymousId: getOrCreateAnonymousId(),
 };
 
+      const res = await fetch("/api/clarify", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+      
       const data: unknown = await res.json().catch(() => null);
 
       if (!res.ok) {

@@ -7,6 +7,7 @@ import CollapsibleLayer from "../../components/CollapsibleLayer";
 import OnboardingModal from "../../components/OnboardingModal";
 import { useRouter } from "next/navigation";
 import DoneState from "../../components/DoneState";
+import Footer from "../../components/Footer";
 
 declare global {
   interface Window {
@@ -1506,7 +1507,7 @@ function handleDone(): void {
         {!isDone && renderClarificationPath()}
         {!isDone && result && renderSupplementaryResult(result)}
         {!isDone && renderFollowupBox()}
-
+          <Footer />
         </div>
       )}
     </main>

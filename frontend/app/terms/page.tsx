@@ -1,87 +1,192 @@
-TERMS
+export default function TermsPage() {
+  return (
+    <main className="min-h-screen bg-[#f7f4ee] text-black">
+      <div className="mx-auto max-w-3xl px-6 py-20 sm:px-8">
+        <div className="space-y-12">
+          <header className="space-y-4">
+            <p className="text-[11px] uppercase tracking-[0.22em] text-black/55">
+              Terms
+            </p>
+            <h1 className="text-3xl font-light tracking-[-0.02em] sm:text-4xl">
+              Conditions of use for VIREKA Space
+            </h1>
+          </header>
 
-Conditions of use for VIREKA Space
+          <section className="space-y-4">
+            <h2 className="text-xl font-light tracking-[-0.01em]">Introduction</h2>
+            <p className="text-[15px] leading-7 text-black/80">
+              These Terms govern the use of VIREKA Space.
+            </p>
+            <p className="text-[15px] leading-7 text-black/80">
+              VIREKA Space provides a structured environment for clarifying how
+              situations are being understood before decisions are made or AI
+              prompts are written. By accessing or using the service, you agree
+              to these Terms. If you do not agree, please do not use the
+              service.
+            </p>
+            <p className="text-[15px] leading-7 text-black/80">
+              These Terms are intended to establish clarity regarding the nature
+              of the service, appropriate use, and the responsibilities of both
+              the user and the service provider.
+            </p>
+          </section>
 
-Introduction
+          <section className="space-y-4">
+            <h2 className="text-xl font-light tracking-[-0.01em]">
+              Use of the service
+            </h2>
+            <p className="text-[15px] leading-7 text-black/80">
+              VIREKA Space may be used to explore how situations are interpreted,
+              including identifying what appears to be happening, what may be
+              assumed, and what may remain unclear.
+            </p>
+            <p className="text-[15px] leading-7 text-black/80">
+              The service is provided for informational and interpretive support
+              purposes only.
+            </p>
+            <p className="text-[15px] leading-7 text-black/80">
+              Use of the service does not create a professional relationship of
+              any kind.
+            </p>
+          </section>
 
-These Terms govern the use of VIREKA Space.
+          <section className="space-y-4">
+            <h2 className="text-xl font-light tracking-[-0.01em]">
+              Nature of the service
+            </h2>
+            <p className="text-[15px] leading-7 text-black/80">
+              VIREKA Space does not provide medical, psychological, legal,
+              financial, or other professional advice.
+            </p>
+            <p className="text-[15px] leading-7 text-black/80">
+              The service does not diagnose, treat, or resolve personal,
+              emotional, relational, or technical problems. It is designed only
+              to help clarify how a situation is being understood.
+            </p>
+            <p className="text-[15px] leading-7 text-black/80">
+              Any decision, action, interpretation, or reliance based on the use
+              of the service remains the sole responsibility of the user.
+            </p>
+          </section>
 
-VIREKA Space provides a structured environment for clarifying how situations are being understood before decisions are made or AI prompts are written. By accessing or using the service, you agree to these Terms. If you do not agree, please do not use the service.
+          <section className="space-y-4">
+            <h2 className="text-xl font-light tracking-[-0.01em]">
+              User responsibility
+            </h2>
+            <p className="text-[15px] leading-7 text-black/80">
+              Users are responsible for how they use the service and for any
+              actions taken after using it.
+            </p>
+            <p className="text-[15px] leading-7 text-black/80">
+              Users should exercise judgment and seek qualified professional
+              guidance where needed.
+            </p>
+            <p className="text-[15px] leading-7 text-black/80">
+              The service should not be used as a substitute for professional
+              care, crisis support, emergency assistance, or expert evaluation.
+            </p>
+          </section>
 
-These Terms are intended to establish clarity regarding the nature of the service, appropriate use, and the responsibilities of both the user and the service provider.
+          <section className="space-y-4">
+            <h2 className="text-xl font-light tracking-[-0.01em]">
+              Acceptable use
+            </h2>
+            <p className="text-[15px] leading-7 text-black/80">
+              You agree not to misuse the service, interfere with its operation,
+              attempt unauthorized access, or use the service in a way that may
+              harm the platform, other users, or third parties.
+            </p>
+            <p className="text-[15px] leading-7 text-black/80">
+              You may not use VIREKA Space for unlawful activity, harmful
+              conduct, or any purpose that violates applicable law or
+              regulation.
+            </p>
+          </section>
 
-Use of the service
+          <section className="space-y-4">
+            <h2 className="text-xl font-light tracking-[-0.01em]">
+              Availability and changes
+            </h2>
+            <p className="text-[15px] leading-7 text-black/80">
+              VIREKA Space may be updated, modified, suspended, or discontinued
+              at any time, with or without notice.
+            </p>
+            <p className="text-[15px] leading-7 text-black/80">
+              We do not guarantee uninterrupted availability, error-free
+              performance, or that the service will always function as expected.
+            </p>
+          </section>
 
-VIREKA Space may be used to explore how situations are interpreted, including identifying what appears to be happening, what may be assumed, and what may remain unclear.
+          <section className="space-y-4">
+            <h2 className="text-xl font-light tracking-[-0.01em]">
+              Disclaimer of warranties
+            </h2>
+            <p className="text-[15px] leading-7 text-black/80">
+              The service is provided on an &ldquo;as is&rdquo; and &ldquo;as
+              available&rdquo; basis, without warranties of any kind, express or
+              implied.
+            </p>
+            <p className="text-[15px] leading-7 text-black/80">
+              We make no warranties regarding the accuracy, completeness,
+              reliability, suitability, or availability of the service or any
+              output it produces.
+            </p>
+          </section>
 
-The service is provided for informational and interpretive support purposes only.
+          <section className="space-y-4">
+            <h2 className="text-xl font-light tracking-[-0.01em]">
+              Limitation of liability
+            </h2>
+            <p className="text-[15px] leading-7 text-black/80">
+              To the fullest extent permitted by law, VIREKA Space and its
+              operator shall not be liable for any direct, indirect, incidental,
+              consequential, special, or exemplary damages arising from or
+              related to the use of, or inability to use, the service.
+            </p>
+            <p className="text-[15px] leading-7 text-black/80">
+              This includes, but is not limited to, decisions made, actions
+              taken, losses incurred, or outcomes experienced in connection with
+              use of the service.
+            </p>
+          </section>
 
-Use of the service does not create a professional relationship of any kind.
+          <section className="space-y-4">
+            <h2 className="text-xl font-light tracking-[-0.01em]">
+              Intellectual property
+            </h2>
+            <p className="text-[15px] leading-7 text-black/80">
+              The design, structure, branding, and original content of VIREKA
+              Space are protected by applicable intellectual property laws.
+            </p>
+            <p className="text-[15px] leading-7 text-black/80">
+              You may not reproduce, distribute, modify, or exploit any part of
+              the service except as permitted by law or with prior written
+              permission.
+            </p>
+          </section>
 
-Nature of the service
+          <section className="space-y-4">
+            <h2 className="text-xl font-light tracking-[-0.01em]">
+              Changes to these Terms
+            </h2>
+            <p className="text-[15px] leading-7 text-black/80">
+              These Terms may be updated from time to time. Continued use of the
+              service after changes are posted constitutes acceptance of the
+              revised Terms.
+            </p>
+          </section>
 
-VIREKA Space does not provide legal advice, medical advice, mental health services, financial advice, or emergency support.
-
-The system does not make decisions and does not determine outcomes. It helps structure interpretation so that decisions and prompts may be developed with greater clarity.
-
-Outputs generated through the service are not guarantees of accuracy, completeness, or suitability for any particular purpose.
-
-User responsibility
-
-Users remain fully responsible for how they interpret and apply any information produced through the service.
-
-Users are responsible for decisions, actions, prompts, communications, and outcomes arising from use of the service.
-
-Users should exercise judgment and discretion when relying on any output.
-
-Acceptable use
-
-Users agree not to use the service in ways that:
-
-• violate applicable laws or regulations  
-• attempt to gain unauthorized access to systems or data  
-• interfere with the operation or security of the service  
-• attempt to disrupt, overload, or reverse engineer the system  
-• use the service for unlawful, harmful, or abusive purposes  
-
-VIREKA Space may restrict or suspend access where misuse is detected.
-
-Intellectual property
-
-The structure, design, content, and underlying concepts of VIREKA Space are the intellectual property of VIREKA Space unless otherwise stated.
-
-Users retain rights to the text they provide as input.
-
-By using the service, users grant permission for submitted text to be processed for the purpose of generating structured interpretive output.
-
-Availability and changes
-
-The service may be modified, updated, interrupted, or discontinued at any time.
-
-Features, functionality, and availability may change without notice.
-
-While reasonable effort is made to maintain reliability, uninterrupted access cannot be guaranteed.
-
-Disclaimer
-
-The service is provided on an "as is" basis without warranties of any kind, whether express or implied.
-
-VIREKA Space does not guarantee that outputs will be free from error or that the service will meet all expectations or requirements.
-
-Limitation of liability
-
-To the extent permitted by law, VIREKA Space shall not be liable for any direct, indirect, incidental, consequential, or special damages arising from the use of the service.
-
-Use of the service is at the user's own discretion.
-
-Changes to these Terms
-
-These Terms may be updated periodically.
-
-Continued use of the service after changes are made constitutes acceptance of the revised Terms.
-
-Contact
-
-For questions regarding these Terms:
-
-admin@vireka.space
+          <section className="space-y-4">
+            <h2 className="text-xl font-light tracking-[-0.01em]">Contact</h2>
+            <p className="text-[15px] leading-7 text-black/80">
+              For questions regarding these Terms, please contact:
+            </p>
+            <p className="text-[15px] leading-7 text-black/80">
+              admin@vireka.space
+            </p>
+          </section>
+        </div>
+      </div>
+    </main>
+  );
+}

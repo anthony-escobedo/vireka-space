@@ -750,7 +750,7 @@ if (existingUsage && existingUsage.interaction_count >= 20) {
   return NextResponse.json(
     {
       error:
-        "Free usage includes 20 interactions per day. Interaction can continue tomorrow or through subscription.",
+        "Free usage includes 20 interactions per day. You may continue tomorrow or subscribe for extended access.",
       limitReached: true,
     },
     { status: 429 }

@@ -2,7 +2,7 @@ import StaticPageShell, {
   staticBodyStyle,
   staticCardStyle,
   staticEmailStyle,
-} from "@/components/StaticPageShell";
+} from "../../../components/StaticPageShell";
 
 export default function ContactPage() {
   return (

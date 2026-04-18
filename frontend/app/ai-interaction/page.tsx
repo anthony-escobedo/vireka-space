@@ -364,11 +364,12 @@ export default function AIInteractionPage() {
 
     try {
       const payload = {
-        input: trimmed,
-        action,
-        history,
-        context: "ai-interaction",
-      };
+  input: trimmed,
+  action,
+  history,
+  context: "ai-interaction",
+  anonymousId: getOrCreateAnonymousId(),
+};
 
       const res = await fetch("/api/clarify", {
         method: "POST",

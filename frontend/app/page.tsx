@@ -202,7 +202,7 @@ export default function HomePage() {
                     top: "52px",
                     right: -110,
                     minWidth: "220px",
-                    padding: "8px",
+                    padding: "6px",
                     borderRadius: "16px",
                     backgroundColor: "#f8f6f1",
                     border: "1px solid rgba(0,0,0,0.08)",

@@ -873,11 +873,35 @@ if (existingUsage) {
     }
 
     if (action === "clarify" && detectClosureSignal(input)) {
-      return NextResponse.json({
-        mode: "close",
-        message: "Acknowledged. A new situation can be started whenever needed.",
-      } satisfies CloseResponse);
+  const closeResponse: CloseResponse = {
+    mode: "close",
+    message: "Acknowledged. A new situation can be started whenever needed.",
+  };
+
+  if (conversationId) {
+    const { error: assistantMessageInsertError } = await supabase
+      .from("messages")
+      .insert({
+        conversation_id: conversationId,
+        role: "assistant",
+        content: closeResponse.message,
+      });
+
+    if (assistantMessageInsertError) {
+      return NextResponse.json(
+        {
+          error: `Failed to save assistant message: ${assistantMessageInsertError.message}`,
+        },
+        { status: 500 }
+      );
     }
+  }
+
+  return NextResponse.json({
+    ...closeResponse,
+    conversationId,
+  });
+}
 
       if (action === "clarify" && input && conversationId) {
       const { error: userMessageInsertError } = await supabase

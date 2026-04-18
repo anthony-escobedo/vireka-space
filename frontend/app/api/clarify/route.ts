@@ -44,6 +44,7 @@ type VirekaRequest = {
   history?: ConversationTurn[];
   latestResult?: ClarifyResponse;
   context?: RequestContext;
+  anonymousId?: string | null;
 };
 
 type ChatCompletionResponse = {
@@ -701,10 +702,16 @@ export async function POST(req: NextRequest) {
 
     const context: RequestContext =
       body.context === "ai-interaction" ? "ai-interaction" : "clarify";
+    
+    const anonymousId = body.anonymousId ?? null;
 
     const history = sanitizeHistory(body.history);
     const input = normalizeWhitespace(body.input ?? "");
     const latestResult = sanitizeLatestResult(body.latestResult);
+
+    if (!anonymousId) {
+  return NextResponse.json({ error: "Missing anonymousId" }, { status: 400 });
+}
 
     if (action === "clarify" && !input) {
       return NextResponse.json({ error: "Input required" }, { status: 400 });

@@ -1361,7 +1361,7 @@ function renderActiveResponse(panel: ClarificationPanel) {
             width: "100%",
             boxSizing: "border-box",
             margin: "0 auto",
-            padding: "1.5rem 1.25rem 4rem",
+            padding: "1.5rem 1.25rem 2rem",
             overflowX: "hidden",
             minWidth: 0,
           }}

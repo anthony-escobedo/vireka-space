@@ -1135,7 +1135,7 @@ function renderActiveResponse(panel: ClarificationPanel) {
           disabled={isTopClarifyDisabled}
           style={{
             flexShrink: 0,
-            padding: "0.78rem 2rem",
+            padding: "0.85rem 2.3rem",
             backgroundColor: isTopClarifyDisabled ? "#d6d3d1" : "#111",
             color: isTopClarifyDisabled ? "#6f6a64" : "#fff",
             border: isTopClarifyDisabled ? "1px solid #d6d3d1" : "1px solid #111",

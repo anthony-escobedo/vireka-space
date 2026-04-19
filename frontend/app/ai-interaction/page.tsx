@@ -1338,9 +1338,9 @@ function renderActiveResponse(panel: ClarificationPanel) {
       style={{
         flexShrink: 0,
         padding: "0.7rem 1.15rem",
-        backgroundColor: "#fff",
-        color: "#111",
-        border: "1px solid #c9c9c6",
+        backgroundColor: "#faf9f7",
+        color: "#6f6a64",
+        border: "1px solid #d8d5cf",
         borderRadius: "999px",
         fontSize: "0.9rem",
         fontWeight: 600,

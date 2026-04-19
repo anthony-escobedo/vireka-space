@@ -1060,8 +1060,25 @@ function handleDone(): void {
   }
 
   function renderTopActionRow() {
-    return (
-      <div style={{ display: "flex", gap: "0.75rem", alignItems: "center", flexWrap: "wrap" }}>
+  return (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "1fr auto 1fr",
+        alignItems: "center",
+        columnGap: "0.75rem",
+        width: "100%",
+        minWidth: 0,
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-start",
+          alignItems: "center",
+          minWidth: 0,
+        }}
+      >
         <button
           type="button"
           onClick={() => startListening("top")}
@@ -1081,39 +1098,53 @@ function handleDone(): void {
         >
           {listeningTarget === "top" ? "Listening…" : "Mic"}
         </button>
+      </div>
 
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
         <button
           type="button"
           onClick={() => handleClarify("top")}
           disabled={isTopClarifyDisabled}
           style={{
             flexShrink: 0,
-            padding: "0.7rem 1.75rem",
-            backgroundColor: isTopClarifyDisabled ? "#ccc" : "#111",
-            color: "#fff",
-            border: "none",
+            padding: "0.85rem 2.3rem",
+            backgroundColor: isTopClarifyDisabled ? "#d6d3d1" : "#111",
+            color: isTopClarifyDisabled ? "#6f6a64" : "#fff",
+            border: isTopClarifyDisabled ? "1px solid #d6d3d1" : "1px solid #111",
             borderRadius: "999px",
             fontSize: "0.9rem",
             fontWeight: 600,
             cursor: isTopClarifyDisabled ? "not-allowed" : "pointer",
-            transition: "background-color 0.15s",
+            transition: "background-color 0.15s, border-color 0.15s, box-shadow 0.15s",
             letterSpacing: "-0.01em",
             whiteSpace: "nowrap",
+            boxShadow: isTopClarifyDisabled ? "none" : "0 1px 2px rgba(0,0,0,0.08)",
           }}
           onMouseEnter={(e) => {
-            if (!isTopClarifyDisabled)
+            if (!isTopClarifyDisabled) {
               e.currentTarget.style.backgroundColor = "#333";
+            }
           }}
           onMouseLeave={(e) => {
-            if (!isTopClarifyDisabled)
+            if (!isTopClarifyDisabled) {
               e.currentTarget.style.backgroundColor = "#111";
+            }
           }}
         >
           {loading ? "Clarifying…" : "Clarify"}
         </button>
       </div>
-    );
-  }
+
+      <div />
+    </div>
+  );
+}
 
   function renderFollowupBox() {
     if (!result || isDone || !lastClarifyResult) return null;
@@ -1190,89 +1221,115 @@ function handleDone(): void {
           </p>
 
           <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginTop: "0.35rem",
-              gap: "0.75rem",
-            }}
-          >
-          
-            <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
-            
-            <button
-              type="button"
-              onClick={() => startListening("followup")}
-              disabled={isFollowupMicDisabled}
-              style={{
-                padding: "0.7rem 1rem",
-                backgroundColor: "#fff",
-                color: "#111",
-                border: "1px solid #d6d3d1",
-                borderRadius: "999px",
-                fontSize: "0.9rem",
-                fontWeight: 600,
-                cursor: isFollowupMicDisabled ? "not-allowed" : "pointer",
-                whiteSpace: "nowrap",
-                opacity: isFollowupMicDisabled ? 0.6 : 1,
-              }}
-            >
-              {listeningTarget === "followup" ? "Listening…" : "Mic"}
-            </button>
+  style={{
+    display: "grid",
+    gridTemplateColumns: "1fr auto 1fr",
+    alignItems: "center",
+    columnGap: "0.75rem",
+    marginTop: "0.35rem",
+    width: "100%",
+  }}
+>
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "flex-start",
+      alignItems: "center",
+      minWidth: 0,
+    }}
+  >
+    <button
+      type="button"
+      onClick={() => startListening("followup")}
+      disabled={isFollowupMicDisabled}
+      style={{
+        padding: "0.7rem 1rem",
+        backgroundColor: "#fff",
+        color: "#111",
+        border: "1px solid #d6d3d1",
+        borderRadius: "999px",
+        fontSize: "0.9rem",
+        fontWeight: 600,
+        cursor: isFollowupMicDisabled ? "not-allowed" : "pointer",
+        whiteSpace: "nowrap",
+        opacity: isFollowupMicDisabled ? 0.6 : 1,
+      }}
+    >
+      {listeningTarget === "followup" ? "Listening…" : "Mic"}
+    </button>
+  </div>
 
-            <button
-              type="button"
-              onClick={() => handleClarify("followup")}
-              disabled={isFollowupClarifyDisabled}
-              style={{
-                flexShrink: 0,
-                padding: "0.7rem 1.75rem",
-                backgroundColor: isFollowupClarifyDisabled ? "#ccc" : "#111",
-                color: "#fff",
-                border: "none",
-                borderRadius: "999px",
-                fontSize: "0.9rem",
-                fontWeight: 600,
-                cursor: isFollowupClarifyDisabled ? "not-allowed" : "pointer",
-                transition: "background-color 0.15s",
-                letterSpacing: "-0.01em",
-                whiteSpace: "nowrap",
-              }}
-              onMouseEnter={(e) => {
-                if (!isFollowupClarifyDisabled)
-                  e.currentTarget.style.backgroundColor = "#333";
-              }}
-              onMouseLeave={(e) => {
-                if (!isFollowupClarifyDisabled)
-                  e.currentTarget.style.backgroundColor = "#111";
-              }}
-            >
-              {loading ? "Clarifying…" : "Clarify"}
-            </button>
-            </div>
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+    }}
+  >
+    <button
+      type="button"
+      onClick={() => handleClarify("followup")}
+      disabled={isFollowupClarifyDisabled}
+      style={{
+        flexShrink: 0,
+        padding: "0.85rem 2.3rem",
+        backgroundColor: isFollowupClarifyDisabled ? "#d6d3d1" : "#111",
+        color: isFollowupClarifyDisabled ? "#6f6a64" : "#fff",
+        border: isFollowupClarifyDisabled ? "1px solid #d6d3d1" : "1px solid #111",
+        borderRadius: "999px",
+        fontSize: "0.9rem",
+        fontWeight: 600,
+        cursor: isFollowupClarifyDisabled ? "not-allowed" : "pointer",
+        transition: "background-color 0.15s, border-color 0.15s, box-shadow 0.15s",
+        letterSpacing: "-0.01em",
+        whiteSpace: "nowrap",
+        boxShadow: isFollowupClarifyDisabled ? "none" : "0 1px 2px rgba(0,0,0,0.08)",
+      }}
+      onMouseEnter={(e) => {
+        if (!isFollowupClarifyDisabled) {
+          e.currentTarget.style.backgroundColor = "#333";
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!isFollowupClarifyDisabled) {
+          e.currentTarget.style.backgroundColor = "#111";
+        }
+      }}
+    >
+      {loading ? "Clarifying…" : "Clarify"}
+    </button>
+  </div>
 
-            <button
-              type="button"
-              onClick={handleDone}
-              disabled={isDoneDisabled}
-              style={{
-                flexShrink: 0,
-                padding: "0.7rem 1.15rem",
-                backgroundColor: "#fff",
-                color: "#111",
-                border: "1px solid #c9c9c6",
-                borderRadius: "999px",
-                fontSize: "0.9rem",
-                fontWeight: 600,
-                cursor: isDoneDisabled ? "not-allowed" : "pointer",
-                whiteSpace: "nowrap",
-                opacity: isDoneDisabled ? 0.6 : 1,
-              }}
-            >
-              Done
-            </button>
-          </div>
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "flex-end",
+      alignItems: "center",
+      minWidth: 0,
+    }}
+  >
+    <button
+      type="button"
+      onClick={handleDone}
+      disabled={isDoneDisabled}
+      style={{
+        flexShrink: 0,
+        padding: "0.7rem 1.15rem",
+        backgroundColor: "#faf9f7",
+        color: "#6f6a64",
+        border: "1px solid #d8d5cf",
+        borderRadius: "999px",
+        fontSize: "0.9rem",
+        fontWeight: 600,
+        cursor: isDoneDisabled ? "not-allowed" : "pointer",
+        whiteSpace: "nowrap",
+        opacity: isDoneDisabled ? 0.6 : 1,
+      }}
+    >
+      Done
+    </button>
+  </div>
+</div>
         </div>
       </div>
     );
@@ -1475,29 +1532,26 @@ function handleDone(): void {
     />
 
     <div
-      style={{
-        display: "flex",
-        alignItems: "flex-end",
-        justifyContent: "space-between",
-        gap: "1.5rem",
-        marginTop: "1rem",
-        flexWrap: "wrap",
-        minWidth: 0,
-      }}
-    >
-      <p
-        style={{
-          fontSize: "0.8rem",
-          color: "#888",
-          lineHeight: 1.55,
-          margin: 0,
-          maxWidth: "480px",
-          flex: "1 1 260px",
-          minWidth: 0,
-        }}
-      >
-        Include the situation as it currently appears, even if interpretation or uncertainty are present.
-      </p>
+  style={{
+    display: "flex",
+    flexDirection: "column",
+    gap: "1rem",
+    marginTop: "1rem",
+    minWidth: 0,
+  }}
+>
+  <p
+    style={{
+      fontSize: "0.8rem",
+      color: "#888",
+      lineHeight: 1.55,
+      margin: 0,
+      maxWidth: "480px",
+      minWidth: 0,
+    }}
+  >
+    Include anything that may help clarify the situation or where interpretation feels uncertain.
+  </p>
 
       {renderTopActionRow()}
     </div>

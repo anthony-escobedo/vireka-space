@@ -197,28 +197,32 @@ export interface TranslationDictionary {
 
   // About Page
   about: {
-  pageLabel: string;
-  heroTitle: string;
-  subtitle: string;
-  sections: {
-    function: {
-      title: string;
-      content: string[];
-    };
-    effect: {
-      title: string;
-      content: string[];
-    };
-    structuralImplication: {
-      title: string;
-      content: string[];
-    };
-    orientation: {
-      title: string;
-      content: string[];
+    pageLabel: string;
+    heroTitle: string;
+    subtitle: string;
+    sections: {
+      function: {
+        title: string;
+        content: string[];
+      };
+      effect: {
+        title: string;
+        content: string[];
+      };
+      structuralImplication: {
+        title: string;
+        content: string[];
+      };
+      orientation: {
+        title: string;
+        content: string[];
+      };
+      origin: {
+        title: string;
+        content: string[];
+      };
     };
   };
-};
   // FAQ Page
   faq: {
     pageLabel: string;

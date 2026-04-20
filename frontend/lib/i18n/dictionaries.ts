@@ -198,6 +198,12 @@ const dictionaries: Record<Language, TranslationDictionary> = {
             'Interpretation does not only influence individual decisions. It also influences how systems are designed. The way a situation is understood shapes the direction of thought, the questions that arise, and the structures that are created in response. In this sense, design begins before implementation. It begins in how something is seen.',
           ],
         },
+        effect: {
+          title: 'Effect',
+          content: [
+            'Clearer interpretation tends to make the situation easier to read as a whole before you act or write a prompt.',
+          ],
+        },
         structuralImplication: {
           title: "Structural Implication",
           content: [
@@ -209,6 +215,13 @@ const dictionaries: Record<Language, TranslationDictionary> = {
           content: [
             'The ideas underlying VIREKA Space are explored in Beyond Thought: Awareness as Design Intelligence, which considers how awareness influences interpretation, reasoning, and design. VIREKA Space brings these ideas into a practical environment where interpretation can become more visible before action is taken.'
           ]
+        },
+        origin: {
+          title: 'Origin',
+          content: [
+            'Based on Beyond Thought: Awareness as Design Intelligence.',
+            'Developed by Anthony Escobedo.',
+          ],
         },
       },
     },
@@ -595,6 +608,18 @@ const dictionaries: Record<Language, TranslationDictionary> = {
             '• lo que permanece incierto',
             'Al distinguir observación, suposición e incertidumbre, la interpretación se vuelve más clara, permitiendo tanto el razonamiento humano como la interacción con IA proceder desde condiciones más estables.',
             'El sistema no proporciona consejos ni prescribe conclusiones. En su lugar, estructura la interpretación para que las decisiones y los prompts puedan formarse con mayor claridad.',
+          ],
+        },
+        effect: {
+          title: 'Efecto',
+          content: [
+            'Con una interpretación más clara, la situación suele ser más fácil de leer en conjunto antes de actuar o redactar un prompt.',
+          ],
+        },
+        structuralImplication: {
+          title: 'Implicación estructural',
+          content: [
+            'La interpretación no solo influye en las decisiones individuales. También influye en cómo se diseñan los sistemas. La forma en que se comprende una situación moldea la dirección del pensamiento, las preguntas que surgen y las estructuras que se crean en respuesta. En este sentido, el diseño comienza antes de la implementación. Comienza en cómo se ve algo.',
           ],
         },
         orientation: {
@@ -998,6 +1023,18 @@ const dictionaries: Record<Language, TranslationDictionary> = {
             'O sistema não fornece conselhos nem prescreve conclusões. Em vez disso, estrutura a interpretação para que decisões e prompts possam ser formados com maior clareza.',
           ],
         },
+        effect: {
+          title: 'Efeito',
+          content: [
+            'Com uma interpretação mais clara, a situação tende a ser mais fácil de ler como um todo antes de agir ou escrever um prompt.',
+          ],
+        },
+        structuralImplication: {
+          title: 'Implicação estrutural',
+          content: [
+            'A interpretação não influencia apenas decisões individuais. Também influencia como os sistemas são projetados. A forma como uma situação é compreendida molda a direção do pensamento, as perguntas que surgem e as estruturas criadas em resposta. Nesse sentido, o design começa antes da implementação. Começa em como algo é visto.',
+          ],
+        },
         orientation: {
           title: 'Orientação',
           content: [
@@ -1197,6 +1234,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
           ],
         },
       },
+    },
   },
 };
 

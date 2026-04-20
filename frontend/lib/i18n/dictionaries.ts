@@ -193,15 +193,13 @@ const dictionaries: Record<Language, TranslationDictionary> = {
             'VIREKA Space was created to support clarity at a point that often goes unnoticed. Before a decision is made or an AI prompt is written, a situation is already being interpreted. That interpretation quietly shapes what feels reasonable, what seems necessary, what appears to make sense, and what it feels appropriate to ask.',
             'Sometimes a situation feels difficult not because it is complex, but because several interpretations seem possible at the same time, each suggesting a slightly different direction. Certain elements feel clear, others feel uncertain, and some assumptions may already be forming without being fully seen. When interpretation is unclear, decisions can feel pressured, and prompts can feel harder to form.',
             'VIREKA Space provides a simple structure that helps make these conditions more visible. Instead of suggesting what should be done, the system helps bring attention to how the situation is being understood. As the structure of interpretation becomes clearer, it often becomes easier to sense whether enough clarity exists for a decision or for forming a prompt. In many cases, this also clarifies the intention guiding the question itself.',
-            'This can support a quieter kind of confidence. Not certainty in the outcome, but greater ease in how the situation itself is being seen.',
-            'AI systems respond to how situations are described. Even small differences in wording can influence what the system emphasizes, how it reasons, and what kinds of responses appear plausible. When interpretation becomes clearer, interaction with AI often becomes more coherent as well.',
-            'Interpretation does not only influence individual decisions. It also influences how systems are designed. The way a situation is understood shapes the direction of thought, the questions that arise, and the structures that are created in response. In this sense, design begins before implementation. It begins in how something is seen.',
           ],
         },
         effect: {
           title: 'Effect',
           content: [
-            'Clearer interpretation tends to make the situation easier to read as a whole before you act or write a prompt.',
+            'This can support a quieter kind of confidence. Not certainty in the outcome, but greater ease in how the situation itself is being seen.',
+            'AI systems respond to how situations are described. Even small differences in wording can influence what the system emphasizes, how it reasons, and what kinds of responses appear plausible. When interpretation becomes clearer, interaction with AI often becomes more coherent as well.',
           ],
         },
         structuralImplication: {
@@ -218,10 +216,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
         },
         origin: {
           title: 'Origin',
-          content: [
-            'Based on Beyond Thought: Awareness as Design Intelligence.',
-            'Developed by Anthony Escobedo.',
-          ],
+          content: [],
         },
       },
     },

@@ -198,37 +198,39 @@ fontSize: "0.95rem",
       ))}
     </section>
 
-    <section>
-      <h2
-        style={{
-          fontSize: 13,
-          letterSpacing: "0.08em",
-          textTransform: "uppercase",
-          marginBottom: 18,
-          color: "#9b948a",
-          fontWeight: 500,
-        }}
-      >
-        {t.about.sections.origin.title}
-      </h2>
-      {t.about.sections.origin.content.map((paragraph, index) => (
-        <p
-          key={index}
+    {t.about.sections.origin.content.length > 0 ? (
+      <section>
+        <h2
           style={{
+            fontSize: 13,
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
             marginBottom: 18,
-            fontSize: 16,
-            lineHeight: 1.72,
-            color: "#2b2b2b",
-            fontWeight: 400,
-            maxWidth: 640,
-            wordBreak: "break-word",
-            overflowWrap: "anywhere",
+            color: "#9b948a",
+            fontWeight: 500,
           }}
         >
-          {paragraph}
-        </p>
-      ))}
-    </section>
+          {t.about.sections.origin.title}
+        </h2>
+        {t.about.sections.origin.content.map((paragraph, index) => (
+          <p
+            key={index}
+            style={{
+              marginBottom: 18,
+              fontSize: 16,
+              lineHeight: 1.72,
+              color: "#2b2b2b",
+              fontWeight: 400,
+              maxWidth: 640,
+              wordBreak: "break-word",
+              overflowWrap: "anywhere",
+            }}
+          >
+            {paragraph}
+          </p>
+        ))}
+      </section>
+    ) : null}
   </main>
 </div>
 

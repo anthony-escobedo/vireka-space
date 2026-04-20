@@ -198,21 +198,18 @@ const dictionaries: Record<Language, TranslationDictionary> = {
             'Interpretation does not only influence individual decisions. It also influences how systems are designed. The way a situation is understood shapes the direction of thought, the questions that arise, and the structures that are created in response. In this sense, design begins before implementation. It begins in how something is seen.',
           ],
         },
+        structuralImplication: {
+          title: "Structural Implication",
+          content: [
+            'Interpretation does not only influence individual decisions. It also influences how systems are designed. The way a situation is understood shapes the direction of thought, the questions that arise, and the structures that are created in response. In this sense, design begins before implementation. It begins in how something is seen.'
+          ]
+        },
         orientation: {
-          title: 'Orientation',
+          title: "Orientation",
           content: [
-            'The ideas underlying VIREKA Space are explored in Beyond Thought: Awareness as Design Intelligence, which considers how awareness influences interpretation, reasoning, and design. VIREKA Space brings these ideas into a practical environment where interpretation can become more visible before action is taken.',
-            'Often, when interpretation becomes clearer, the next step does not need to be forced. It becomes easier to see whether a response is needed, what form it may take, or whether more observation is still useful.',
-          ],
-        },
-        origin: {
-          title: 'Origin',
-          content: [
-            'VIREKA Space exists to support this earlier moment, where understanding begins to take shape and where small shifts in clarity can influence everything that follows.',
-          ],
-        },
-      },
-    },
+            'The ideas underlying VIREKA Space are explored in Beyond Thought: Awareness as Design Intelligence, which considers how awareness influences interpretation, reasoning, and design. VIREKA Space brings these ideas into a practical environment where interpretation can become more visible before action is taken."
+          ]
+        }
     faq: {
       pageLabel: 'FAQ',
       heroTitle: 'Frequently Asked Questions',

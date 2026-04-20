@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { CSSProperties } from "react";
+import { useLanguage } from "../../lib/i18n/useLanguage";
 
 const pageStyle: CSSProperties = {
   minHeight: "100vh",
@@ -88,48 +89,49 @@ const listLinkStyle: CSSProperties = {
 };
 
 export default function SettingsPage() {
+  const { t } = useLanguage();
   return (
     <main style={pageStyle}>
       <div style={containerStyle}>
         <Link href="/" style={backLinkStyle}>
           <span aria-hidden="true">←</span>
-          <span>Back to home</span>
+          <span>{t.settings.backToHome}</span>
         </Link>
 
-        <div style={capsuleStyle}>SETTINGS</div>
+        <div style={capsuleStyle}>{t.settings.badge}</div>
 
-        <h1 style={titleStyle}>Settings and support</h1>
+        <h1 style={titleStyle}>{t.settings.title}</h1>
 
         <p style={introStyle}>
-          Account access, usage information, legal pages, and contact details.
+          {t.settings.subtitle}
         </p>
 
         <section style={sectionStyle}>
-          <h2 style={sectionTitleStyle}>Access</h2>
+          <h2 style={sectionTitleStyle}>{t.settings.access}</h2>
           <div style={cardStyle}>
             <Link href="/settings/account" style={listLinkStyle}>
-              Account
+              {t.settings.account}
             </Link>
 
             <Link href="/settings/plan" style={listLinkStyle}>
-              Plan
+              {t.settings.plan}
             </Link>
 
             <Link href="/settings/contact" style={listLinkStyle}>
-              Contact
+              {t.settings.contact}
             </Link>
           </div>
         </section>
 
         <section style={sectionStyle}>
-          <h2 style={sectionTitleStyle}>Legal</h2>
+          <h2 style={sectionTitleStyle}>{t.settings.legal}</h2>
           <div style={cardStyle}>
             <Link href="/privacy" style={listLinkStyle}>
-              Privacy
+              {t.settings.privacy}
             </Link>
 
             <Link href="/terms" style={listLinkStyle}>
-              Terms
+              {t.settings.terms}
             </Link>
           </div>
         </section>

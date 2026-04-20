@@ -47,6 +47,7 @@ type VirekaRequest = {
   context?: RequestContext;
   anonymousId?: string | null;
   conversationId?: string | null;
+  language?: string;
 };
 
 type ChatCompletionResponse = {
@@ -741,17 +742,20 @@ export async function POST(req: NextRequest) {
     const anonymousId = body.anonymousId ?? null;
     const incomingConversationId = body.conversationId ?? null;
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    // Graceful Supabase fallback
+    let supabase = null;
 
-    if (!supabaseUrl || !supabaseServiceRoleKey) {
-    return NextResponse.json(
-    { error: "Missing Supabase environment variables" },
-    { status: 500 }
-  );
-}
-
-    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+    if (
+      process.env.NEXT_PUBLIC_SUPABASE_URL &&
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    ) {
+      supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.SUPABASE_SERVICE_ROLE_KEY
+      );
+    } else {
+      console.warn("Supabase not configured - continuing without persistence");
+    }
 
     const today = new Date().toISOString().slice(0, 10);
 
@@ -760,110 +764,116 @@ export async function POST(req: NextRequest) {
     const latestResult = sanitizeLatestResult(body.latestResult);
 
     if (!anonymousId) {
-  return NextResponse.json({ error: "Missing anonymousId" }, { status: 400 });
-}
+      return NextResponse.json({ error: "Missing anonymousId" }, { status: 400 });
+    }
 
     let conversationId = incomingConversationId;
 
-if (!conversationId) {
-  const { data: conversationData, error: conversationInsertError } = await supabase
-    .from("conversations")
-    .insert({
-      anonymous_id: anonymousId,
-      mode: context,
-    })
-    .select("id")
-    .single();
+    // Conversation management with Supabase conditional
+    if (supabase) {
+      if (!conversationId) {
+        const { data: conversationData, error: conversationInsertError } = await supabase
+          .from("conversations")
+          .insert({
+            anonymous_id: anonymousId,
+            mode: context,
+          })
+          .select("id")
+          .single();
 
-  if (conversationInsertError || !conversationData) {
-    return NextResponse.json(
-      {
-        error: `Failed to create conversation: ${
-          conversationInsertError?.message || "Unknown error"
-        }`,
-      },
-      { status: 500 }
-    );
-  }
+        if (conversationInsertError || !conversationData) {
+          return NextResponse.json(
+            {
+              error: `Failed to create conversation: ${
+                conversationInsertError?.message || "Unknown error"
+              }`,
+            },
+            { status: 500 }
+          );
+        }
 
-  conversationId = conversationData.id;
-} else {
-  const { error: conversationUpdateError } = await supabase
-    .from("conversations")
-    .update({
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", conversationId);
+        conversationId = conversationData.id;
+      } else {
+        const { error: conversationUpdateError } = await supabase
+          .from("conversations")
+          .update({
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", conversationId);
 
-  if (conversationUpdateError) {
-    return NextResponse.json(
-      {
-        error: `Failed to update conversation: ${conversationUpdateError.message}`,
-      },
-      { status: 500 }
-    );
-  }
-}
+        if (conversationUpdateError) {
+          return NextResponse.json(
+            {
+              error: `Failed to update conversation: ${conversationUpdateError.message}`,
+            },
+            { status: 500 }
+          );
+        }
+      }
+    }
     
     if (action === "clarify" && !input) {
       return NextResponse.json({ error: "Input required" }, { status: 400 });
     }
 
-    const { data: existingUsage, error: usageReadError } = await supabase
-  .from("usage_tracking")
-  .select("id, interaction_count")
-  .eq("anonymous_id", anonymousId)
-  .eq("usage_date", today)
-  .maybeSingle();
+    // Usage tracking with Supabase conditional
+    if (supabase) {
+      const { data: existingUsage, error: usageReadError } = await supabase
+        .from("usage_tracking")
+        .select("id, interaction_count")
+        .eq("anonymous_id", anonymousId)
+        .eq("usage_date", today)
+        .maybeSingle();
 
-if (usageReadError) {
-  return NextResponse.json(
-    { error: `Failed to read usage tracking: ${usageReadError.message}` },
-    { status: 500 }
-  );
-}
+      if (usageReadError) {
+        return NextResponse.json(
+          { error: `Failed to read usage tracking: ${usageReadError.message}` },
+          { status: 500 }
+        );
+      }
 
-if (existingUsage && existingUsage.interaction_count >= 20) {
-  return NextResponse.json(
-    {
-      error:
-        "Free usage includes 20 interactions per day. Access resumes tomorrow or with subscription.",
-      limitReached: true,
-    },
-    { status: 429 }
-  );
-}
+      if (existingUsage && existingUsage.interaction_count >= 20) {
+        return NextResponse.json(
+          {
+            error:
+              "Free usage includes 20 interactions per day. Access resumes tomorrow or with subscription.",
+            limitReached: true,
+          },
+          { status: 429 }
+        );
+      }
 
-if (existingUsage) {
-  const { error: usageUpdateError } = await supabase
-    .from("usage_tracking")
-    .update({
-      interaction_count: existingUsage.interaction_count + 1,
-    })
-    .eq("id", existingUsage.id);
+      if (existingUsage) {
+        const { error: usageUpdateError } = await supabase
+          .from("usage_tracking")
+          .update({
+            interaction_count: existingUsage.interaction_count + 1,
+          })
+          .eq("id", existingUsage.id);
 
-  if (usageUpdateError) {
-    return NextResponse.json(
-      { error: `Failed to update usage tracking: ${usageUpdateError.message}` },
-      { status: 500 }
-    );
-  }
-} else {
-  const { error: usageInsertError } = await supabase
-    .from("usage_tracking")
-    .insert({
-      anonymous_id: anonymousId,
-      usage_date: today,
-      interaction_count: 1,
-    });
+        if (usageUpdateError) {
+          return NextResponse.json(
+            { error: `Failed to update usage tracking: ${usageUpdateError.message}` },
+            { status: 500 }
+          );
+        }
+      } else {
+        const { error: usageInsertError } = await supabase
+          .from("usage_tracking")
+          .insert({
+            anonymous_id: anonymousId,
+            usage_date: today,
+            interaction_count: 1,
+          });
 
-  if (usageInsertError) {
-    return NextResponse.json(
-      { error: `Failed to insert usage tracking: ${usageInsertError.message}` },
-      { status: 500 }
-    );
-  }
-}
+        if (usageInsertError) {
+          return NextResponse.json(
+            { error: `Failed to insert usage tracking: ${usageInsertError.message}` },
+            { status: 500 }
+          );
+        }
+      }
+    }
     
     if (action === "integrated_view" && !latestResult) {
       return NextResponse.json(
@@ -872,55 +882,57 @@ if (existingUsage) {
       );
     }
 
+    // Closure signal handling
     if (action === "clarify" && detectClosureSignal(input)) {
-  const closeResponse: CloseResponse = {
-    mode: "close",
-    message: "Acknowledged. A new situation can be started whenever needed.",
-  };
+      const closeResponse: CloseResponse = {
+        mode: "close",
+        message: "Acknowledged. A new situation can be started whenever needed.",
+      };
 
-  if (conversationId) {
-    const { error: assistantMessageInsertError } = await supabase
-      .from("messages")
-      .insert({
-        conversation_id: conversationId,
-        role: "assistant",
-        content: closeResponse.message,
+      if (supabase && conversationId) {
+        const { error: assistantMessageInsertError } = await supabase
+          .from("messages")
+          .insert({
+            conversation_id: conversationId,
+            role: "assistant",
+            content: closeResponse.message,
+          });
+
+        if (assistantMessageInsertError) {
+          return NextResponse.json(
+            {
+              error: `Failed to save assistant message: ${assistantMessageInsertError.message}`,
+            },
+            { status: 500 }
+          );
+        }
+      }
+
+      return NextResponse.json({
+        ...closeResponse,
+        conversationId,
       });
-
-    if (assistantMessageInsertError) {
-      return NextResponse.json(
-        {
-          error: `Failed to save assistant message: ${assistantMessageInsertError.message}`,
-        },
-        { status: 500 }
-      );
     }
-  }
 
-  return NextResponse.json({
-    ...closeResponse,
-    conversationId,
-  });
-}
-
-      if (action === "clarify" && input && conversationId) {
+    // User message insertion with Supabase conditional
+    if (supabase && action === "clarify" && input && conversationId) {
       const { error: userMessageInsertError } = await supabase
-      .from("messages")
-      .insert({
-      conversation_id: conversationId,
-      role: "user",
-      content: input,
-    });
+        .from("messages")
+        .insert({
+          conversation_id: conversationId,
+          role: "user",
+          content: input,
+        });
 
-  if (userMessageInsertError) {
-    return NextResponse.json(
-      {
-        error: `Failed to save user message: ${userMessageInsertError.message}`,
-      },
-      { status: 500 }
-    );
-  }
-}
+      if (userMessageInsertError) {
+        return NextResponse.json(
+          {
+            error: `Failed to save user message: ${userMessageInsertError.message}`,
+          },
+          { status: 500 }
+        );
+      }
+    }
     
     const userMessage =
       action === "integrated_view"
@@ -930,8 +942,15 @@ if (existingUsage) {
           )
         : buildClarifyUserMessage(input, context);
 
+    // Add language instruction to system prompt based on UI language
+    const languageInstruction = body.language ? 
+      `\n\nLanguage instruction: Generate all responses in ${body.language === 'es' ? 'Spanish' : body.language === 'pt' ? 'Portuguese' : 'English'}. All output must be in this language.` : 
+      '';
+    
+    const modifiedSystemPrompt = SYSTEM_PROMPT + languageInstruction;
+
     const messages = [
-      { role: "system", content: SYSTEM_PROMPT },
+      { role: "system", content: modifiedSystemPrompt },
       ...history,
       { role: "user", content: userMessage },
     ];
@@ -978,35 +997,40 @@ if (existingUsage) {
     const validated = validateResponse(parsed);
     const neutralized = enforceNeutralResponse(validated);
 
-    if (conversationId) {
-    const assistantContent =
-    neutralized.mode === "clarify"
-      ? formatResponseForStorage(neutralized)
-      : neutralized.message;
+    // Assistant message insertion with Supabase conditional
+    if (supabase && conversationId) {
+      const assistantContent =
+        neutralized.mode === "clarify"
+          ? formatResponseForStorage(neutralized)
+          : neutralized.message;
 
-    const { error: assistantMessageInsertError } = await supabase
-    .from("messages")
-    .insert({
-      conversation_id: conversationId,
-      role: "assistant",
-      content: assistantContent,
-    });
+      const { error: assistantMessageInsertError } = await supabase
+        .from("messages")
+        .insert({
+          conversation_id: conversationId,
+          role: "assistant",
+          content: assistantContent,
+        });
 
-    if (assistantMessageInsertError) {
-    return NextResponse.json(
-      {
-        error: `Failed to save assistant message: ${assistantMessageInsertError.message}`,
-      },
-      { status: 500 }
-    );
-  }
-}
+      if (assistantMessageInsertError) {
+        return NextResponse.json(
+          {
+            error: `Failed to save assistant message: ${assistantMessageInsertError.message}`,
+          },
+          { status: 500 }
+        );
+      }
+    }
     
     return NextResponse.json({
-  ...neutralized,
-  conversationId,
-});
-  } catch {
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+      ...neutralized,
+      conversationId,
+    });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json(
+      { error: "Failed to process request" },
+      { status: 500 }
+    );
   }
 }

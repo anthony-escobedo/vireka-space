@@ -1,29 +1,33 @@
+"use client";
+ 
 import StaticPageShell, {
   staticBodyStyle,
   staticCardStyle,
 } from "../../../components/StaticPageShell";
-
+import { useLanguage } from "../../../lib/i18n/useLanguage";
+ 
 export default function PlanPage() {
+  const { t } = useLanguage();
   return (
     <StaticPageShell
-      pill="PLAN"
-      title="Usage structure"
-      intro="VIREKA Space is designed to remain accessible while allowing expanded usage when needed."
+      pill={t.settings.plan}
+      title={t.plan.pageTitle}
+      intro={t.plan.pageIntro}
     >
       <section style={staticCardStyle}>
         <p style={staticBodyStyle}>
-          Free access includes up to 20 interactions per day.
+          {t.plan.freeAccessIncludes}
           <br />
           <br />
-          When the daily limit is reached, usage becomes available again the
-          following day.
+          {t.plan.dailyLimitReached}
           <br />
           <br />
-          Users who require extended access may choose to subscribe.
-          Subscription enables additional usage beyond the daily free limit.
+          {t.plan.extendedAccessSubscription}
+          {' '}
+          {t.plan.subscriptionEnablesAdditional}
           <br />
           <br />
-          Plan structure may evolve as the service develops.
+          {t.plan.planStructureMayEvolve}
         </p>
       </section>
     </StaticPageShell>

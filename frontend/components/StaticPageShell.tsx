@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
+import { useLanguage } from "../lib/i18n/useLanguage";
 
 type StaticPageShellProps = {
   pill: string;
@@ -140,13 +143,14 @@ export default function StaticPageShell({
   intro,
   children,
 }: StaticPageShellProps) {
+  const { t } = useLanguage();
   return (
     <main style={pageStyle}>
       <div style={containerStyle}>
         <div style={backLinkWrapperStyle}>
           <Link href="/" style={backLinkStyle}>
             <span aria-hidden="true">←</span>
-            <span>Back to home</span>
+            <span>{t.staticPage.backToHome}</span>
           </Link>
         </div>
 

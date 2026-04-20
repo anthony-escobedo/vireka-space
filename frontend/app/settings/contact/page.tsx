@@ -1,15 +1,19 @@
+"use client";
+
 import StaticPageShell, {
   staticBodyStyle,
   staticCardStyle,
   staticEmailStyle,
 } from "../../../components/StaticPageShell";
+import { useLanguage } from "../../../lib/i18n/useLanguage";
 
 export default function ContactPage() {
+  const { t } = useLanguage();
   return (
     <StaticPageShell
-      pill="CONTACT"
-      title="Contact and feedback"
-      intro="Questions, feedback, and technical issues may be directed using the contact information below."
+      pill={t.settings.contact}
+      title={t.contact.pageTitle}
+      intro={t.contact.pageIntro}
     >
       <section style={{ ...staticCardStyle, marginBottom: "1rem" }}>
         <a href="mailto:admin@vireka.space" style={staticEmailStyle}>
@@ -19,10 +23,10 @@ export default function ContactPage() {
 
       <section style={staticCardStyle}>
         <p style={staticBodyStyle}>
-          Feedback helps improve clarity, reliability, and usability over time.
+          {t.contact.feedbackHelpsImprove}
           <br />
           <br />
-          Messages are reviewed as availability allows.
+          {t.contact.messagesReviewed}
         </p>
       </section>
     </StaticPageShell>

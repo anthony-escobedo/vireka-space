@@ -3,10 +3,15 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import Footer from "../components/footer";
+import LanguageSelector from "../components/LanguageSelector";
+import { useLanguage } from "../lib/i18n/useLanguage";
+import { useLanguageContext } from "../lib/i18n/LanguageProvider";
 
 export default function HomePage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const { t} = useLanguage();
+  const { language } = useLanguageContext();
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -121,16 +126,18 @@ export default function HomePage() {
                 href="/about"
                 style={{ color: "#333", textDecoration: "none" }}
               >
-                About
+                {t.header.about}
               </Link>
 
               <Link
                 href="/faq"
                 style={{ color: "#333", textDecoration: "none" }}
               >
-                FAQ
+                {t.header.faq}
               </Link>
             </nav>
+
+            <LanguageSelector />
 
             <div
               ref={menuRef}
@@ -224,7 +231,7 @@ export default function HomePage() {
                     }}
                     onClick={() => setMenuOpen(false)}
                   >
-                    Account
+                    {t.settings.account}
                   </Link>
 
                   <Link
@@ -238,7 +245,7 @@ export default function HomePage() {
                     }}
                     onClick={() => setMenuOpen(false)}
                   >
-                    Plan
+                    {t.settings.plan}
                   </Link>
 
                   <Link
@@ -252,7 +259,7 @@ export default function HomePage() {
                     }}
                     onClick={() => setMenuOpen(false)}
                   >
-                    Privacy
+                    {t.footer.privacy}
                   </Link>
 
                   <Link
@@ -266,7 +273,7 @@ export default function HomePage() {
                     }}
                     onClick={() => setMenuOpen(false)}
                   >
-                    Terms
+                    {t.footer.terms}
                   </Link>
 
                   <Link
@@ -280,7 +287,7 @@ export default function HomePage() {
                     }}
                     onClick={() => setMenuOpen(false)}
                   >
-                    Contact
+                    {t.footer.contact}
                   </Link>
                 </div>
               )}
@@ -318,21 +325,25 @@ export default function HomePage() {
               color: "#444",
             }}
           >
-            VIREKA SPACE
+            {t.hero.badge.toUpperCase()}
           </div>
 
           <h1
             style={{
-              fontSize: "clamp(2.35rem, 5.6vw, 4.4rem)",
-              lineHeight: 1.05,
-              letterSpacing: "-0.035em",
+              fontSize: language === 'en' 
+                ? "clamp(2.35rem, 5.6vw, 4.4rem)"
+                : language === 'es'
+                ? "clamp(2.1rem, 5.2vw, 4rem)"
+                : "clamp(2.15rem, 5.3vw, 4.1rem)",
+              lineHeight: language === 'en' ? 1.05 : 1.1,
+              letterSpacing: language === 'en' ? "-0.035em" : "-0.025em",
               fontWeight: 700,
               marginBottom: "20px",
             }}
           >
-            CLARITY BEFORE DECISION.
+            {t.hero.title[0]}
             <br />
-            CLARITY BEFORE USING AI.
+            {t.hero.title[1]}
           </h1>
 
           <p
@@ -345,8 +356,7 @@ export default function HomePage() {
               marginBottom: "42px",
             }}
           >
-            VIREKA Space helps distinguish what is happening from what may be
-            assumed, so responses begin from clearer understanding.
+            {t.hero.subtitle}
           </p>
 
           <div
@@ -374,7 +384,7 @@ export default function HomePage() {
                 textAlign: "center",
               }}
             >
-              Clarify a situation
+              {t.hero.clarifyButton}
             </Link>
             <Link
               href="/ai-interaction"
@@ -392,7 +402,7 @@ export default function HomePage() {
                 textAlign: "center",
               }}
             >
-              AI interaction
+              {t.hero.aiButton}
             </Link>
           </div>
 
@@ -403,7 +413,7 @@ export default function HomePage() {
               lineHeight: 1.7,
             }}
           >
-            <div>Developed by Anthony Escobedo</div>
+            <div>{t.hero.developedBy}</div>
 
             <div>
               Based on <em>Beyond Thought: Awareness as Design Intelligence</em>

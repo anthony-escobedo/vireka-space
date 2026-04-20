@@ -1,10 +1,13 @@
-
 import "./globals.css"
+import { LanguageProvider } from "../lib/i18n/LanguageProvider"
 
 export const metadata = {
   title: "VIREKA Space",
   description: "Clarity before decision. Clarity before prompting.",
-  themeColor: "#F5F5F2"
+}
+
+export const viewport = {
+  themeColor: "#F5F5F2",
 }
 
 export default function RootLayout({
@@ -15,9 +18,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-[#f7f4ee] text-black">
-        {children}
+        <LanguageProvider>
+          {children}
+        </LanguageProvider>
       </body>
     </html>
   )
 }
-

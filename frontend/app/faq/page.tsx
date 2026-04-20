@@ -1,6 +1,10 @@
+"use client";
+
 import Link from "next/link";
+import { useLanguage } from '../../lib/i18n/useLanguage';
 
 export default function FAQPage() {
+  const { t } = useLanguage();
   return (
     <div
       style={{
@@ -16,10 +20,13 @@ export default function FAQPage() {
       <main
         style={{
           width: "100%",
-          maxWidth: "640px",
-          margin: "0 auto",
-          padding: "2rem 1.25rem 2.75rem",
-          lineHeight: 1.65,
+          maxWidth: 760,
+          marginLeft: "auto",
+          marginRight: "auto",
+          paddingLeft: 28,
+          paddingRight: 28,
+          paddingTop: 56,
+          paddingBottom: 90,
           boxSizing: "border-box",
         }}
       >
@@ -32,246 +39,367 @@ export default function FAQPage() {
               fontSize: "0.95rem",
             }}
           >
-            ← Back to home
+            ← {t.staticPage.backToHome}
           </Link>
         </div>
 
         <h1
           style={{
-            fontSize: "1.9rem",
-            fontWeight: 650,
-            marginBottom: "0.5rem",
+            fontSize: 34,
+            lineHeight: 1.28,
+            letterSpacing: "-0.01em",
+            fontWeight: 500,
+            color: "#1c1c1c",
+            marginBottom: 38,
+            maxWidth: 680,
             wordBreak: "break-word",
             overflowWrap: "anywhere",
           }}
         >
-          FAQ
+          {t.faq.heroTitle}
         </h1>
 
         <h2
           style={{
-            fontSize: "1.5rem",
-            fontWeight: 500,
-            letterSpacing: "-0.01em",
-            color: "#333",
-            marginTop: "0.35rem",
-            marginBottom: "3rem",
+            fontSize: 18,
+            lineHeight: 1.5,
+            color: "#4b4b4b",
+            fontWeight: 400,
+            marginBottom: 36,
+            maxWidth: 620,
           }}
         >
-          Questions about VIREKA Space
+          {t.faq.subtitle}
         </h2>
 
-        <section style={{ marginBottom: "2.5rem" }}>
+        <section style={{ marginBottom: "3.5rem" }}>
           <h2
             style={{
-              fontSize: "1.05rem",
-              fontWeight: 650,
-              marginBottom: "0.75rem",
+              fontSize: 18,
+              lineHeight: 1.45,
+              fontWeight: 500,
+              color: "#1f1f1f",
+              marginTop: 38,
+              marginBottom: 10,
+              maxWidth: 640,
               wordBreak: "break-word",
               overflowWrap: "anywhere",
             }}
           >
-            Why clarify a situation before using AI?
+            {t.faq.questions.whatIsVirekaSpace.question}
           </h2>
 
-          <p style={{ marginBottom: "1rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>
-            AI systems respond to how situations are framed. Even highly capable
-            models depend on the clarity of the problem they are given.
-          </p>
-
-          <p style={{ marginBottom: "1rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>
-            Clarifying what is known, what may be assumed, and what remains
-            unclear helps ensure the system is working on the right problem.
-          </p>
-
-          <p style={{ wordBreak: "break-word", overflowWrap: "anywhere" }}>
-            Small differences in framing can produce very different outputs.
-            When interpretation becomes clearer, prompts often become simpler
-            and outputs often require fewer revisions.
-          </p>
+          {t.faq.questions.whatIsVirekaSpace.answer.map((paragraph, index) => (
+            <p key={index} style={{ 
+              marginBottom: 18,
+              fontSize: 16,
+              lineHeight: 1.72,
+              color: "#2b2b2b",
+              fontWeight: 400,
+              maxWidth: 640,
+              wordBreak: "break-word", 
+              overflowWrap: "anywhere" 
+            }}>
+              {paragraph}
+            </p>
+          ))}
         </section>
 
-        <section style={{ marginBottom: "2.5rem" }}>
+        <section style={{ marginBottom: "3.5rem" }}>
           <h2
             style={{
-              fontSize: "1.05rem",
-              fontWeight: 650,
-              marginBottom: "0.75rem",
+              fontSize: 18,
+              lineHeight: 1.45,
+              fontWeight: 500,
+              color: "#1f1f1f",
+              marginTop: 38,
+              marginBottom: 10,
+              maxWidth: 640,
               wordBreak: "break-word",
               overflowWrap: "anywhere",
             }}
           >
-            If AI keeps improving, won’t it figure out what we mean anyway?
+            {t.faq.questions.whyClarify.question}
           </h2>
 
-          <p style={{ marginBottom: "1rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>
-            As AI systems become more capable, they can generate more outputs
-            across more domains, more quickly.
-          </p>
-
-          <p style={{ marginBottom: "1rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>
-            This increases the importance of clarity about what is being asked.
-          </p>
-
-          <p style={{ wordBreak: "break-word", overflowWrap: "anywhere" }}>
-            More capable systems amplify the framing conditions they receive. If
-            the situation is misinterpreted, the system may confidently produce
-            outputs that appear coherent while failing to address the underlying
-            issue. As generation becomes easier, the value of clarifying what
-            should be generated often increases rather than decreases.
-          </p>
+          {t.faq.questions.whyClarify.answer.map((paragraph, index) => (
+            <p key={index} style={{ 
+              marginBottom: 18,
+              fontSize: 16,
+              lineHeight: 1.72,
+              color: "#2b2b2b",
+              fontWeight: 400,
+              maxWidth: 640,
+              wordBreak: "break-word", 
+              overflowWrap: "anywhere" 
+            }}>
+              {paragraph}
+            </p>
+          ))}
         </section>
 
-        <section style={{ marginBottom: "2.5rem" }}>
+        <section style={{ marginBottom: "3.5rem" }}>
           <h2
             style={{
-              fontSize: "1.05rem",
-              fontWeight: 650,
-              marginBottom: "0.75rem",
+              fontSize: 18,
+              lineHeight: 1.45,
+              fontWeight: 500,
+              color: "#1f1f1f",
+              marginTop: 38,
+              marginBottom: 10,
+              maxWidth: 640,
               wordBreak: "break-word",
               overflowWrap: "anywhere",
             }}
           >
-            How is VIREKA Space different from prompt engineering?
+            {t.faq.questions.promptEngineering.question}
           </h2>
 
-          <p style={{ marginBottom: "1rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>
-            Prompt engineering focuses on optimizing instructions given to AI.
-            VIREKA Space focuses earlier, on clarifying how the situation itself
-            is being interpreted before instructions are written.
-          </p>
-
-          <p style={{ marginBottom: "1rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>
-            Instead of asking: <br />
-            “How should this prompt be written?”
-          </p>
-
-          <p style={{ wordBreak: "break-word", overflowWrap: "anywhere" }}>
-            VIREKA helps explore: <br />
-            “What is actually happening in this situation?” <br />
-            “What assumptions may be influencing interpretation?” <br />
-            “What may still be unclear?”
-          </p>
+          {t.faq.questions.promptEngineering.answer.map((paragraph, index) => (
+            <p key={index} style={{ 
+              marginBottom: 18,
+              fontSize: 16,
+              lineHeight: 1.72,
+              color: "#2b2b2b",
+              fontWeight: 400,
+              maxWidth: 640,
+              wordBreak: "break-word", 
+              overflowWrap: "anywhere"
+            }}>
+              {paragraph}
+            </p>
+          ))}
         </section>
 
-        <section style={{ marginBottom: "2.5rem" }}>
+        <section style={{ marginBottom: "3.5rem" }}>
           <h2
             style={{
-              fontSize: "1.05rem",
-              fontWeight: 650,
-              marginBottom: "0.75rem",
+              fontSize: 18,
+              lineHeight: 1.45,
+              fontWeight: 500,
+              color: "#1f1f1f",
+              marginTop: 38,
+              marginBottom: 10,
+              maxWidth: 640,
               wordBreak: "break-word",
               overflowWrap: "anywhere",
             }}
           >
-            Where does VIREKA Space fit in workflows that include AI agents or
-            automated systems?
+            {t.faq.questions.providesAnswers.question}
           </h2>
 
-          <p style={{ marginBottom: "1rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>
-            As AI systems increasingly operate through multi-step processes,
-            small misunderstandings can propagate further before being detected.
-          </p>
-
-          <p style={{ marginBottom: "1rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>
-            For example, a team may ask an AI system to “improve performance,”
-            assuming the issue is speed. The system produces optimized code,
-            revised workflows, and new documentation. Later, it becomes clear
-            that the underlying issue was unclear decision criteria rather than
-            processing time.
-          </p>
-
-          <p style={{ wordBreak: "break-word", overflowWrap: "anywhere" }}>
-            Multiple outputs may be generated, reviewed, and implemented before
-            the original problem is fully defined. Clarifying the situation
-            earlier helps reduce downstream correction costs and improves the
-            likelihood that automated systems are working toward relevant
-            outcomes.
-          </p>
+          {t.faq.questions.providesAnswers.answer.map((paragraph, index) => (
+            <p key={index} style={{ 
+              marginBottom: 18,
+              fontSize: 16,
+              lineHeight: 1.72,
+              color: "#2b2b2b",
+              fontWeight: 400,
+              maxWidth: 640,
+              wordBreak: "break-word", 
+              overflowWrap: "anywhere" 
+            }}>
+              {paragraph}
+            </p>
+          ))}
         </section>
 
-        <section style={{ marginBottom: "2.5rem" }}>
+        <section style={{ marginBottom: "3.5rem" }}>
           <h2
             style={{
-              fontSize: "1.05rem",
-              fontWeight: 650,
-              marginBottom: "0.75rem",
+              fontSize: 18,
+              lineHeight: 1.45,
+              fontWeight: 500,
+              color: "#1f1f1f",
+              marginTop: 38,
+              marginBottom: 10,
+              maxWidth: 640,
               wordBreak: "break-word",
               overflowWrap: "anywhere",
             }}
           >
-            Is VIREKA Space a decision-making tool?
+            {t.faq.questions.decisionTool.question}
           </h2>
 
-          <p style={{ marginBottom: "1rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>
-            VIREKA Space does not make decisions.
-          </p>
-
-          <p style={{ marginBottom: "1rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>
-            It helps clarify interpretation so decisions can be made with
-            greater visibility into:
-            <br />• what is known
-            <br />• what may be influencing interpretation
-            <br />• what may still require attention
-          </p>
-
-          <p style={{ wordBreak: "break-word", overflowWrap: "anywhere" }}>
-            The goal is not to prescribe conclusions, but to support clearer
-            understanding before conclusions are formed.
-          </p>
+          {t.faq.questions.decisionTool.answer.map((paragraph, index) => (
+            <p key={index} style={{ 
+              marginBottom: 18,
+              fontSize: 16,
+              lineHeight: 1.72,
+              color: "#2b2b2b",
+              fontWeight: 400,
+              maxWidth: 640,
+              wordBreak: "break-word", 
+              overflowWrap: "anywhere" 
+            }}>
+              {paragraph}
+            </p>
+          ))}
         </section>
 
-        <section style={{ marginBottom: "2.5rem" }}>
+        <section style={{ marginBottom: "3.5rem" }}>
           <h2
             style={{
-              fontSize: "1.05rem",
-              fontWeight: 650,
-              marginBottom: "0.75rem",
+              fontSize: 18,
+              lineHeight: 1.45,
+              fontWeight: 500,
+              color: "#1f1f1f",
+              marginTop: 38,
+              marginBottom: 10,
+              maxWidth: 640,
               wordBreak: "break-word",
               overflowWrap: "anywhere",
             }}
           >
-            How does VIREKA Space relate to AI alignment?
+            {t.faq.questions.alignment.question}
           </h2>
 
-          <p style={{ marginBottom: "1rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>
-            Technical alignment research focuses on ensuring that AI systems
-            behave according to specified objectives.
-          </p>
+          {t.faq.questions.alignment.answer.map((paragraph, index) => (
+            <p key={index} style={{ 
+              marginBottom: 18,
+              fontSize: 16,
+              lineHeight: 1.72,
+              color: "#2b2b2b",
+              fontWeight: 400,
+              maxWidth: 640,
+              wordBreak: "break-word", 
+              overflowWrap: "anywhere" 
+            }}>
+              {paragraph}
+            </p>
+          ))}
+        </section>
 
-          <p style={{ wordBreak: "break-word", overflowWrap: "anywhere" }}>
-            VIREKA Space operates earlier, supporting clarity about how
-            situations and objectives are interpreted before they are translated
-            into instructions. Clearer framing helps ensure technical systems
-            are applied in ways that more accurately reflect the situation they
-            are intended to address.
-          </p>
+        <section style={{ marginBottom: "3.5rem" }}>
+          <h2
+            style={{
+              fontSize: 18,
+              lineHeight: 1.45,
+              fontWeight: 500,
+              color: "#1f1f1f",
+              marginTop: 38,
+              marginBottom: 10,
+              maxWidth: 640,
+              wordBreak: "break-word",
+              overflowWrap: "anywhere",
+            }}
+          >
+            {t.faq.questions.aiAgents.question}
+          </h2>
+
+          {t.faq.questions.aiAgents.answer.map((paragraph, index) => (
+            <p key={index} style={{ 
+              marginBottom: 18,
+              fontSize: 16,
+              lineHeight: 1.72,
+              color: "#2b2b2b",
+              fontWeight: 400,
+              maxWidth: 640,
+              wordBreak: "break-word", 
+              overflowWrap: "anywhere" 
+            }}>
+              {paragraph}
+            </p>
+          ))}
+        </section>
+
+        <section style={{ marginBottom: "3.5rem" }}>
+          <h2
+            style={{
+              fontSize: 18,
+              lineHeight: 1.45,
+              fontWeight: 500,
+              color: "#1f1f1f",
+              marginTop: 38,
+              marginBottom: 10,
+              maxWidth: 640,
+              wordBreak: "break-word",
+              overflowWrap: "anywhere",
+            }}
+          >
+            {t.faq.questions.aiImprovement.question}
+          </h2>
+
+          {t.faq.questions.aiImprovement.answer.map((paragraph, index) => (
+            <p key={index} style={{ 
+              marginBottom: 18,
+              fontSize: 16,
+              lineHeight: 1.72,
+              color: "#2b2b2b",
+              fontWeight: 400,
+              maxWidth: 640,
+              wordBreak: "break-word", 
+              overflowWrap: "anywhere" 
+            }}>
+              {paragraph}
+            </p>
+          ))}
         </section>
 
         <section>
           <h2
             style={{
-              fontSize: "1.05rem",
-              fontWeight: 650,
-              marginBottom: "0.75rem",
+              fontSize: 18,
+              lineHeight: 1.45,
+              fontWeight: 500,
+              color: "#1f1f1f",
+              marginTop: 38,
+              marginBottom: 10,
+              maxWidth: 640,
               wordBreak: "break-word",
               overflowWrap: "anywhere",
             }}
           >
-            Does VIREKA Space provide answers?
+            {t.faq.questions.isCoaching.question}
           </h2>
 
-          <p style={{ marginBottom: "1rem", wordBreak: "break-word", overflowWrap: "anywhere" }}>
-            VIREKA Space does not attempt to provide answers to every
-            situation.
-          </p>
+          {t.faq.questions.isCoaching.answer.map((paragraph, index) => (
+            <p key={index} style={{ 
+              marginBottom: 18,
+              fontSize: 16,
+              lineHeight: 1.72,
+              color: "#2b2b2b",
+              fontWeight: 400,
+              maxWidth: 640,
+              wordBreak: "break-word", 
+              overflowWrap: "anywhere" 
+            }}>
+              {paragraph}
+            </p>
+          ))}
+        </section>
 
-          <p style={{ wordBreak: "break-word", overflowWrap: "anywhere" }}>
-            It helps clarify interpretation so responses, decisions, and prompts
-            develop with greater coherence. The goal is not to increase output
-            volume, but to improve the conditions under which outputs are
-            generated.
-          </p>
+        <section style={{ marginTop: 38 }}>
+          <h2
+            style={{
+              fontSize: 18,
+              lineHeight: 1.45,
+              fontWeight: 500,
+              color: "#1f1f1f",
+              marginTop: 38,
+              marginBottom: 10,
+              maxWidth: 640,
+              wordBreak: "break-word",
+              overflowWrap: "anywhere",
+            }}
+          >
+            {t.faq.questions.whoIsFor.question}
+          </h2>
+
+          {t.faq.questions.whoIsFor.answer.map((paragraph, index) => (
+            <p key={index} style={{ 
+              marginBottom: 18,
+              fontSize: 16,
+              lineHeight: 1.72,
+              color: "#2b2b2b",
+              fontWeight: 400,
+              maxWidth: 640,
+              wordBreak: "break-word", 
+              overflowWrap: "anywhere" 
+            }}>
+              {paragraph}
+            </p>
+          ))}
         </section>
       </main>
     </div>

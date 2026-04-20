@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useLanguage } from "../lib/i18n/useLanguage";
 
 type DoneStateProps = {
   onCopy: () => void;
@@ -15,6 +16,7 @@ export default function DoneState({
   onHome,
   copyLabel = "Copy result",
 }: DoneStateProps) {
+  const { t } = useLanguage();
   return (
     <div
       style={{
@@ -38,7 +40,7 @@ export default function DoneState({
           color: "#111",
         }}
       >
-        Clarity established
+        {t.doneState.clarityEstablished}
       </h2>
 
       <p
@@ -49,7 +51,7 @@ export default function DoneState({
           color: "#66615b",
         }}
       >
-        Structure supports clearer understanding.
+        {t.doneState.structureSupportsClarity}
       </p>
 
       <div
@@ -93,7 +95,7 @@ export default function DoneState({
             whiteSpace: "nowrap",
           }}
         >
-          Start new situation
+          {t.doneState.startNewSituation}
         </button>
 
         <button
@@ -111,7 +113,7 @@ export default function DoneState({
             whiteSpace: "nowrap",
           }}
         >
-          Return home
+          {t.doneState.returnHome}
         </button>
       </div>
     </div>

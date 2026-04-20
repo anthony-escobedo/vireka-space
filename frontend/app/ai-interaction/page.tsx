@@ -10,6 +10,7 @@ import DoneState from "../../components/DoneState";
 import Footer from "../../components/footer";
 
 import { getOrCreateAnonymousId } from "../../lib/anonymousSession";
+import { useLanguage } from "../../lib/i18n/useLanguage";
 
 declare global {
   interface Window {
@@ -113,9 +114,10 @@ export default function AIInteractionPage() {
   const [iterations, setIterations] = useState<ClarificationIteration[]>([]);
   const [openPanelIds, setOpenPanelIds] = useState<string[]>([]);
   const [latestPanelId, setLatestPanelId] = useState<string | null>(null);
-  const [copyLabel, setCopyLabel] = useState("Copy result");
   const [showOnboarding, setShowOnboarding] = useState<boolean>(false);
   const [checkedOnboarding, setCheckedOnboarding] = useState(false);
+  const { t, language } = useLanguage();
+  const [copyLabel, setCopyLabel] = useState(t.aiInteraction.copyResult);
   const pathTopRef = useRef<HTMLDivElement | null>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const resultRef = useRef<HTMLDivElement | null>(null);
@@ -226,7 +228,7 @@ export default function AIInteractionPage() {
       panels.push({
         id: `panel-${topIteration.id}`,
         kind: "initial_response",
-        title: "Initial reflection",
+        title: t.aiInteraction.initialReflection,
         summary: "",
         iteration: topIteration,
       });
@@ -236,7 +238,7 @@ export default function AIInteractionPage() {
       panels.push({
         id: `panel-${iteration.id}`,
         kind: "refinement",
-        title: `Refinement ${iteration.step - 1}`,
+        title: `${t.aiInteraction.refinement} ${iteration.step - 1}`,
         summary: getRefinementPanelSummary(iteration),
         iteration,
       });
@@ -262,9 +264,7 @@ export default function AIInteractionPage() {
       window.SpeechRecognition || window.webkitSpeechRecognition;
 
     if (!SpeechRecognitionCtor) {
-  setError(
-    "Speech recognition is not supported in this browser. Try Chrome, Edge, or Safari."
-  );
+  setError(t.aiInteraction.speechRecognitionNotSupported);
   return;
 }
 
@@ -300,7 +300,7 @@ export default function AIInteractionPage() {
     };
 
     recognition.onerror = (event) => {
-      setError("Microphone error: " + event.error);
+      setError(t.aiInteraction.microphoneError + event.error);
     };
 
     recognition.onend = () => {
@@ -323,10 +323,10 @@ export default function AIInteractionPage() {
   const distinctSuggestedQuestions = getDistinctSuggestedQuestions(response);
 
   const sections = [
-    `What appears to be happening:\n${response.observable.join("\n")}`,
-    `What may be assumed:\n${response.interpretive.join("\n")}`,
-    `What may remain unclear:\n${response.unknown.join("\n")}`,
-    `What may be influencing the AI interaction:\n${response.structural.join("\n")}`,
+    `${t.aiInteraction.whatAppearsToBeHappening}:\n${response.observable.join("\n")}`,
+    `${t.aiInteraction.whatMayBeAssumed}:\n${response.interpretive.join("\n")}`,
+    `${t.aiInteraction.whatMayRemainUnclear}:\n${response.unknown.join("\n")}`,
+    `${t.aiInteraction.whatMayBeInfluencingTheAIInteraction}:\n${response.structural.join("\n")}`,
   ];
 
   if (response.orientation.trim()) {
@@ -334,12 +334,12 @@ export default function AIInteractionPage() {
   }
 
   if (response.question) {
-    sections.push(`Clarifying question:\n${response.question}`);
+    sections.push(`${t.aiInteraction.clarifyingQuestion}:\n${response.question}`);
   }
 
   if (distinctSuggestedQuestions.length) {
     sections.push(
-      `Suggested questions:\n${distinctSuggestedQuestions.join("\n")}`
+      `${t.aiInteraction.suggestedQuestions}:\n${distinctSuggestedQuestions.join("\n")}`
     );
   }
 
@@ -357,7 +357,7 @@ export default function AIInteractionPage() {
     const trimmed = effectiveInput.trim();
 
     if (action === "clarify" && !trimmed) {
-      setError("Please enter a situation or response.");
+      setError(t.aiInteraction.pleaseEnterASituationOrResponse);
       return;
     }
 
@@ -373,6 +373,7 @@ export default function AIInteractionPage() {
       context: "ai-interaction",
       anonymousId: getOrCreateAnonymousId(),
       conversationId,
+      language,
     };
 
       const res = await fetch("/api/clarify", {
@@ -457,7 +458,7 @@ export default function AIInteractionPage() {
       }, 100);
     } catch (err: unknown) {
       setError(
-        err instanceof Error ? err.message : "An unexpected error occurred."
+        err instanceof Error ? err.message : t.aiInteraction.anUnexpectedErrorOccurred
       );
     } finally {
       setLoading(false);
@@ -489,24 +490,24 @@ export default function AIInteractionPage() {
     text = result.message;
   } else {
     text = [
-      "What appears to be happening:",
+      t.aiInteraction.whatAppearsToBeHappening + ",",
       ...result.observable,
       "",
-      "What may be assumed:",
+      t.aiInteraction.whatMayBeAssumed + ",",
       ...result.interpretive,
       "",
-      "What may remain unclear:",
+      t.aiInteraction.whatMayRemainUnclear + ",",
       ...result.unknown,
       "",
-      "What may be influencing the AI interaction:",
+      t.aiInteraction.whatMayBeInfluencingTheAIInteraction + ",",
       ...result.structural,
       ...(result.orientation.trim()
-        ? ["", "Integrated view:", result.orientation.trim()]
+        ? ["", t.aiInteraction.integratedView + ":", result.orientation.trim()]
         : []),
-      ...(result.question ? ["", "Clarifying question:", result.question] : []),
+      ...(result.question ? ["", t.aiInteraction.clarifyingQuestion + ":", result.question] : []),
       ...(
         result.suggestedQuestions?.length
-          ? ["", "Suggested questions:", ...result.suggestedQuestions]
+          ? ["", t.aiInteraction.suggestedQuestions + ":", ...result.suggestedQuestions]
           : []
       ),
     ].join("\n");
@@ -517,7 +518,7 @@ export default function AIInteractionPage() {
       clearTimeout(copyResetTimeoutRef.current);
     }
     copyResetTimeoutRef.current = setTimeout(() => {
-      setCopyLabel("Copy result");
+      setCopyLabel(t.aiInteraction.copyResult);
     }, 1500);
   };
 
@@ -542,9 +543,9 @@ export default function AIInteractionPage() {
     document.body.removeChild(textarea);
 
     if (successful) {
-      setCopyLabel("Copied");
+      setCopyLabel(t.aiInteraction.copied);
     } else {
-      setCopyLabel("Could not copy");
+      setCopyLabel(t.aiInteraction.couldNotCopy);
     }
     resetLabel();
   };
@@ -553,7 +554,7 @@ export default function AIInteractionPage() {
     navigator.clipboard
       .writeText(text)
       .then(() => {
-        setCopyLabel("Copied");
+        setCopyLabel(t.aiInteraction.copied);
         resetLabel();
       })
       .catch(() => {
@@ -568,7 +569,7 @@ function handleStartNew(): void {
   if (copyResetTimeoutRef.current) {
     clearTimeout(copyResetTimeoutRef.current);
   }
-  setCopyLabel("Copy result");
+  setCopyLabel(t.aiInteraction.copyResult);
   resetSession();
 }
 
@@ -679,7 +680,7 @@ function handleDismissOnboarding(): void {
             margin: "0 0 0.7rem 0",
           }}
         >
-          Initial AI issue
+          {t.aiInteraction.initialAIIssue}
         </h3>
         <p
           style={{
@@ -728,7 +729,7 @@ function handleDismissOnboarding(): void {
                 margin: "0 0 0.55rem 0",
               }}
             >
-              Your input
+              {t.aiInteraction.yourInput}
             </h3>
             <p
               style={{
@@ -745,10 +746,10 @@ function handleDismissOnboarding(): void {
           </div>
         )}
 
-        {renderList(response.observable, "What appears to be happening")}
-        {renderList(response.interpretive, "What may be assumed")}
-        {renderList(response.unknown, "What may remain unclear")}
-        {renderList(response.structural, "What may be influencing the AI interaction")}
+        {renderList(response.observable, t.aiInteraction.whatAppearsToBeHappening)}
+        {renderList(response.interpretive, t.aiInteraction.whatMayBeAssumed)}
+        {renderList(response.unknown, t.aiInteraction.whatMayRemainUnclear)}
+        {renderList(response.structural, t.aiInteraction.whatMayBeInfluencingTheAIInteraction)}
 
         {response.orientation.trim().length > 0 && (
   <div
@@ -782,7 +783,7 @@ function handleDismissOnboarding(): void {
           margin: 0,
         }}
       >
-        Integrated View
+        {t.aiInteraction.integratedView}
       </h3>
 
       <p
@@ -795,7 +796,7 @@ function handleDismissOnboarding(): void {
           wordBreak: "break-word",
         }}
       >
-        How the situation reads as a whole
+        {t.aiInteraction.howTheSituationReadsAsAWhole}
       </p>
 
       <p
@@ -849,7 +850,7 @@ function handleDismissOnboarding(): void {
               margin: 0,
             }}
           >
-            Clarifying question
+            {t.aiInteraction.clarifyingQuestion}
           </h3>
 
           <span
@@ -894,7 +895,7 @@ function handleDismissOnboarding(): void {
                 margin: "0 0 0.85rem 0",
               }}
             >
-              Suggested questions
+              {t.aiInteraction.suggestedQuestions}
             </h3>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.7rem" }}>
               {refinementQuestions.map((item, index) => (
@@ -993,7 +994,7 @@ function renderActiveResponse(panel: ClarificationPanel) {
             margin: "0 0 0.25rem 0",
           }}
         >
-          Clarification path
+          {t.aiInteraction.clarificationPath}
         </h2>
         <p
           style={{
@@ -1118,7 +1119,7 @@ function renderActiveResponse(panel: ClarificationPanel) {
             opacity: isTopMicDisabled ? 0.6 : 1,
           }}
         >
-          {listeningTarget === "top" ? "Listening…" : "Mic"}
+          {listeningTarget === "top" ? t.aiInteraction.listening : t.aiInteraction.mic}
         </button>
       </div>
 
@@ -1159,7 +1160,7 @@ function renderActiveResponse(panel: ClarificationPanel) {
             }
           }}
         >
-          {loading ? "Clarifying…" : "Clarify"}
+          {loading ? t.aiInteraction.loadingText : t.aiInteraction.simpleAction}
         </button>
       </div>
 
@@ -1194,7 +1195,7 @@ function renderActiveResponse(panel: ClarificationPanel) {
             marginBottom: "0.875rem",
           }}
         >
-          Continue the AI interaction
+          {t.aiInteraction.refinement} ({t.aiInteraction.optional})
         </label>
 
         <textarea
@@ -1202,7 +1203,7 @@ function renderActiveResponse(panel: ClarificationPanel) {
           value={followupInput}
           onChange={(e) => setFollowupInput(e.target.value)}
           disabled={loading}
-          placeholder="Add any detail that may help clarify the prompt, the objective, or the output."
+          placeholder={`Add any detail that may help distinguish ${t.aiInteraction.whatAppearsToBeHappening.toLowerCase()}, ${t.aiInteraction.whatMayBeAssumed.toLowerCase()}, or ${t.aiInteraction.whatMayRemainUnclear.toLowerCase()}.`}
           rows={6}
           style={{
             display: "block",
@@ -1239,8 +1240,7 @@ function renderActiveResponse(panel: ClarificationPanel) {
           }}
         >
           <p style={{ fontSize: "0.8rem", color: "#888", lineHeight: 1.55, margin: 0 }}>
-            Continue the same AI issue, respond to the clarifying question, or add what
-            may help distinguish the prompt, the objective, and the output.
+            Continue same AI issue, respond to the clarifying question, or add what may help distinguish the prompt, the objective, and the output.
           </p>
             
           <div
@@ -1278,7 +1278,7 @@ function renderActiveResponse(panel: ClarificationPanel) {
         opacity: isFollowupMicDisabled ? 0.6 : 1,
       }}
     >
-      {listeningTarget === "followup" ? "Listening…" : "Mic"}
+      {listeningTarget === "followup" ? t.aiInteraction.listening : t.aiInteraction.mic}
     </button>
   </div>
 
@@ -1319,7 +1319,7 @@ function renderActiveResponse(panel: ClarificationPanel) {
         }
       }}
     >
-      {loading ? "Clarifying…" : "Clarify"}
+      {loading ? t.aiInteraction.loadingText : t.aiInteraction.simpleAction}
     </button>
   </div>
 
@@ -1349,7 +1349,7 @@ function renderActiveResponse(panel: ClarificationPanel) {
         opacity: isDoneDisabled ? 0.6 : 1,
       }}
     >
-      Done
+      {t.aiInteraction.doneButton}
     </button>
   </div>
 </div>
@@ -1439,7 +1439,7 @@ function renderActiveResponse(panel: ClarificationPanel) {
               gap: "0.25rem",
             }}
           >
-            ← Back to home
+            ← {t.aiInteraction.backLink}
           </Link>
         </div>
 
@@ -1457,7 +1457,7 @@ function renderActiveResponse(panel: ClarificationPanel) {
               padding: "6px 12px",
             }}
           >
-            AI Interaction
+            {t.aiInteraction.pageLabel}
           </span>
         </div>
 
@@ -1471,16 +1471,15 @@ function renderActiveResponse(panel: ClarificationPanel) {
             margin: "0 0 1.25rem 0",
           }}
         >
-          See clearly before deciding what to ask AI to do.
+          {t.aiInteraction.heroTitle}
         </h1>
 
         <div style={{ maxWidth: "680px", minWidth: 0, width: "100%" }}>
           <p style={{ fontSize: "0.95rem", color: "#444", lineHeight: 1.65, margin: "0 0 0.75rem 0" }}>
-            Describe the prompt, output issue, or AI-related situation as it currently appears.
+            {t.aiInteraction.introText}
           </p>
           <p style={{ fontSize: "0.95rem", color: "#444", lineHeight: 1.65, margin: 0 }}>
-            VIREKA Space helps separate what is happening from what may be assumed, improving
-            the clarity of interaction with AI.
+            {t.aiInteraction.descriptionParagraph}
           </p>
         </div>
 
@@ -1514,7 +1513,7 @@ function renderActiveResponse(panel: ClarificationPanel) {
               marginBottom: "0.875rem",
             }}
           >
-            What is happening in the AI interaction?
+            {t.aiInteraction.inputLabel}
           </label>
 
           <textarea
@@ -1522,7 +1521,7 @@ function renderActiveResponse(panel: ClarificationPanel) {
             value={topInput}
             onChange={(e) => setTopInput(e.target.value)}
             disabled={loading}
-            placeholder="Describe the prompt, the output, what seems off, or what is making the interaction unclear."
+            placeholder={t.aiInteraction.inputPlaceholder}
             rows={7}
             style={{
               display: "block",
@@ -1568,8 +1567,7 @@ function renderActiveResponse(panel: ClarificationPanel) {
       minWidth: 0,
     }}
   >
-    Include the prompt, the objective, the output, or anything that may help
-    clarify where the interaction feels off.
+    {t.aiInteraction.helperText}
   </p>
 
     {renderTopActionRow()}

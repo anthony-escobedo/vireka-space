@@ -10,6 +10,7 @@ import DoneState from "../../components/DoneState";
 import Footer from "../../components/footer";
 
 import { getOrCreateAnonymousId } from "../../lib/anonymousSession";
+import { useLanguage } from "../../lib/i18n/useLanguage";
 
 declare global {
   interface Window {
@@ -108,9 +109,10 @@ export default function ClarifyPage() {
   const [iterations, setIterations] = useState<ClarificationIteration[]>([]);
   const [openPanelIds, setOpenPanelIds] = useState<string[]>([]);
   const [latestPanelId, setLatestPanelId] = useState<string | null>(null);
-  const [copyLabel, setCopyLabel] = useState("Copy result");
   const [showOnboarding, setShowOnboarding] = useState<boolean>(false);
   const [checkedOnboarding, setCheckedOnboarding] = useState(false);
+  const { t, language } = useLanguage();
+  const [copyLabel, setCopyLabel] = useState(t.clarify.copyResult);
   const topInputRef = useRef<HTMLTextAreaElement | null>(null);
   const pathTopRef = useRef<HTMLDivElement | null>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
@@ -220,7 +222,7 @@ export default function ClarifyPage() {
       panels.push({
         id: `panel-${topIteration.id}`,
         kind: "initial_response",
-        title: "Initial reflection",
+        title: t.clarify.initialReflection,
         summary: "",
         iteration: topIteration,
       });
@@ -230,7 +232,7 @@ export default function ClarifyPage() {
       panels.push({
         id: `panel-${iteration.id}`,
         kind: "refinement",
-        title: `Refinement ${iteration.step - 1}`,
+        title: `${t.clarify.refinement} ${iteration.step - 1}`,
         summary: getRefinementPanelSummary(iteration),
         iteration,
       });
@@ -256,9 +258,7 @@ export default function ClarifyPage() {
       window.SpeechRecognition || window.webkitSpeechRecognition;
 
     if (!SpeechRecognitionCtor) {
-  setError(
-    "Speech recognition is not supported in this browser. Try Chrome, Edge, or Safari."
-  );
+  setError(t.clarify.speechRecognitionNotSupported);
   return;
 }
 
@@ -294,7 +294,7 @@ export default function ClarifyPage() {
     };
 
     recognition.onerror = (event) => {
-      setError("Microphone error: " + event.error);
+      setError(t.clarify.microphoneError + event.error);
     };
 
     recognition.onend = () => {
@@ -313,10 +313,10 @@ export default function ClarifyPage() {
     const distinctSuggestedQuestions = getDistinctSuggestedQuestions(response);
 
     const sections = [
-      `What appears to be happening:\n${response.observable.join("\n")}`,
-      `What may be assumed:\n${response.interpretive.join("\n")}`,
-      `What may remain unclear:\n${response.unknown.join("\n")}`,
-      `What may be influencing the situation:\n${response.structural.join("\n")}`,
+      `${t.clarify.whatAppearsToBeHappening}:\n${response.observable.join("\n")}`,
+      `${t.clarify.whatMayBeAssumed}:\n${response.interpretive.join("\n")}`,
+      `${t.clarify.whatMayRemainUnclear}:\n${response.unknown.join("\n")}`,
+      `${t.clarify.whatMayBeInfluencingTheSituation}:\n${response.structural.join("\n")}`,
     ];
 
     if (response.orientation.trim()) {
@@ -324,12 +324,12 @@ export default function ClarifyPage() {
     }
 
     if (response.question) {
-      sections.push(`Clarifying question:\n${response.question}`);
+      sections.push(`${t.clarify.clarifyingQuestion}:\n${response.question}`);
     }
 
     if (distinctSuggestedQuestions.length) {
       sections.push(
-        `Suggested questions:\n${distinctSuggestedQuestions.join("\n")}`
+        `${t.clarify.suggestedQuestions}:\n${distinctSuggestedQuestions.join("\n")}`
       );
     }
 
@@ -347,7 +347,7 @@ export default function ClarifyPage() {
     const trimmed = effectiveInput.trim();
 
     if (action === "clarify" && !trimmed) {
-      setError("Please enter a situation or response.");
+      setError(t.clarify.pleaseEnterASituationOrResponse);
       return;
     }
 
@@ -364,6 +364,7 @@ export default function ClarifyPage() {
     context: "clarify",
     anonymousId: getOrCreateAnonymousId(),
     conversationId,
+    language,
   };
 
       const res = await fetch("/api/clarify", {
@@ -447,7 +448,7 @@ export default function ClarifyPage() {
       }, 100);
     } catch (err: unknown) {
       setError(
-        err instanceof Error ? err.message : "An unexpected error occurred."
+        err instanceof Error ? err.message : t.clarify.anUnexpectedErrorOccurred
       );
     } finally {
       setLoading(false);
@@ -480,24 +481,24 @@ function handleCopyResult(): void {
     result.mode === "close"
       ? result.message
       : [
-          "What appears to be happening:",
+          t.clarify.whatAppearsToBeHappening + ",",
           ...result.observable,
           "",
-          "What may be assumed:",
+          t.clarify.whatMayBeAssumed + ",",
           ...result.interpretive,
           "",
-          "What may remain unclear:",
+          t.clarify.whatMayRemainUnclear + ",",
           ...result.unknown,
           "",
-          "What may be influencing the situation:",
+          t.clarify.whatMayBeInfluencingTheSituation + ",",
           ...result.structural,
           ...(result.orientation.trim()
-              ? ["", "Integrated view:", result.orientation.trim()]
+              ? ["", t.clarify.integratedView + ":", result.orientation.trim()]
               : []),
-          ...(result.question ? ["", "Clarifying question:", result.question] : []),
+          ...(result.question ? ["", t.clarify.clarifyingQuestion + ":", result.question] : []),
           ...(
             result.suggestedQuestions?.length
-              ? ["", "Suggested questions:", ...result.suggestedQuestions]
+              ? ["", t.clarify.suggestedQuestions + ":", ...result.suggestedQuestions]
               : []
           ),
         ].join("\n");
@@ -507,7 +508,7 @@ function handleCopyResult(): void {
       clearTimeout(copyResetTimeoutRef.current);
     }
     copyResetTimeoutRef.current = setTimeout(() => {
-      setCopyLabel("Copy result");
+      setCopyLabel(t.clarify.copyResult);
     }, 1500);
   };
 
@@ -532,9 +533,9 @@ function handleCopyResult(): void {
     document.body.removeChild(textarea);
 
     if (successful) {
-      setCopyLabel("Copied");
+      setCopyLabel(t.clarify.copied);
     } else {
-      setCopyLabel("Could not copy");
+      setCopyLabel(t.clarify.couldNotCopy);
     }
     resetLabel();
   };
@@ -543,7 +544,7 @@ function handleCopyResult(): void {
     navigator.clipboard
       .writeText(text)
       .then(() => {
-        setCopyLabel("Copied");
+        setCopyLabel(t.clarify.copied);
         resetLabel();
       })
       .catch(() => {
@@ -558,7 +559,7 @@ function handleStartNew(): void {
   if (copyResetTimeoutRef.current) {
     clearTimeout(copyResetTimeoutRef.current);
   }
-  setCopyLabel("Copy result");
+  setCopyLabel(t.clarify.copyResult);
   resetSession();
 }
   
@@ -608,7 +609,7 @@ function handleDone(): void {
             margin: "0 0 0.7rem 0",
           }}
         >
-          {label}
+          {t.clarify[label.replace(/\s+/g, '') as keyof typeof t.clarify]}
         </h3>
         <ul style={{ paddingLeft: "1.125rem", margin: 0, listStyleType: "disc" }}>
           {items.map((item, i) => (
@@ -657,7 +658,7 @@ function handleDone(): void {
             margin: "0 0 0.7rem 0",
           }}
         >
-          Initial situation
+          {t.clarify.initialSituation}
         </h3>
         <p
           style={{
@@ -706,7 +707,7 @@ function handleDone(): void {
                 margin: "0 0 0.55rem 0",
               }}
             >
-              Your input
+              {t.clarify.yourInput}
             </h3>
             <p
               style={{
@@ -723,10 +724,10 @@ function handleDone(): void {
           </div>
         )}
 
-        {renderList(response.observable, "What appears to be happening")}
-        {renderList(response.interpretive, "What may be assumed")}
-        {renderList(response.unknown, "What may remain unclear")}
-        {renderList(response.structural, "What may be influencing the situation")}
+        {renderList(response.observable, "whatAppearsToBeHappening")}
+        {renderList(response.interpretive, "whatMayBeAssumed")}
+        {renderList(response.unknown, "whatMayRemainUnclear")}
+        {renderList(response.structural, "whatMayBeInfluencingTheSituation")}
 
         {response.orientation.trim().length > 0 && (
   <div
@@ -760,7 +761,7 @@ function handleDone(): void {
           margin: 0,
         }}
       >
-        Integrated View
+        {t.clarify.integratedView}
       </h3>
 
       <p
@@ -773,7 +774,7 @@ function handleDone(): void {
           wordBreak: "break-word",
         }}
       >
-        How the situation reads as a whole
+        {t.clarify.howTheSituationReadsAsAWhole}
       </p>
 
       <p
@@ -826,7 +827,7 @@ function handleDone(): void {
               margin: 0,
           }}
             >
-              Clarifying question
+              {t.clarify.clarifyingQuestion}
             </h3>
 
             <span
@@ -840,7 +841,7 @@ function handleDone(): void {
               whiteSpace: "nowrap",
           }}
         >
-            Optional
+            {t.clarify.optional}
           </span>
         </div>
             
@@ -872,7 +873,7 @@ function handleDone(): void {
                 margin: "0 0 0.85rem 0",
               }}
             >
-              Suggested questions
+              {t.clarify.suggestedQuestions}
             </h3>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.7rem" }}>
               {refinementQuestions.map((item, index) => (
@@ -971,7 +972,7 @@ function handleDone(): void {
             margin: "0 0 0.25rem 0",
           }}
         >
-          Clarification path
+          {t.clarify.clarificationPath}
         </h2>
         <p
           style={{
@@ -983,7 +984,7 @@ function handleDone(): void {
             wordBreak: "break-word",
           }}
         >
-          Earlier reflections can be expanded when needed, while the latest response remains visible.
+          {t.clarify.clarificationPathDescription}
         </p>
 
         {renderInitialSituationCard()}
@@ -1040,7 +1041,7 @@ function handleDone(): void {
               margin: "0 0 0.7rem 0",
             }}
           >
-            Response
+            {t.clarify.response}
           </h3>
           <p
             style={{
@@ -1096,7 +1097,7 @@ function handleDone(): void {
             opacity: isTopMicDisabled ? 0.6 : 1,
           }}
         >
-          {listeningTarget === "top" ? "Listening…" : "Mic"}
+          {listeningTarget === "top" ? t.clarify.listening : t.clarify.mic}
         </button>
       </div>
 
@@ -1137,7 +1138,7 @@ function handleDone(): void {
             }
           }}
         >
-          {loading ? "Clarifying…" : "Clarify"}
+          {loading ? t.clarify.loadingText : t.clarify.simpleAction}
         </button>
       </div>
 
@@ -1172,7 +1173,7 @@ function handleDone(): void {
             marginBottom: "0.875rem",
           }}
         >
-          Refine further (optional)
+          {t.clarify.refinement} ({t.clarify.optional})
         </label>
 
         <textarea
@@ -1180,7 +1181,7 @@ function handleDone(): void {
           value={followupInput}
           onChange={(e) => setFollowupInput(e.target.value)}
           disabled={loading}
-          placeholder="Add any detail that may help distinguish what appears to be happening, what may be assumed, or what may remain unclear."
+          placeholder={t.clarify.followupPlaceholder}
           rows={6}
           style={{
             display: "block",
@@ -1217,7 +1218,7 @@ function handleDone(): void {
           }}
         >
           <p style={{ fontSize: "0.8rem", color: "#888", lineHeight: 1.55, margin: 0 }}>
-            Additional detail may help separate observation from interpretation.
+            {t.clarify.followupHelper}
           </p>
 
           <div
@@ -1255,7 +1256,7 @@ function handleDone(): void {
         opacity: isFollowupMicDisabled ? 0.6 : 1,
       }}
     >
-      {listeningTarget === "followup" ? "Listening…" : "Mic"}
+      {listeningTarget === "followup" ? t.clarify.listening : t.clarify.mic}
     </button>
   </div>
 
@@ -1296,7 +1297,7 @@ function handleDone(): void {
         }
       }}
     >
-      {loading ? "Clarifying…" : "Clarify"}
+      {loading ? t.clarify.loadingText : t.clarify.simpleAction}
     </button>
   </div>
 
@@ -1326,7 +1327,7 @@ function handleDone(): void {
         opacity: isDoneDisabled ? 0.6 : 1,
       }}
     >
-      Done
+      {t.clarify.doneButton}
     </button>
   </div>
 </div>
@@ -1416,7 +1417,7 @@ function handleDone(): void {
               gap: "0.25rem",
             }}
           >
-            ← Back to home
+            ← {t.clarify.backLink}
           </Link>
         </div>
 
@@ -1434,7 +1435,7 @@ function handleDone(): void {
               padding: "6px 12px",
             }}
           >
-            Clarify
+            {t.clarify.pageLabel}
           </span>
         </div>
 
@@ -1448,16 +1449,15 @@ function handleDone(): void {
             margin: "0 0 1.25rem 0",
           }}
         >
-          Clarify a situation
+          {t.clarify.heroTitle}
         </h1>
 
         <div style={{ maxWidth: "640px", minWidth: 0, width: "100%" }}>
           <p style={{ fontSize: "0.95rem", color: "#444", lineHeight: 1.6, margin: "0 0 0.75rem 0" }}>
-            Describe the situation as it currently appears.
+            {t.clarify.introText}
           </p>
           <p style={{ fontSize: "0.95rem", color: "#444", lineHeight: 1.65, margin: 0 }}>
-            Vireka distinguishes what appears to be happening, what may be assumed, and
-            what may remain unclear so response can begin from clearer structure.
+            {t.clarify.descriptionParagraph}
           </p>
         </div>
         
@@ -1491,7 +1491,7 @@ function handleDone(): void {
         marginBottom: "0.875rem",
       }}
     >
-      Situation
+      {t.clarify.inputLabel}
     </label>
 
     <textarea
@@ -1500,7 +1500,7 @@ function handleDone(): void {
       value={topInput}
       onChange={(e) => setTopInput(e.target.value)}
       disabled={loading}
-      placeholder="Example: The situation appears to call for action, but it is not yet clear which factors are influencing the outcome."
+      placeholder={t.clarify.inputPlaceholder}
       rows={8}
       style={{
         display: "block",
@@ -1550,7 +1550,7 @@ function handleDone(): void {
       minWidth: 0,
     }}
   >
-    Include anything that may help clarify the situation or where interpretation feels uncertain.
+    {t.clarify.helperText}
   </p>
 
       {renderTopActionRow()}

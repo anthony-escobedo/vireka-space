@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { CSSProperties } from "react";
+import { useLanguage } from "../lib/i18n/useLanguage";
 
 const footerStyle: CSSProperties = {
   marginTop: "24px",
@@ -35,26 +36,27 @@ const copyrightStyle: CSSProperties = {
 };
 
 export default function Footer() {
+  const { t } = useLanguage();
   return (
     <footer style={footerStyle}>
       <div style={innerStyle}>
         
         <nav style={navStyle}>
           <Link href="/privacy" style={linkStyle}>
-            Privacy
+            {t.footer.privacy}
           </Link>
 
           <Link href="/terms" style={linkStyle}>
-            Terms
+            {t.footer.terms}
           </Link>
 
           <Link href="/settings/contact" style={linkStyle}>
-            Contact
+            {t.footer.contact}
           </Link>
         </nav>
 
         <div style={copyrightStyle}>
-          © VIREKA Space
+          {t.footer.copyright}
         </div>
 
       </div>

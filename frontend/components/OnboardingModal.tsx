@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useLanguage } from "../lib/i18n/useLanguage";
 
 type OnboardingModalProps = {
   isOpen: boolean;
@@ -12,11 +13,14 @@ type OnboardingModalProps = {
 
 export default function OnboardingModal({
   isOpen,
-  title = "Understanding begins with structure",
+  title,
   body,
   onBegin,
   onDismiss,
 }: OnboardingModalProps) {
+  const { t } = useLanguage();
+  
+  const modalTitle = title || t.onboarding.defaultTitle;
   if (!isOpen) return null;
 
   return (
@@ -58,7 +62,7 @@ export default function OnboardingModal({
             letterSpacing: "-0.01em",
           }}
         >
-          {title}
+          {modalTitle}
         </h2>
 
         <div
@@ -71,11 +75,11 @@ export default function OnboardingModal({
           {body ?? (
             <>
               <p style={{ margin: "0 0 0.9rem 0" }}>
-                Vireka Space clarifies how situations are interpreted before conclusions guide response.
+                {t.onboarding.defaultBody.description}
               </p>
 
               <div style={{ margin: "0 0 0.9rem 0" }}>
-                <p style={{ margin: "0 0 0.45rem 0" }}>Useful when:</p>
+                <p style={{ margin: "0 0 0.45rem 0" }}>{t.onboarding.defaultBody.usefulWhenTitle}</p>
                 <ul
                   style={{
                     margin: 0,
@@ -83,27 +87,18 @@ export default function OnboardingModal({
                     listStyleType: "disc",
                   }}
                 >
-                  <li style={{ marginBottom: "0.35rem" }}>
-                    meaning feels uncertain
-                  </li>
-                  <li style={{ marginBottom: "0.35rem" }}>
-                    multiple interpretations seem possible
-                  </li>
-                  <li style={{ marginBottom: "0.35rem" }}>
-                    a response is being considered
-                  </li>
-                  <li style={{ marginBottom: "0.35rem" }}>
-                    assumptions may be influencing interpretation
-                  </li>
-                  <li>an AI prompt needs clearer structure</li>
+                  {t.onboarding.defaultBody.usefulWhenList.map((item, index) => (
+                    <li key={index} style={{ marginBottom: "0.35rem" }}>
+                      {item}
+                    </li>
+                  ))}
                 </ul>
               </div>
 
               <p style={{ margin: "0 0 0.35rem 0" }}>
-                Begin with a simple description.
+                {t.onboarding.defaultBody.beginWith}
               </p>
-              <p style={{ margin: 0 }}>The system does not search for answers. It helps clarify how situations are being understood.
-              </p>
+              <p style={{ margin: 0 }}>{t.onboarding.defaultBody.systemNote}</p>
             </>
           )}
         </div>
@@ -141,7 +136,7 @@ export default function OnboardingModal({
               e.currentTarget.style.backgroundColor = "#111";
             }}
           >
-            Begin
+            {t.onboarding.begin}
           </button>
 
           <button
@@ -159,7 +154,7 @@ export default function OnboardingModal({
               whiteSpace: "nowrap",
             }}
           >
-            Not now
+            {t.onboarding.notNow}
           </button>
         </div>
       </div>

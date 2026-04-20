@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import type { CSSProperties } from "react";
 import { useLanguage } from "../../lib/i18n/useLanguage";

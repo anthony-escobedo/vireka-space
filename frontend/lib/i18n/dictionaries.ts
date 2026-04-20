@@ -210,13 +210,13 @@ const dictionaries: Record<Language, TranslationDictionary> = {
         },
         orientation: {
           title: "Orientation",
-          content: [
-            'The ideas underlying VIREKA Space are explored in Beyond Thought: Awareness as Design Intelligence, which considers how awareness influences interpretation, reasoning, and design. VIREKA Space brings these ideas into a practical environment where interpretation can become more visible before action is taken.'
-          ]
+          content: [],
         },
         origin: {
           title: 'Origin',
-          content: [],
+          content: [
+            'The ideas underlying VIREKA Space are explored in Beyond Thought: Awareness as Design Intelligence, which considers how awareness influences interpretation, reasoning, and design. VIREKA Space brings these ideas into a practical environment where interpretation can become more visible before action is taken.',
+          ],
         },
       },
     },
@@ -594,41 +594,32 @@ const dictionaries: Record<Language, TranslationDictionary> = {
         function: {
           title: 'Función',
           content: [
-            'VIREKA Space es un entorno estructurado para aclarar cómo se están comprendiendo las situaciones antes de que se tomen decisiones o se escriban prompts de IA.',
-            'La mayoría de los enfoques se centran en mejorar las respuestas después de que las conclusiones ya han comenzado a formarse. VIREKA Space se centra antes, en las condiciones que influyen en la interpretación en primer lugar.',
-            'Cuando la interpretación se vuelve más clara, la claridad de las decisiones a menudo mejora, y las respuestas requieren menos ajustes.',
-            'VIREKA Space ayuda a distinguir:',
-            '• lo que se puede observar directamente',
-            '• lo que puede suponerse o interpretarse',
-            '• lo que permanece incierto',
-            'Al distinguir observación, suposición e incertidumbre, la interpretación se vuelve más clara, permitiendo tanto el razonamiento humano como la interacción con IA proceder desde condiciones más estables.',
-            'El sistema no proporciona consejos ni prescribe conclusiones. En su lugar, estructura la interpretación para que las decisiones y los prompts puedan formarse con mayor claridad.',
+            'VIREKA Space se creó para apoyar la claridad en un punto que a menudo pasa desapercibido. Antes de que se tome una decisión o se escriba un prompt de IA, una situación ya se está interpretando. Esa interpretación moldea en silencio lo que parece razonable, lo que parece necesario, lo que parece tener sentido y lo que parece apropiado preguntar.',
+            'A veces una situación se siente difícil no porque sea compleja, sino porque varias interpretaciones parecen posibles al mismo tiempo, cada una sugiriendo una dirección ligeramente distinta. Algunos elementos se sienten claros, otros inciertos, y pueden estar formándose suposiciones sin verse del todo. Cuando la interpretación no está clara, las decisiones pueden sentirse presionadas y los prompts más difíciles de formular.',
+            'VIREKA Space ofrece una estructura sencilla que ayuda a hacer más visibles estas condiciones. En lugar de sugerir qué debería hacerse, el sistema orienta la atención hacia cómo se está comprendiendo la situación. A medida que la estructura de la interpretación se vuelve más clara, suele ser más fácil percibir si hay claridad suficiente para decidir o para formular un prompt. En muchos casos, esto también aclara la intención que guía la propia pregunta.',
           ],
         },
         effect: {
           title: 'Efecto',
           content: [
-            'Con una interpretación más clara, la situación suele ser más fácil de leer en conjunto antes de actuar o redactar un prompt.',
+            'Esto puede sostener una confianza más tranquila. No certeza sobre el resultado, sino mayor soltura en cómo se está viendo la situación.',
+            'Los sistemas de IA responden a cómo se describen las situaciones. Incluso pequeñas diferencias en la redacción pueden influir en lo que el sistema enfatiza, cómo razona y qué respuestas parecen plausibles. Cuando la interpretación se vuelve más clara, la interacción con la IA suele volverse más coherente también.',
           ],
         },
         structuralImplication: {
           title: 'Implicación estructural',
           content: [
-            'La interpretación no solo influye en las decisiones individuales. También influye en cómo se diseñan los sistemas. La forma en que se comprende una situación moldea la dirección del pensamiento, las preguntas que surgen y las estructuras que se crean en respuesta. En este sentido, el diseño comienza antes de la implementación. Comienza en cómo se ve algo.',
+            'La interpretación no solo influye en las decisiones individuales. También influye en cómo se diseñan los sistemas. La forma en que se entiende una situación moldea la dirección del pensamiento, las preguntas que surgen y las estructuras que se crean en respuesta. En este sentido, el diseño comienza antes de la implementación. Comienza en cómo se ve algo.',
           ],
         },
         orientation: {
           title: 'Orientación',
-          content: [
-            'VIREKA Space está diseñado para momentos en que el significado parece incierto.',
-            'Apoya la toma de decisiones proporcionando una estructura más clara.',
-          ],
+          content: [],
         },
         origin: {
           title: 'Origen',
           content: [
-            'Basado en "Beyond Thought: Awareness as Design Intelligence".',
-            'Desarrollado por Anthony Escobedo.',
+            'Las ideas que sustentan VIREKA Space se exploran en Beyond Thought: Awareness as Design Intelligence, que considera cómo la conciencia influye en la interpretación, el razonamiento y el diseño. VIREKA Space acerca estas ideas a un entorno práctico donde la interpretación puede volverse más visible antes de actuar.',
           ],
         },
       },
@@ -1007,21 +998,16 @@ const dictionaries: Record<Language, TranslationDictionary> = {
         function: {
           title: 'Função',
           content: [
-            'VIREKA Space é um ambiente estruturado para esclarecer como situações estão sendo compreendidas antes de decisões serem tomadas ou prompts de IA serem escritos.',
-            'A maioria das abordagens foca em melhorar respostas depois que conclusões já começaram a se formar. VIREKA Space foca antes, nas condições que influenciam a interpretação em primeiro lugar.',
-            'Quando a interpretação se torna mais clara, a clareza das decisões muitas vezes melhora, e as respostas exigem menos ajustes.',
-            'VIREKA Space ajuda a distinguir:',
-            '• o que pode ser diretamente observado',
-            '• o que pode ser assumido ou interpretado',
-            '• o que permanece incerto',
-            'Ao distinguir observação, suposição e incerteza, a interpretação se torna mais clara, permitindo tanto raciocínio humano quanto interação com IA prosseguir a partir de condições mais estáveis.',
-            'O sistema não fornece conselhos nem prescreve conclusões. Em vez disso, estrutura a interpretação para que decisões e prompts possam ser formados com maior clareza.',
+            'VIREKA Space foi criado para apoiar a clareza em um ponto que muitas vezes passa despercebido. Antes de uma decisão ser tomada ou um prompt de IA ser escrito, uma situação já está sendo interpretada. Essa interpretação molda em silêncio o que parece razoável, o que parece necessário, o que parece fazer sentido e o que parece apropriado perguntar.',
+            'Às vezes uma situação parece difícil não por ser complexa, mas porque várias interpretações parecem possíveis ao mesmo tempo, cada uma sugerindo uma direção ligeiramente diferente. Alguns elementos parecem claros, outros incertos, e suposições podem já estar se formando sem ser plenamente vistas. Quando a interpretação não está clara, decisões podem parecer pressionadas e prompts mais difíceis de formular.',
+            'VIREKA Space oferece uma estrutura simples que ajuda a tornar essas condições mais visíveis. Em vez de sugerir o que deve ser feito, o sistema ajuda a direcionar a atenção para como a situação está sendo compreendida. À medida que a estrutura da interpretação fica mais clara, costuma ficar mais fácil perceber se há clareza suficiente para decidir ou para formular um prompt. Em muitos casos, isso também esclarece a intenção que orienta a própria pergunta.',
           ],
         },
         effect: {
           title: 'Efeito',
           content: [
-            'Com uma interpretação mais clara, a situação tende a ser mais fácil de ler como um todo antes de agir ou escrever um prompt.',
+            'Isso pode sustentar uma confiança mais quieta. Não certeza sobre o resultado, mas maior fluidez em como a situação está sendo vista.',
+            'Os sistemas de IA respondem a como as situações são descritas. Até pequenas diferenças na redação podem influenciar o que o sistema enfatiza, como raciocina e que tipos de respostas parecem plausíveis. Quando a interpretação fica mais clara, a interação com a IA tende a ficar mais coerente também.',
           ],
         },
         structuralImplication: {
@@ -1032,16 +1018,12 @@ const dictionaries: Record<Language, TranslationDictionary> = {
         },
         orientation: {
           title: 'Orientação',
-          content: [
-            'VIREKA Space é projetado para momentos em que o significado parece incerto.',
-            'Apoia a tomada de decisão fornecendo estrutura mais clara.',
-          ],
+          content: [],
         },
         origin: {
           title: 'Origem',
           content: [
-            'Baseado em "Beyond Thought: Awareness as Design Intelligence".',
-            'Desenvolvido por Anthony Escobedo.',
+            'As ideias que sustentam o VIREKA Space são exploradas em Beyond Thought: Awareness as Design Intelligence, que considera como a consciência influencia interpretação, raciocínio e design. O VIREKA Space leva essas ideias a um ambiente prático onde a interpretação pode ficar mais visível antes de agir.',
           ],
         },
       },

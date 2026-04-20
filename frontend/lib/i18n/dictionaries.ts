@@ -1195,7 +1195,6 @@ const dictionaries: Record<Language, TranslationDictionary> = {
           ],
         },
       },
-    },
   },
 };
 

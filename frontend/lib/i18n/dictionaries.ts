@@ -207,7 +207,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
         orientation: {
           title: "Orientation",
           content: [
-            'The ideas underlying VIREKA Space are explored in Beyond Thought: Awareness as Design Intelligence, which considers how awareness influences interpretation, reasoning, and design. VIREKA Space brings these ideas into a practical environment where interpretation can become more visible before action is taken."
+            'The ideas underlying VIREKA Space are explored in Beyond Thought: Awareness as Design Intelligence, which considers how awareness influences interpretation, reasoning, and design. VIREKA Space brings these ideas into a practical environment where interpretation can become more visible before action is taken.'
           ]
         },
     faq: {

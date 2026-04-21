@@ -5,13 +5,11 @@ import { useEffect, useRef, useState } from "react";
 import Footer from "../components/footer";
 import LanguageSelector from "../components/LanguageSelector";
 import { useLanguage } from "../lib/i18n/useLanguage";
-import { useLanguageContext } from "../lib/i18n/LanguageProvider";
 
 export default function HomePage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const { t} = useLanguage();
-  const { language } = useLanguageContext();
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -313,54 +311,6 @@ export default function HomePage() {
         >
           <div
             style={{
-              display: "inline-block",
-              padding: "8px 14px",
-              borderRadius: "999px",
-              border: "1px solid #e1e1da",
-              backgroundColor: "#ffffff",
-              fontSize: "13px",
-              fontWeight: 500,
-              letterSpacing: "0.03em",
-              marginBottom: "10px",
-              color: "#444",
-            }}
-          >
-            {t.hero.badge.toUpperCase()}
-          </div>
-
-          <h1
-            style={{
-              fontSize: language === 'en' 
-                ? "clamp(2.35rem, 5.6vw, 4.4rem)"
-                : language === 'es'
-                ? "clamp(2.1rem, 5.2vw, 4rem)"
-                : "clamp(2.15rem, 5.3vw, 4.1rem)",
-              lineHeight: language === 'en' ? 1.05 : 1.1,
-              letterSpacing: language === 'en' ? "-0.035em" : "-0.025em",
-              fontWeight: 700,
-              marginBottom: "20px",
-            }}
-          >
-            {t.hero.title[0]}
-            <br />
-            {t.hero.title[1]}
-          </h1>
-
-          <p
-            style={{
-              maxWidth: "720px",
-              margin: "0 auto",
-              fontSize: "clamp(1.05rem, 1.7vw, 1.28rem)",
-              lineHeight: 1.75,
-              color: "#2e2e2e",
-              marginBottom: "42px",
-            }}
-          >
-            {t.hero.subtitle}
-          </p>
-
-          <div
-            style={{
               display: "flex",
               justifyContent: "center",
               gap: "16px",
@@ -408,16 +358,14 @@ export default function HomePage() {
 
           <div
             style={{
-              fontSize: "14px",
-              color: "#666",
-              lineHeight: 1.7,
+              fontSize: "13px",
+              color: "#9b948a",
+              lineHeight: 1.5,
+              textAlign: "center",
+              fontWeight: 400,
             }}
           >
-            <div>{t.hero.developedBy}</div>
-
-            <div>
-              Based on <em>Beyond Thought: Awareness as Design Intelligence</em>
-            </div>
+            Developed by Anthony Escobedo • Based on <em>Beyond Thought: Awareness as Design Intelligence</em>
           </div>
         </div>
       </section>

@@ -296,11 +296,11 @@ export default function HomePage() {
 
       <section
   style={{
-    flex: 1,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    padding: "0px 24px 0px",
+    minHeight: "calc(100vh - 120px)",
+    padding: "40px 24px 60px",
   }}
 >
         <div
@@ -315,7 +315,7 @@ export default function HomePage() {
               justifyContent: "center",
               gap: "16px",
               flexWrap: "wrap",
-              marginBottom: "30px",
+              marginBottom: "34px",
             }}
           >
             <Link

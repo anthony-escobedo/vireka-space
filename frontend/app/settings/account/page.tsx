@@ -10,7 +10,6 @@ export default function AccountPage() {
   const { t } = useLanguage();
   return (
     <StaticPageShell
-      pill={t.settings.account}
       title={t.account.pageTitle}
       intro={t.account.pageIntro}
     >

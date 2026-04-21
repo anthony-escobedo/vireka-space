@@ -12,7 +12,6 @@ export default function TermsPage() {
   const { t } = useLanguage();
   return (
     <StaticPageShell
-      pill={t.terms.pageLabel}
       title={t.terms.heroTitle}
       intro={t.terms.subtitle}
     >

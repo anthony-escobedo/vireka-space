@@ -11,7 +11,6 @@ export default function ContactPage() {
   const { t } = useLanguage();
   return (
     <StaticPageShell
-      pill={t.settings.contact}
       title={t.contact.pageTitle}
       intro={t.contact.pageIntro}
     >

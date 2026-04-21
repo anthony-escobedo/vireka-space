@@ -12,7 +12,6 @@ export default function PrivacyPage() {
   const { t } = useLanguage();
   return (
     <StaticPageShell
-      pill={t.privacy.pageLabel}
       title={t.privacy.heroTitle}
       intro={t.privacy.subtitle}
     >

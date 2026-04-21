@@ -5,7 +5,7 @@ import type { CSSProperties, ReactNode } from "react";
 import { useLanguage } from "../lib/i18n/useLanguage";
 
 type StaticPageShellProps = {
-  pill: string;
+  pill?: string;
   title: string;
   intro: string;
   children: ReactNode;
@@ -154,9 +154,11 @@ export default function StaticPageShell({
           </Link>
         </div>
 
-        <div style={capsuleWrapperStyle}>
-          <span style={capsuleStyle}>{pill}</span>
-        </div>
+        {pill ? (
+          <div style={capsuleWrapperStyle}>
+            <span style={capsuleStyle}>{pill}</span>
+          </div>
+        ) : null}
 
         <h1 style={titleStyle}>{title}</h1>
 

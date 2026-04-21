@@ -10,7 +10,6 @@ export default function PlanPage() {
   const { t } = useLanguage();
   return (
     <StaticPageShell
-      pill={t.settings.plan}
       title={t.plan.pageTitle}
       intro={t.plan.pageIntro}
     >

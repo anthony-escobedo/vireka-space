@@ -31,7 +31,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       copyright: '© VIREKA Space',
     },
     settings: {
-      backToHome: 'Back to home',
+      backToHome: 'Back',
       badge: 'SETTINGS',
       title: 'Settings and support',
       subtitle: 'Account access, usage information, legal pages, and contact details.',
@@ -183,7 +183,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       messagesReviewed: 'Messages are reviewed as availability allows.',
     },
     staticPage: {
-      backToHome: 'Back to home',
+      backToHome: 'Back',
     },
     doneState: {
       clarityEstablished: 'Clarity established',
@@ -445,7 +445,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       copyright: '© VIREKA Space',
     },
     settings: {
-      backToHome: 'Volver al inicio',
+      backToHome: 'Volver',
       badge: 'CONFIGURACIÓN',
       title: 'Configuración y soporte',
       subtitle: 'Acceso a la cuenta, información de uso, páginas legales y detalles de contacto.',
@@ -597,7 +597,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       messagesReviewed: 'Los mensajes se revisan según la disponibilidad.',
     },
     staticPage: {
-      backToHome: 'Volver al inicio',
+      backToHome: 'Volver',
     },
     doneState: {
       clarityEstablished: 'Claridad establecida',
@@ -859,7 +859,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       copyright: '© VIREKA Space',
     },
     settings: {
-      backToHome: 'Voltar ao início',
+      backToHome: 'Voltar',
       badge: 'CONFIGURAÇÕES',
       title: 'Configurações e suporte',
       subtitle: 'Acesso à conta, informações de uso, páginas legais e detalhes de contato.',
@@ -1011,7 +1011,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       messagesReviewed: 'Mensagens são revisadas conforme a disponibilidade.',
     },
     staticPage: {
-      backToHome: 'Voltar ao início',
+      backToHome: 'Voltar',
     },
     doneState: {
       clarityEstablished: 'Clareza estabelecida',

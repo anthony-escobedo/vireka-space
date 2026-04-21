@@ -1432,24 +1432,6 @@ function handleDone(): void {
           </Link>
         </div>
 
-        <div style={{ marginBottom: "1.25rem" }}>
-          <span
-            style={{
-              display: "inline-block",
-              fontSize: "0.65rem",
-              fontWeight: 600,
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              color: "#555",
-              border: "1.5px solid #d6d3d1",
-              borderRadius: "999px",
-              padding: "6px 12px",
-            }}
-          >
-            {t.clarify.pageLabel}
-          </span>
-        </div>
-
         <h1
           style={{
             fontSize: "clamp(2rem, 5vw, 2.85rem)",

@@ -107,9 +107,9 @@ export default function DoneState({
         <div
           style={{
             display: "flex",
-            flexWrap: "wrap",
-            gap: "0.85rem",
+            flexDirection: "column",
             alignItems: "center",
+            gap: "0.85rem",
           }}
         >
           <button

@@ -1207,7 +1207,7 @@ function renderActiveResponse(panel: ClarificationPanel) {
           value={followupInput}
           onChange={(e) => setFollowupInput(e.target.value)}
           disabled={loading}
-          placeholder={`Add any detail that may help distinguish ${t.aiInteraction.whatAppearsToBeHappening.toLowerCase()}, ${t.aiInteraction.whatMayBeAssumed.toLowerCase()}, or ${t.aiInteraction.whatMayRemainUnclear.toLowerCase()}.`}
+          placeholder={t.aiInteraction.followupPlaceholder}
           rows={6}
           style={{
             display: "block",

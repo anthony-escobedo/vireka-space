@@ -300,13 +300,18 @@ export default function HomePage() {
     alignItems: "center",
     justifyContent: "center",
     minHeight: "calc(100vh - 120px)",
-    padding: "40px 24px 60px",
+    padding: "40px 24px 88px",
   }}
 >
         <div
           style={{
             maxWidth: "900px",
+            width: "100%",
             textAlign: "center",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            minHeight: "calc(100vh - 220px)",
           }}
         >
           <div
@@ -315,7 +320,7 @@ export default function HomePage() {
               justifyContent: "center",
               gap: "16px",
               flexWrap: "wrap",
-              marginBottom: "34px",
+              marginBottom: "48px",
             }}
           >
             <Link
@@ -358,14 +363,17 @@ export default function HomePage() {
 
           <div
             style={{
-              fontSize: "13px",
+              fontSize: "12px",
               color: "#9b948a",
-              lineHeight: 1.5,
+              lineHeight: 1.45,
               textAlign: "center",
               fontWeight: 400,
+              marginTop: "auto",
             }}
           >
-            Developed by Anthony Escobedo • Based on <em>Beyond Thought: Awareness as Design Intelligence</em>
+            Developed by Anthony Escobedo
+            <br />
+            Based on <em>Beyond Thought: Awareness as Design Intelligence</em>
           </div>
         </div>
       </section>

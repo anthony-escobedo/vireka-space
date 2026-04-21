@@ -296,15 +296,58 @@ export default function HomePage() {
 
       <section
   style={{
+    position: "relative",
+    overflow: "hidden",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     minHeight: "calc(100vh - 120px)",
     padding: "40px 24px 88px",
+    backgroundColor: "#f7f7f2",
   }}
 >
         <div
+          aria-hidden
           style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 0,
+            pointerEvents: "none",
+            backgroundColor: "#f7f7f2",
+          }}
+        >
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            style={{
+              position: "absolute",
+              left: 0,
+              top: 0,
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              objectPosition: "center",
+              pointerEvents: "none",
+            }}
+          >
+            <source src="/vireka-breath-loop.mp4" type="video/mp4" />
+          </video>
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              backgroundColor: "rgba(247, 247, 242, 0.82)",
+              pointerEvents: "none",
+            }}
+          />
+        </div>
+        <div
+          style={{
+            position: "relative",
+            zIndex: 1,
             maxWidth: "900px",
             width: "100%",
             textAlign: "center",

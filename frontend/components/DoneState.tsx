@@ -20,101 +20,152 @@ export default function DoneState({
   return (
     <div
       style={{
+        position: "relative",
         width: "100%",
-        maxWidth: "620px",
-        backgroundColor: "#ffffff",
-        border: "1px solid #e7e5e4",
-        borderRadius: "20px",
-        padding: "2.75rem 2.5rem",
+        maxWidth: "100%",
+        display: "flex",
+        justifyContent: "center",
         boxSizing: "border-box",
-        boxShadow: "0 1px 2px rgba(0,0,0,0.02)",
       }}
     >
-      <h2
+      <div
+        aria-hidden
         style={{
-          margin: "0 0 0.8rem 0",
-          fontSize: "clamp(1.8rem, 4vw, 2.2rem)",
-          lineHeight: 1.1,
-          letterSpacing: "-0.03em",
-          fontWeight: 600,
-          color: "#111",
+          position: "fixed",
+          inset: 0,
+          zIndex: 0,
+          pointerEvents: "none",
+          backgroundColor: "#f5f3ef",
         }}
       >
-        {t.doneState.clarityEstablished}
-      </h2>
-
-      <p
-        style={{
-          margin: "0 0 2rem 0",
-          fontSize: "1rem",
-          lineHeight: 1.65,
-          color: "#66615b",
-        }}
-      >
-        {t.doneState.structureSupportsClarity}
-      </p>
-
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          style={{
+            position: "absolute",
+            left: 0,
+            top: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            objectPosition: "center",
+            pointerEvents: "none",
+          }}
+        >
+          <source src="/vireka-breath-loop.mp4" type="video/mp4" />
+        </video>
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            backgroundColor: "rgba(245, 243, 239, 0.84)",
+            pointerEvents: "none",
+          }}
+        />
+      </div>
       <div
         style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: "0.85rem",
-          alignItems: "center",
+          position: "relative",
+          zIndex: 1,
+          width: "100%",
+          maxWidth: "620px",
+          backgroundColor: "#ffffff",
+          border: "1px solid #e7e5e4",
+          borderRadius: "20px",
+          padding: "2.75rem 2.5rem",
+          boxSizing: "border-box",
+          boxShadow: "0 1px 2px rgba(0,0,0,0.02)",
         }}
       >
-        <button
-          type="button"
-          onClick={onCopy}
+        <h2
           style={{
-            padding: "0.78rem 1.15rem",
-            borderRadius: "999px",
-            border: "1px solid #d6d3d1",
-            backgroundColor: "#fff",
+            margin: "0 0 0.8rem 0",
+            fontSize: "clamp(1.8rem, 4vw, 2.2rem)",
+            lineHeight: 1.1,
+            letterSpacing: "-0.03em",
+            fontWeight: 600,
             color: "#111",
-            fontSize: "0.95rem",
-            fontWeight: 600,
-            cursor: "pointer",
-            whiteSpace: "nowrap",
           }}
         >
-          {copyLabel}
-        </button>
+          {t.doneState.clarityEstablished}
+        </h2>
 
-        <button
-          type="button"
-          onClick={onNew}
+        <p
           style={{
-            padding: "0.78rem 1.15rem",
-            borderRadius: "999px",
-            border: "1px solid #d6d3d1",
-            backgroundColor: "#fff",
-            color: "#111",
-            fontSize: "0.95rem",
-            fontWeight: 600,
-            cursor: "pointer",
-            whiteSpace: "nowrap",
+            margin: "0 0 2rem 0",
+            fontSize: "1rem",
+            lineHeight: 1.65,
+            color: "#66615b",
           }}
         >
-          {t.doneState.startNewSituation}
-        </button>
+          {t.doneState.structureSupportsClarity}
+        </p>
 
-        <button
-          type="button"
-          onClick={onHome}
+        <div
           style={{
-            padding: "0.78rem 1.15rem",
-            borderRadius: "999px",
-            border: "1px solid #d6d3d1",
-            backgroundColor: "#fff",
-            color: "#7a756f",
-            fontSize: "0.95rem",
-            fontWeight: 600,
-            cursor: "pointer",
-            whiteSpace: "nowrap",
+            display: "flex",
+            flexWrap: "wrap",
+            gap: "0.85rem",
+            alignItems: "center",
           }}
         >
-          {t.doneState.returnHome}
-        </button>
+          <button
+            type="button"
+            onClick={onCopy}
+            style={{
+              padding: "0.78rem 1.15rem",
+              borderRadius: "999px",
+              border: "1px solid #d6d3d1",
+              backgroundColor: "#fff",
+              color: "#111",
+              fontSize: "0.95rem",
+              fontWeight: 600,
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {copyLabel}
+          </button>
+
+          <button
+            type="button"
+            onClick={onNew}
+            style={{
+              padding: "0.78rem 1.15rem",
+              borderRadius: "999px",
+              border: "1px solid #d6d3d1",
+              backgroundColor: "#fff",
+              color: "#111",
+              fontSize: "0.95rem",
+              fontWeight: 600,
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {t.doneState.startNewSituation}
+          </button>
+
+          <button
+            type="button"
+            onClick={onHome}
+            style={{
+              padding: "0.78rem 1.15rem",
+              borderRadius: "999px",
+              border: "1px solid #d6d3d1",
+              backgroundColor: "#fff",
+              color: "#7a756f",
+              fontSize: "0.95rem",
+              fontWeight: 600,
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {t.doneState.returnHome}
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -27,7 +27,7 @@ p, li, span, div {
 @media (max-width: 639px) {
   .home-hero-section {
     min-height: calc(100dvh - 88px);
-    padding-top: 28px;
+    padding-top: clamp(72px, 18vh, 160px);
     padding-bottom: 56px;
     align-items: flex-start;
   }

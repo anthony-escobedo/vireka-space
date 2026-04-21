@@ -1396,7 +1396,7 @@ function renderActiveResponse(panel: ClarificationPanel) {
 
         <main
       style={{
-        minHeight: "100vh",
+        minHeight: "100svh",
         backgroundColor: "#f5f3ef",
         fontFamily:
           "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif",
@@ -1405,17 +1405,18 @@ function renderActiveResponse(panel: ClarificationPanel) {
         maxWidth: "100%",
         overflowX: "hidden",
         boxSizing: "border-box",
+        position: "relative",
       }}
     >
       {isDone ? (
         <div
           style={{
-            minHeight: "100vh",
+            minHeight: "100svh",
             display: "flex",
-            alignItems: "flex-start",
+            alignItems: "center",
             justifyContent: "center",
-            paddingTop: "max(1rem, env(safe-area-inset-top, 0px))",
-            paddingBottom: "2rem",
+            paddingTop: "clamp(72px, 12vh, 140px)",
+            paddingBottom: "40px",
             paddingLeft: "1.25rem",
             paddingRight: "1.25rem",
             boxSizing: "border-box",

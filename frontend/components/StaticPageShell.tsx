@@ -18,9 +18,10 @@ const pageStyle: CSSProperties = {
     "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif",
   color: "#111",
   width: "100%",
-  maxWidth: "100vw",
+  maxWidth: "100%",
   overflowX: "hidden",
   boxSizing: "border-box",
+  position: "relative",
 };
 
 const containerStyle: CSSProperties = {

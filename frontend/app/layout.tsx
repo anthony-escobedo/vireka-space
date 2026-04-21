@@ -17,7 +17,16 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-[#f7f4ee] text-black">
+      <body
+        className="bg-[#f7f4ee] text-black"
+        style={{
+          margin: 0,
+          padding: 0,
+          width: "100%",
+          maxWidth: "100%",
+          overflowX: "hidden",
+        }}
+      >
         <LanguageProvider>
           {children}
         </LanguageProvider>

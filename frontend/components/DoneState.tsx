@@ -27,6 +27,7 @@ export default function DoneState({
         justifyContent: "center",
         boxSizing: "border-box",
         overflowX: "hidden",
+        minWidth: 0,
       }}
     >
       <div

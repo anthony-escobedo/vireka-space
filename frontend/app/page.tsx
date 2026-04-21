@@ -57,6 +57,7 @@ export default function HomePage() {
       overflowX: "hidden",
       width: "100%",
       maxWidth: "100%",
+      position: "relative",
       color: "#111111",
       fontFamily:
      'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',

@@ -64,7 +64,6 @@ export interface TranslationDictionary {
   clarify: {
     pageTitle: string;
     heroTitle: string;
-    introText: string;
     descriptionParagraph: string;
     inputLabel: string;
     inputPlaceholder: string;
@@ -113,7 +112,6 @@ export interface TranslationDictionary {
   aiInteraction: {
     pageTitle: string;
     heroTitle: string;
-    introText: string;
     descriptionParagraph: string;
     inputLabel: string;
     inputPlaceholder: string;

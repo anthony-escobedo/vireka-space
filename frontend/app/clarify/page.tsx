@@ -1451,9 +1451,6 @@ function handleDone(): void {
         </h1>
 
         <div style={{ maxWidth: "640px", minWidth: 0, width: "100%" }}>
-          <p style={{ fontSize: "0.95rem", color: "#444", lineHeight: 1.6, margin: "0 0 0.75rem 0" }}>
-            {t.clarify.introText}
-          </p>
           <p style={{ fontSize: "0.95rem", color: "#444", lineHeight: 1.65, margin: 0 }}>
             {t.clarify.descriptionParagraph}
           </p>

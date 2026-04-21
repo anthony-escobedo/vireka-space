@@ -275,20 +275,24 @@ export default function AIInteractionPage() {
 
     const recognition = new SpeechRecognitionCtor();
     recognitionRef.current = recognition;
+    const capturedTarget = target;
 
     recognition.continuous = false;
     recognition.interimResults = false;
     recognition.lang = "en-US";
 
     recognition.onstart = () => {
-      setListeningTarget(target);
+      setListeningTarget(capturedTarget);
       setError(null);
     };
 
     recognition.onresult = (event) => {
+      if (recognitionRef.current !== recognition) {
+        return;
+      }
       let transcript = event.results[0][0].transcript;
       transcript = cleanTranscript(transcript);
-      if (target === "top") {
+      if (capturedTarget === "top") {
         setTopInput((prev) =>
           prev.trim() ? `${prev.trim()} ${transcript}` : transcript
         );
@@ -1588,11 +1592,12 @@ function renderActiveResponse(panel: ClarificationPanel) {
         fontWeight: 600
       }}
     >
-      {error.toLowerCase().includes("speech")
-        ? "Microphone unavailable"
+      {error === t.aiInteraction.speechRecognitionNotSupported ||
+      error.startsWith(t.aiInteraction.microphoneError)
+        ? t.aiInteraction.microphoneUnavailableTitle
         : error.toLowerCase().includes("limit")
-        ? "Usage limit reached"
-        : "Notice"}
+        ? t.aiInteraction.usageLimitNoticeTitle
+        : t.aiInteraction.genericNoticeTitle}
     </div>
 
     <div

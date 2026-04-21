@@ -102,6 +102,9 @@ export interface TranslationDictionary {
     pleaseEnterASituationOrResponse: string;
     speechRecognitionNotSupported: string;
     microphoneError: string;
+    microphoneUnavailableTitle: string;
+    usageLimitNoticeTitle: string;
+    genericNoticeTitle: string;
     anUnexpectedErrorOccurred: string;
   };
   
@@ -148,6 +151,9 @@ export interface TranslationDictionary {
     pleaseEnterASituationOrResponse: string;
     speechRecognitionNotSupported: string;
     microphoneError: string;
+    microphoneUnavailableTitle: string;
+    usageLimitNoticeTitle: string;
+    genericNoticeTitle: string;
     anUnexpectedErrorOccurred: string;
   };
   

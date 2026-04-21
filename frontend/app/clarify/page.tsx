@@ -269,20 +269,24 @@ export default function ClarifyPage() {
 
     const recognition = new SpeechRecognitionCtor();
     recognitionRef.current = recognition;
+    const capturedTarget = target;
 
     recognition.continuous = false;
     recognition.interimResults = false;
     recognition.lang = "en-US";
 
     recognition.onstart = () => {
-      setListeningTarget(target);
+      setListeningTarget(capturedTarget);
       setError(null);
     };
 
     recognition.onresult = (event) => {
+      if (recognitionRef.current !== recognition) {
+        return;
+      }
       let transcript = event.results[0][0].transcript;
       transcript = cleanTranscript(transcript);
-      if (target === "top") {
+      if (capturedTarget === "top") {
         setTopInput((prev) =>
           prev.trim() ? `${prev.trim()} ${transcript}` : transcript
         );
@@ -1571,11 +1575,12 @@ function handleDone(): void {
         fontWeight: 600
       }}
     >
-      {error.toLowerCase().includes("speech")
-        ? "Microphone unavailable"
+      {error === t.clarify.speechRecognitionNotSupported ||
+      error.startsWith(t.clarify.microphoneError)
+        ? t.clarify.microphoneUnavailableTitle
         : error.toLowerCase().includes("limit")
-        ? "Usage limit reached"
-        : "Notice"}
+        ? t.clarify.usageLimitNoticeTitle
+        : t.clarify.genericNoticeTitle}
     </div>
 
     <div

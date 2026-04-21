@@ -317,10 +317,10 @@ export default function HomePage() {
           <div
             style={{
               display: "flex",
-              justifyContent: "center",
-              gap: "16px",
-              flexWrap: "wrap",
-              marginBottom: "48px",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "14px",
+              marginBottom: "72px",
             }}
           >
             <Link

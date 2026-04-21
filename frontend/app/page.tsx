@@ -319,7 +319,6 @@ export default function HomePage() {
     alignItems: "center",
     justifyContent: "center",
     minHeight: "calc(100vh - 120px)",
-    padding: "40px 24px 72px",
     backgroundColor: "#f7f7f2",
   }}
 >

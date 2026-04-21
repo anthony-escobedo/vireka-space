@@ -24,10 +24,17 @@ p, li, span, div {
   word-break: break-word;
 }
 
+.home-hero-section {
+  padding-top: clamp(120px, 18vh, 220px);
+  padding-left: 24px;
+  padding-right: 24px;
+  padding-bottom: 72px;
+}
+
 @media (max-width: 639px) {
   .home-hero-section {
     min-height: calc(100dvh - 88px);
-    padding-top: clamp(72px, 18vh, 160px);
+    padding-top: clamp(96px, 22vh, 200px);
     padding-bottom: 56px;
     align-items: flex-start;
   }

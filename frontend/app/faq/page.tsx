@@ -2,6 +2,17 @@
 
 import Link from "next/link";
 import { useLanguage } from '../../lib/i18n/useLanguage';
+import type { TranslationDictionary } from '../../lib/i18n/types';
+
+const FAQ_KEYS = [
+  'whatIsVirekaSpace',
+  'whyClarify',
+  'aiImprovement',
+  'promptEngineering',
+  'aiAgents',
+  'providesAnswers',
+  'alignment',
+] as const satisfies readonly (keyof TranslationDictionary['faq']['questions'])[];
 
 export default function FAQPage() {
   const { t } = useLanguage();
@@ -72,335 +83,51 @@ export default function FAQPage() {
           {t.faq.subtitle}
         </h2>
 
-        <section style={{ marginBottom: "3.5rem" }}>
-          <h2
-            style={{
-              fontSize: 18,
-              lineHeight: 1.45,
-              fontWeight: 500,
-              color: "#1f1f1f",
-              marginTop: 38,
-              marginBottom: 10,
-              maxWidth: 640,
-              wordBreak: "break-word",
-              overflowWrap: "anywhere",
-            }}
-          >
-            {t.faq.questions.whatIsVirekaSpace.question}
-          </h2>
+        {FAQ_KEYS.map((key, index) => {
+          const item = t.faq.questions[key];
+          return (
+            <section
+              key={key}
+              style={{
+                marginBottom: index < FAQ_KEYS.length - 1 ? "3.5rem" : undefined,
+              }}
+            >
+              <h2
+                style={{
+                  fontSize: 18,
+                  lineHeight: 1.45,
+                  fontWeight: 500,
+                  color: "#1f1f1f",
+                  marginTop: 38,
+                  marginBottom: 10,
+                  maxWidth: 640,
+                  wordBreak: "break-word",
+                  overflowWrap: "anywhere",
+                }}
+              >
+                {item.question}
+              </h2>
 
-          {t.faq.questions.whatIsVirekaSpace.answer.map((paragraph, index) => (
-            <p key={index} style={{ 
-              marginBottom: 18,
-              fontSize: 16,
-              lineHeight: 1.72,
-              color: "#2b2b2b",
-              fontWeight: 400,
-              maxWidth: 640,
-              wordBreak: "break-word", 
-              overflowWrap: "anywhere" 
-            }}>
-              {paragraph}
-            </p>
-          ))}
-        </section>
-
-        <section style={{ marginBottom: "3.5rem" }}>
-          <h2
-            style={{
-              fontSize: 18,
-              lineHeight: 1.45,
-              fontWeight: 500,
-              color: "#1f1f1f",
-              marginTop: 38,
-              marginBottom: 10,
-              maxWidth: 640,
-              wordBreak: "break-word",
-              overflowWrap: "anywhere",
-            }}
-          >
-            {t.faq.questions.whyClarify.question}
-          </h2>
-
-          {t.faq.questions.whyClarify.answer.map((paragraph, index) => (
-            <p key={index} style={{ 
-              marginBottom: 18,
-              fontSize: 16,
-              lineHeight: 1.72,
-              color: "#2b2b2b",
-              fontWeight: 400,
-              maxWidth: 640,
-              wordBreak: "break-word", 
-              overflowWrap: "anywhere" 
-            }}>
-              {paragraph}
-            </p>
-          ))}
-        </section>
-
-        <section style={{ marginBottom: "3.5rem" }}>
-          <h2
-            style={{
-              fontSize: 18,
-              lineHeight: 1.45,
-              fontWeight: 500,
-              color: "#1f1f1f",
-              marginTop: 38,
-              marginBottom: 10,
-              maxWidth: 640,
-              wordBreak: "break-word",
-              overflowWrap: "anywhere",
-            }}
-          >
-            {t.faq.questions.promptEngineering.question}
-          </h2>
-
-          {t.faq.questions.promptEngineering.answer.map((paragraph, index) => (
-            <p key={index} style={{ 
-              marginBottom: 18,
-              fontSize: 16,
-              lineHeight: 1.72,
-              color: "#2b2b2b",
-              fontWeight: 400,
-              maxWidth: 640,
-              wordBreak: "break-word", 
-              overflowWrap: "anywhere"
-            }}>
-              {paragraph}
-            </p>
-          ))}
-        </section>
-
-        <section style={{ marginBottom: "3.5rem" }}>
-          <h2
-            style={{
-              fontSize: 18,
-              lineHeight: 1.45,
-              fontWeight: 500,
-              color: "#1f1f1f",
-              marginTop: 38,
-              marginBottom: 10,
-              maxWidth: 640,
-              wordBreak: "break-word",
-              overflowWrap: "anywhere",
-            }}
-          >
-            {t.faq.questions.providesAnswers.question}
-          </h2>
-
-          {t.faq.questions.providesAnswers.answer.map((paragraph, index) => (
-            <p key={index} style={{ 
-              marginBottom: 18,
-              fontSize: 16,
-              lineHeight: 1.72,
-              color: "#2b2b2b",
-              fontWeight: 400,
-              maxWidth: 640,
-              wordBreak: "break-word", 
-              overflowWrap: "anywhere" 
-            }}>
-              {paragraph}
-            </p>
-          ))}
-        </section>
-
-        <section style={{ marginBottom: "3.5rem" }}>
-          <h2
-            style={{
-              fontSize: 18,
-              lineHeight: 1.45,
-              fontWeight: 500,
-              color: "#1f1f1f",
-              marginTop: 38,
-              marginBottom: 10,
-              maxWidth: 640,
-              wordBreak: "break-word",
-              overflowWrap: "anywhere",
-            }}
-          >
-            {t.faq.questions.decisionTool.question}
-          </h2>
-
-          {t.faq.questions.decisionTool.answer.map((paragraph, index) => (
-            <p key={index} style={{ 
-              marginBottom: 18,
-              fontSize: 16,
-              lineHeight: 1.72,
-              color: "#2b2b2b",
-              fontWeight: 400,
-              maxWidth: 640,
-              wordBreak: "break-word", 
-              overflowWrap: "anywhere" 
-            }}>
-              {paragraph}
-            </p>
-          ))}
-        </section>
-
-        <section style={{ marginBottom: "3.5rem" }}>
-          <h2
-            style={{
-              fontSize: 18,
-              lineHeight: 1.45,
-              fontWeight: 500,
-              color: "#1f1f1f",
-              marginTop: 38,
-              marginBottom: 10,
-              maxWidth: 640,
-              wordBreak: "break-word",
-              overflowWrap: "anywhere",
-            }}
-          >
-            {t.faq.questions.alignment.question}
-          </h2>
-
-          {t.faq.questions.alignment.answer.map((paragraph, index) => (
-            <p key={index} style={{ 
-              marginBottom: 18,
-              fontSize: 16,
-              lineHeight: 1.72,
-              color: "#2b2b2b",
-              fontWeight: 400,
-              maxWidth: 640,
-              wordBreak: "break-word", 
-              overflowWrap: "anywhere" 
-            }}>
-              {paragraph}
-            </p>
-          ))}
-        </section>
-
-        <section style={{ marginBottom: "3.5rem" }}>
-          <h2
-            style={{
-              fontSize: 18,
-              lineHeight: 1.45,
-              fontWeight: 500,
-              color: "#1f1f1f",
-              marginTop: 38,
-              marginBottom: 10,
-              maxWidth: 640,
-              wordBreak: "break-word",
-              overflowWrap: "anywhere",
-            }}
-          >
-            {t.faq.questions.aiAgents.question}
-          </h2>
-
-          {t.faq.questions.aiAgents.answer.map((paragraph, index) => (
-            <p key={index} style={{ 
-              marginBottom: 18,
-              fontSize: 16,
-              lineHeight: 1.72,
-              color: "#2b2b2b",
-              fontWeight: 400,
-              maxWidth: 640,
-              wordBreak: "break-word", 
-              overflowWrap: "anywhere" 
-            }}>
-              {paragraph}
-            </p>
-          ))}
-        </section>
-
-        <section style={{ marginBottom: "3.5rem" }}>
-          <h2
-            style={{
-              fontSize: 18,
-              lineHeight: 1.45,
-              fontWeight: 500,
-              color: "#1f1f1f",
-              marginTop: 38,
-              marginBottom: 10,
-              maxWidth: 640,
-              wordBreak: "break-word",
-              overflowWrap: "anywhere",
-            }}
-          >
-            {t.faq.questions.aiImprovement.question}
-          </h2>
-
-          {t.faq.questions.aiImprovement.answer.map((paragraph, index) => (
-            <p key={index} style={{ 
-              marginBottom: 18,
-              fontSize: 16,
-              lineHeight: 1.72,
-              color: "#2b2b2b",
-              fontWeight: 400,
-              maxWidth: 640,
-              wordBreak: "break-word", 
-              overflowWrap: "anywhere" 
-            }}>
-              {paragraph}
-            </p>
-          ))}
-        </section>
-
-        <section>
-          <h2
-            style={{
-              fontSize: 18,
-              lineHeight: 1.45,
-              fontWeight: 500,
-              color: "#1f1f1f",
-              marginTop: 38,
-              marginBottom: 10,
-              maxWidth: 640,
-              wordBreak: "break-word",
-              overflowWrap: "anywhere",
-            }}
-          >
-            {t.faq.questions.isCoaching.question}
-          </h2>
-
-          {t.faq.questions.isCoaching.answer.map((paragraph, index) => (
-            <p key={index} style={{ 
-              marginBottom: 18,
-              fontSize: 16,
-              lineHeight: 1.72,
-              color: "#2b2b2b",
-              fontWeight: 400,
-              maxWidth: 640,
-              wordBreak: "break-word", 
-              overflowWrap: "anywhere" 
-            }}>
-              {paragraph}
-            </p>
-          ))}
-        </section>
-
-        <section style={{ marginTop: 38 }}>
-          <h2
-            style={{
-              fontSize: 18,
-              lineHeight: 1.45,
-              fontWeight: 500,
-              color: "#1f1f1f",
-              marginTop: 38,
-              marginBottom: 10,
-              maxWidth: 640,
-              wordBreak: "break-word",
-              overflowWrap: "anywhere",
-            }}
-          >
-            {t.faq.questions.whoIsFor.question}
-          </h2>
-
-          {t.faq.questions.whoIsFor.answer.map((paragraph, index) => (
-            <p key={index} style={{ 
-              marginBottom: 18,
-              fontSize: 16,
-              lineHeight: 1.72,
-              color: "#2b2b2b",
-              fontWeight: 400,
-              maxWidth: 640,
-              wordBreak: "break-word", 
-              overflowWrap: "anywhere" 
-            }}>
-              {paragraph}
-            </p>
-          ))}
-        </section>
+              {item.answer.map((paragraph, pIndex) => (
+                <p
+                  key={pIndex}
+                  style={{
+                    marginBottom: 18,
+                    fontSize: 16,
+                    lineHeight: 1.72,
+                    color: "#2b2b2b",
+                    fontWeight: 400,
+                    maxWidth: 640,
+                    wordBreak: "break-word",
+                    overflowWrap: "anywhere",
+                  }}
+                >
+                  {paragraph}
+                </p>
+              ))}
+            </section>
+          );
+        })}
       </main>
     </div>
   );

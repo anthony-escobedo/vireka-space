@@ -246,19 +246,11 @@ export interface TranslationDictionary {
         question: string;
         answer: string[];
       };
+      aiImprovement: {
+        question: string;
+        answer: string[];
+      };
       promptEngineering: {
-        question: string;
-        answer: string[];
-      };
-      providesAnswers: {
-        question: string;
-        answer: string[];
-      };
-      decisionTool: {
-        question: string;
-        answer: string[];
-      };
-      alignment: {
         question: string;
         answer: string[];
       };
@@ -266,15 +258,11 @@ export interface TranslationDictionary {
         question: string;
         answer: string[];
       };
-      aiImprovement: {
+      providesAnswers: {
         question: string;
         answer: string[];
       };
-      isCoaching: {
-        question: string;
-        answer: string[];
-      };
-      whoIsFor: {
+      alignment: {
         question: string;
         answer: string[];
       };

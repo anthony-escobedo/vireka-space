@@ -178,7 +178,8 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       pageTitle: 'Contact and feedback',
       pageIntro: 'Questions, feedback, and technical issues may be directed using the contact information below.',
       feedbackHelpsImprove: 'Feedback helps improve clarity, reliability, and usability over time.',
-      messagesReviewed: 'Messages are reviewed as availability allows.',
+      messagesReviewed:
+        'Messages are reviewed thoughtfully and contribute to ongoing refinement.',
     },
     staticPage: {
       backToHome: 'Back',
@@ -599,8 +600,10 @@ const dictionaries: Record<Language, TranslationDictionary> = {
     contact: {
       pageTitle: 'Contacto y retroalimentación',
       pageIntro: 'Preguntas, retroalimentación y problemas técnicos pueden dirigirse usando la información de contacto a continuación.',
-      feedbackHelpsImprove: 'La retroalimentación ayuda a mejorar la claridad, confiabilidad y usabilidad con el tiempo.',
-      messagesReviewed: 'Los mensajes se revisan según la disponibilidad.',
+      feedbackHelpsImprove:
+        'La retroalimentación ayuda a mejorar la claridad, la fiabilidad y la usabilidad con el tiempo.',
+      messagesReviewed:
+        'Los mensajes se revisan con atención y contribuyen al perfeccionamiento continuo del sistema.',
     },
     staticPage: {
       backToHome: 'Volver',
@@ -1021,8 +1024,10 @@ const dictionaries: Record<Language, TranslationDictionary> = {
     contact: {
       pageTitle: 'Contato e feedback',
       pageIntro: 'Perguntas, feedback e problemas técnicos podem ser direcionados usando as informações de contato abaixo.',
-      feedbackHelpsImprove: 'Feedback ajuda a melhorar clareza, confiabilidade e usabilidade ao longo do tempo.',
-      messagesReviewed: 'Mensagens são revisadas conforme a disponibilidade.',
+      feedbackHelpsImprove:
+        'O feedback ajuda a melhorar a clareza, a confiabilidade e a usabilidade ao longo do tempo.',
+      messagesReviewed:
+        'As mensagens são analisadas com atenção e contribuem para o aprimoramento contínuo do sistema.',
     },
     staticPage: {
       backToHome: 'Voltar',

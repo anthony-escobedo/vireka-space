@@ -26,6 +26,7 @@ export default function DoneState({
         display: "flex",
         justifyContent: "center",
         boxSizing: "border-box",
+        overflowX: "hidden",
       }}
     >
       <div

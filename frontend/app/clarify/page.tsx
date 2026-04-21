@@ -1380,7 +1380,7 @@ function handleDone(): void {
           "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif",
         color: "#111",
         width: "100%",
-        maxWidth: "100vw",
+        maxWidth: "100%",
         overflowX: "hidden",
         boxSizing: "border-box",
       }}
@@ -1390,10 +1390,14 @@ function handleDone(): void {
           style={{
             minHeight: "100vh",
             display: "flex",
-            alignItems: "center",
+            alignItems: "flex-start",
             justifyContent: "center",
-            padding: "2rem 1.25rem",
+            paddingTop: "max(1rem, env(safe-area-inset-top, 0px))",
+            paddingBottom: "2rem",
+            paddingLeft: "1.25rem",
+            paddingRight: "1.25rem",
             boxSizing: "border-box",
+            overflowX: "hidden",
           }}
         >
                     <DoneState

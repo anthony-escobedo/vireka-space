@@ -56,6 +56,7 @@ export default function HomePage() {
       backgroundColor: "#f7f7f2",
       overflowX: "hidden",
       width: "100%",
+      maxWidth: "100%",
       color: "#111111",
       fontFamily:
      'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
@@ -81,62 +82,20 @@ export default function HomePage() {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            gap: "18px",
+            gap: "12px",
             flexWrap: "wrap",
             width: "100%",
             boxSizing: "border-box",
           }}
         >
-          <Link
-            href="/"
-            style={{
-              fontSize: "18px",
-              fontWeight: 650,
-              letterSpacing: "-0.015em",
-              color: "#000",
-              textDecoration: "none",
-              display: "inline-block",
-              whiteSpace: "nowrap",
-              flexShrink: 0,
-            }}
-          >
-            VIREKA Space
-          </Link>
-
           <div
             style={{
               display: "flex",
               alignItems: "center",
-              gap: "18px",
+              gap: "12px",
+              minWidth: 0,
             }}
           >
-            <nav
-              style={{
-                display: "flex",
-                gap: "18px",
-                fontSize: "14px",
-                flexWrap: "wrap",
-                justifyContent: "flex-start",
-                alignItems: "center",
-              }}
-            >
-              <Link
-                href="/about"
-                style={{ color: "#333", textDecoration: "none" }}
-              >
-                {t.header.about}
-              </Link>
-
-              <Link
-                href="/faq"
-                style={{ color: "#333", textDecoration: "none" }}
-              >
-                {t.header.faq}
-              </Link>
-            </nav>
-
-            <LanguageSelector />
-
             <div
               ref={menuRef}
               style={{
@@ -209,8 +168,9 @@ export default function HomePage() {
                   style={{
                     position: "absolute",
                     top: "52px",
-                    right: -110,
+                    left: 0,
                     minWidth: "220px",
+                    maxWidth: "min(280px, calc(100vw - 32px))",
                     padding: "6px",
                     borderRadius: "16px",
                     backgroundColor: "#f8f6f1",
@@ -290,11 +250,67 @@ export default function HomePage() {
                 </div>
               )}
             </div>
+
+            <Link
+              href="/"
+              style={{
+                fontSize: "18px",
+                fontWeight: 650,
+                letterSpacing: "-0.015em",
+                color: "#000",
+                textDecoration: "none",
+                display: "inline-block",
+                whiteSpace: "nowrap",
+                flexShrink: 0,
+              }}
+            >
+              VIREKA Space
+            </Link>
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "18px",
+              flexWrap: "wrap",
+              justifyContent: "flex-end",
+              marginLeft: "auto",
+              minWidth: 0,
+            }}
+          >
+            <nav
+              style={{
+                display: "flex",
+                gap: "18px",
+                fontSize: "14px",
+                flexWrap: "wrap",
+                justifyContent: "flex-end",
+                alignItems: "center",
+              }}
+            >
+              <Link
+                href="/about"
+                style={{ color: "#333", textDecoration: "none" }}
+              >
+                {t.header.about}
+              </Link>
+
+              <Link
+                href="/faq"
+                style={{ color: "#333", textDecoration: "none" }}
+              >
+                {t.header.faq}
+              </Link>
+            </nav>
+
+            <LanguageSelector />
           </div>
         </div>
       </header>
 
       <section
+  className="home-hero-section"
   style={{
     position: "relative",
     overflow: "hidden",
@@ -345,6 +361,7 @@ export default function HomePage() {
           />
         </div>
         <div
+          className="home-hero-inner"
           style={{
             position: "relative",
             zIndex: 1,

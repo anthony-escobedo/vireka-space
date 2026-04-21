@@ -23,3 +23,16 @@ p, li, span, div {
   overflow-wrap: anywhere;
   word-break: break-word;
 }
+
+@media (max-width: 639px) {
+  .home-hero-section {
+    min-height: calc(100dvh - 88px);
+    padding-top: 28px;
+    padding-bottom: 56px;
+    align-items: flex-start;
+  }
+
+  .home-hero-inner {
+    min-height: min(62dvh, 480px);
+  }
+}

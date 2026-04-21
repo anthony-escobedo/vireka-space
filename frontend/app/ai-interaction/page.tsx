@@ -12,6 +12,10 @@ import Footer from "../../components/footer";
 import { getOrCreateAnonymousId } from "../../lib/anonymousSession";
 import { useLanguage } from "../../lib/i18n/useLanguage";
 
+/** Matches API body when daily free limit is exceeded (see app/api/clarify/route.ts). */
+const FREE_USAGE_LIMIT_ERROR_EN =
+  "Free usage includes 20 interactions per day. Access resumes tomorrow or with subscription.";
+
 declare global {
   interface Window {
     SpeechRecognition?: new () => SpeechRecognition;
@@ -461,9 +465,12 @@ export default function AIInteractionPage() {
         });
       }, 100);
     } catch (err: unknown) {
-      setError(
-        err instanceof Error ? err.message : t.aiInteraction.anUnexpectedErrorOccurred
-      );
+      const msg = err instanceof Error ? err.message : "";
+      if (msg === FREE_USAGE_LIMIT_ERROR_EN) {
+        setError(t.aiInteraction.usageLimitBody);
+      } else {
+        setError(msg || t.aiInteraction.anUnexpectedErrorOccurred);
+      }
     } finally {
       setLoading(false);
     }
@@ -868,7 +875,7 @@ function handleDismissOnboarding(): void {
                 whiteSpace: "nowrap",
               }}
             >
-              Optional
+              {t.aiInteraction.optional}
             </span>
           </div>    
             <p
@@ -1595,7 +1602,9 @@ function renderActiveResponse(panel: ClarificationPanel) {
       {error === t.aiInteraction.speechRecognitionNotSupported ||
       error.startsWith(t.aiInteraction.microphoneError)
         ? t.aiInteraction.microphoneUnavailableTitle
-        : error.toLowerCase().includes("limit")
+        : error === t.aiInteraction.usageLimitBody ||
+            error === FREE_USAGE_LIMIT_ERROR_EN ||
+            error.toLowerCase().includes("limit")
         ? t.aiInteraction.usageLimitNoticeTitle
         : t.aiInteraction.genericNoticeTitle}
     </div>
@@ -1610,7 +1619,10 @@ function renderActiveResponse(panel: ClarificationPanel) {
         fontSize: "0.9rem",
       }}
     >
-      {error}
+      {error === t.aiInteraction.usageLimitBody ||
+      error === FREE_USAGE_LIMIT_ERROR_EN
+        ? t.aiInteraction.usageLimitBody
+        : error}
     </div>
 
   </div>

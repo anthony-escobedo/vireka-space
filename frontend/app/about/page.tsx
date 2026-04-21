@@ -38,7 +38,7 @@ textDecoration: "none",
 fontSize: "0.95rem",
 }}
 >
-{t.staticPage.backToHome} </Link> </div>
+← {t.staticPage.backToHome} </Link> </div>
 
 
     <h1

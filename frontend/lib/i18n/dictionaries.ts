@@ -97,6 +97,8 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       microphoneError: 'Microphone error: ',
       microphoneUnavailableTitle: 'Microphone unavailable',
       usageLimitNoticeTitle: 'Usage limit reached',
+      usageLimitBody:
+        'Free usage includes 20 interactions per day. Access resumes tomorrow or with subscription.',
       genericNoticeTitle: 'Notice',
       anUnexpectedErrorOccurred: 'An unexpected error occurred.',
       loadingText: 'Clarifying...',
@@ -151,6 +153,8 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       microphoneError: 'Microphone error: ',
       microphoneUnavailableTitle: 'Microphone unavailable',
       usageLimitNoticeTitle: 'Usage limit reached',
+      usageLimitBody:
+        'Free usage includes 20 interactions per day. Access resumes tomorrow or with subscription.',
       genericNoticeTitle: 'Notice',
       anUnexpectedErrorOccurred: 'An unexpected error occurred.',
     },
@@ -507,6 +511,8 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       microphoneError: 'Error de micrófono: ',
       microphoneUnavailableTitle: 'Micrófono no disponible',
       usageLimitNoticeTitle: 'Límite de uso alcanzado',
+      usageLimitBody:
+        'El uso gratuito incluye 20 interacciones por día. El acceso se reanuda mañana o con una suscripción.',
       genericNoticeTitle: 'Aviso',
       anUnexpectedErrorOccurred: 'Ocurrió un error inesperado.',
       loadingText: 'Aclarando...',
@@ -561,6 +567,8 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       microphoneError: 'Error de micrófono: ',
       microphoneUnavailableTitle: 'Micrófono no disponible',
       usageLimitNoticeTitle: 'Límite de uso alcanzado',
+      usageLimitBody:
+        'El uso gratuito incluye 20 interacciones por día. El acceso se reanuda mañana o con una suscripción.',
       genericNoticeTitle: 'Aviso',
       anUnexpectedErrorOccurred: 'Ocurrió un error inesperado.',
     },
@@ -917,6 +925,8 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       microphoneError: 'Erro no microfone: ',
       microphoneUnavailableTitle: 'Microfone indisponível',
       usageLimitNoticeTitle: 'Limite de uso atingido',
+      usageLimitBody:
+        'O uso gratuito inclui 20 interações por dia. O acesso é retomado amanhã ou com uma assinatura.',
       genericNoticeTitle: 'Aviso',
       anUnexpectedErrorOccurred: 'Ocorreu um erro inesperado.',
       loadingText: 'Esclarecendo...',
@@ -971,6 +981,8 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       microphoneError: 'Erro no microfone: ',
       microphoneUnavailableTitle: 'Microfone indisponível',
       usageLimitNoticeTitle: 'Limite de uso atingido',
+      usageLimitBody:
+        'O uso gratuito inclui 20 interações por dia. O acesso é retomado amanhã ou com uma assinatura.',
       genericNoticeTitle: 'Aviso',
       anUnexpectedErrorOccurred: 'Ocorreu um erro inesperado.',
     },

@@ -12,6 +12,10 @@ import Footer from "../../components/footer";
 import { getOrCreateAnonymousId } from "../../lib/anonymousSession";
 import { useLanguage } from "../../lib/i18n/useLanguage";
 
+/** Matches API body when daily free limit is exceeded (see app/api/clarify/route.ts). */
+const FREE_USAGE_LIMIT_ERROR_EN =
+  "Free usage includes 20 interactions per day. Access resumes tomorrow or with subscription.";
+
 declare global {
   interface Window {
     SpeechRecognition?: new () => SpeechRecognition;
@@ -451,9 +455,12 @@ export default function ClarifyPage() {
         });
       }, 100);
     } catch (err: unknown) {
-      setError(
-        err instanceof Error ? err.message : t.clarify.anUnexpectedErrorOccurred
-      );
+      const msg = err instanceof Error ? err.message : "";
+      if (msg === FREE_USAGE_LIMIT_ERROR_EN) {
+        setError(t.clarify.usageLimitBody);
+      } else {
+        setError(msg || t.clarify.anUnexpectedErrorOccurred);
+      }
     } finally {
       setLoading(false);
     }
@@ -1578,7 +1585,9 @@ function handleDone(): void {
       {error === t.clarify.speechRecognitionNotSupported ||
       error.startsWith(t.clarify.microphoneError)
         ? t.clarify.microphoneUnavailableTitle
-        : error.toLowerCase().includes("limit")
+        : error === t.clarify.usageLimitBody ||
+            error === FREE_USAGE_LIMIT_ERROR_EN ||
+            error.toLowerCase().includes("limit")
         ? t.clarify.usageLimitNoticeTitle
         : t.clarify.genericNoticeTitle}
     </div>
@@ -1593,7 +1602,9 @@ function handleDone(): void {
         fontSize: "0.9rem",
       }}
     >
-      {error}
+      {error === t.clarify.usageLimitBody || error === FREE_USAGE_LIMIT_ERROR_EN
+        ? t.clarify.usageLimitBody
+        : error}
     </div>
 
   </div>

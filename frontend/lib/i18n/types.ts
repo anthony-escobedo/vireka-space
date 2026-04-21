@@ -104,6 +104,7 @@ export interface TranslationDictionary {
     microphoneError: string;
     microphoneUnavailableTitle: string;
     usageLimitNoticeTitle: string;
+    usageLimitBody: string;
     genericNoticeTitle: string;
     anUnexpectedErrorOccurred: string;
   };
@@ -153,6 +154,7 @@ export interface TranslationDictionary {
     microphoneError: string;
     microphoneUnavailableTitle: string;
     usageLimitNoticeTitle: string;
+    usageLimitBody: string;
     genericNoticeTitle: string;
     anUnexpectedErrorOccurred: string;
   };

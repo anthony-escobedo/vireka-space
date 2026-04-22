@@ -2,16 +2,6 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
-const { pathname } = request.nextUrl
-
-// Allow OG image + metadata routes without auth
-if (
-  pathname.startsWith('/api/og') ||
-  pathname === '/' // allow homepage for validator
-) {
-  return NextResponse.next()
-}
-  
   const basicAuth = request.headers.get('authorization')
 
   const username = 'admin'

@@ -443,14 +443,21 @@ const InterpretationInput = forwardRef<
       mediaChunksRef.current = [];
       discardRecordingRef.current = false;
       recorder.ondataavailable = (ev) => {
+        const data = ev.data;
+        if (data && data.size > 0) {
+          mediaChunksRef.current.push(data);
+        }
+        const size = data?.size ?? 0;
+        const totalChunkCount = mediaChunksRef.current.length;
         console.log("[mic] dataavailable", {
-          size: ev.data?.size,
-          type: ev.data?.type,
+          size,
+          type: data?.type,
+          totalChunkCount,
         });
-        if (ev.data.size > 0) mediaChunksRef.current.push(ev.data);
       };
 
       recorder.onstop = () => {
+        console.log("[mic] ONSTOP FIRED");
         console.log("[mic] onstop fired", {
           mediaRecorderState: recorder.state,
           activeRecorderIs: activeRecorderRef.current
@@ -482,9 +489,13 @@ const InterpretationInput = forwardRef<
           return;
         }
 
-        const chunks = mediaChunksRef.current;
-        console.log("[mic] total chunk parts", chunks?.length);
+        const chunkSnapshot = Array.from(mediaChunksRef.current);
+        const chunks = chunkSnapshot;
         mediaChunksRef.current = [];
+        console.log("[mic] CHUNKS SNAPSHOT", {
+          count: chunkSnapshot.length,
+          sizes: chunkSnapshot.map((c) => (c instanceof Blob ? c.size : 0)),
+        });
         const blobType = recorder.mimeType || mimeTypeRef.current || "audio/webm";
         console.log("[mic] building blob from chunks", {
           chunkCount: chunks?.length,
@@ -669,8 +680,22 @@ const InterpretationInput = forwardRef<
 
   const confirmRecording = useCallback(() => {
     try {
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
-        mediaRecorderRef.current.stop();
+      const r = mediaRecorderRef.current;
+      console.log("[mic] CONFIRM CLICKED");
+      console.log("[mic] confirm recorder", {
+        hasRecorder: r != null,
+        state: r?.state,
+        chunkCount: mediaChunksRef.current.length,
+      });
+      if (r && r.state === "recording") {
+        try {
+          r.requestData?.();
+          console.log("[mic] requestData called");
+        } catch (e) {
+          console.log("[mic] requestData failed", e);
+        }
+        console.log("[mic] calling stop()");
+        r.stop();
       }
     } catch {
       setMicState("idle");

@@ -43,6 +43,7 @@ export type InterpretationInputProps = {
   transcribeUrl?: string;
   /** Parent loading (e.g. POST /api/clarify) - disables send control. */
   clarifyLoading?: boolean;
+  surfaceVariant?: "card" | "composer";
 };
 
 function mergeRefs<T>(
@@ -210,6 +211,7 @@ const InterpretationInput = forwardRef<
     onSend,
     transcribeUrl = WHISPER_TRANSCRIBE_URL,
     clarifyLoading = false,
+    surfaceVariant = "card",
   },
   ref
 ) {
@@ -721,14 +723,16 @@ const InterpretationInput = forwardRef<
     </>
   ) : null;
 
+  const isComposer = surfaceVariant === "composer";
+
   return (
     <div
       style={{
-        backgroundColor: "#ffffff",
-        borderRadius: "16px",
+        backgroundColor: isComposer ? "#fbfaf7" : "#ffffff",
+        borderRadius: isComposer ? "18px" : "16px",
         border: "1px solid #e7e5e4",
-        boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
-        padding: "1.5rem 1.25rem 1.25rem",
+        boxShadow: isComposer ? "0 2px 10px rgba(0, 0, 0, 0.06)" : "0 1px 3px rgba(0, 0, 0, 0.05)",
+        padding: isComposer ? "0.95rem 1rem 0.9rem" : "1.5rem 1.25rem 1.25rem",
         maxWidth: "100%",
         minWidth: 0,
         boxSizing: "border-box",
@@ -767,12 +771,12 @@ const InterpretationInput = forwardRef<
           boxSizing: "border-box",
           minHeight: TEXTAREA_MIN_PX,
           maxHeight: TEXTAREA_MAX_PX,
-          height: TEXTAREA_MIN_PX,
-          backgroundColor: "#fafaf8",
+          height: isComposer ? "56px" : TEXTAREA_MIN_PX,
+          backgroundColor: isComposer ? "transparent" : "#fafaf8",
           color: "#111",
-          border: "1px solid #e7e5e4",
-          borderRadius: "12px",
-          padding: "0.75rem 1rem",
+          border: isComposer ? "1px solid transparent" : "1px solid #e7e5e4",
+          borderRadius: isComposer ? "10px" : "12px",
+          padding: isComposer ? "0.45rem 0.2rem 0.4rem 0.2rem" : "0.75rem 1rem",
           fontSize: "0.925rem",
           lineHeight: 1.65,
           resize: "none",
@@ -785,10 +789,10 @@ const InterpretationInput = forwardRef<
           wordBreak: "break-word",
         }}
         onFocus={(e) => {
-          e.currentTarget.style.borderColor = "#c9c5c0";
+          e.currentTarget.style.borderColor = isComposer ? "transparent" : "#c9c5c0";
         }}
         onBlur={(e) => {
-          e.currentTarget.style.borderColor = "#e7e5e4";
+          e.currentTarget.style.borderColor = isComposer ? "transparent" : "#e7e5e4";
         }}
       />
 
@@ -797,7 +801,7 @@ const InterpretationInput = forwardRef<
           fontSize: "0.8rem",
           color: "#888",
           lineHeight: 1.55,
-          margin: "0.75rem 0 0 0",
+          margin: isComposer ? "0.2rem 0 0 0" : "0.75rem 0 0 0",
           minWidth: 0,
         }}
       >

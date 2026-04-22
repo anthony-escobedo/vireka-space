@@ -66,8 +66,6 @@ export default function ClarifyPage() {
   const [topInput, setTopInput] = useState<string>("");
   const [followupInput, setFollowupInput] = useState<string>("");
   const [result, setResult] = useState<VirekaResponse | null>(null);
-  const [lastClarifyResult, setLastClarifyResult] =
-    useState<ClarifyResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [history, setHistory] = useState<ConversationTurn[]>([]);
@@ -301,8 +299,6 @@ export default function ClarifyPage() {
         }
 
         if (typedData.mode === "clarify") {
-          setLastClarifyResult(typedData);
-
           const newIteration: ClarificationIteration = {
             id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
             step: iterations.length + 1,
@@ -320,8 +316,6 @@ export default function ClarifyPage() {
           if (source === "top" && !initialSituation) {
             setInitialSituation(trimmed);
           }
-        } else {
-          setLastClarifyResult(null);
         }
       }
 
@@ -469,6 +463,17 @@ function handleReturnHome(): void {
   const panels = getPanels();
   const archivedPanels = panels.slice(0, -1);
   const activePanel = panels.length > 0 ? panels[panels.length - 1] : null;
+  const hasClarificationHistory = iterations.length > 0;
+  const composerValue = hasClarificationHistory ? followupInput : topInput;
+  const composerPlaceholder = hasClarificationHistory
+    ? t.clarify.followupPlaceholder
+    : t.clarify.inputPlaceholder;
+  const composerHelperText = hasClarificationHistory
+    ? t.clarify.followupHelper
+    : t.clarify.helperText;
+  const composerSource: "top" | "followup" = hasClarificationHistory
+    ? "followup"
+    : "top";
 
   function renderList(items: string[] | undefined, label: string) {
     if (!items || items.length === 0) return null;
@@ -936,31 +941,10 @@ function handleReturnHome(): void {
     );
   }
 
-  function renderFollowupBox() {
-    if (!result || isDone || !lastClarifyResult) return null;
-
-    return (
-      <InterpretationInput
-        id="clarify-followup-input"
-        label={`${t.clarify.refinement} (${t.clarify.optional})`}
-        helperText={t.clarify.followupHelper}
-        placeholder={t.clarify.followupPlaceholder}
-        value={followupInput}
-        onChange={(e) => setFollowupInput(e.target.value)}
-        disabled={loading}
-        voiceEnabled
-        clarifyLoading={loading}
-        onSend={() => submitToClarify("clarify", "followup")}
-        cardStyle={{ marginTop: "1.75rem" }}
-      />
-    );
-  }
-
   function resetSession(): void {
   setTopInput("");
   setFollowupInput("");
   setResult(null);
-  setLastClarifyResult(null);
   setHistory([]);
   setConversationId(null);
   setError(null);
@@ -1024,7 +1008,7 @@ function handleReturnHome(): void {
             width: "100%",
             boxSizing: "border-box",
             margin: "0 auto",
-            padding: "1.5rem 1.25rem 4rem",
+            padding: "1.5rem 1.25rem 240px",
             overflowX: "hidden",
             minWidth: 0,
           }}
@@ -1046,47 +1030,36 @@ function handleReturnHome(): void {
           </Link>
         </div>
 
-        <h1
-          style={{
-            fontSize: "clamp(2rem, 5vw, 2.85rem)",
-            fontWeight: 700,
-            lineHeight: 1.15,
-            letterSpacing: "-0.03em",
-            color: "#111",
-            margin: "0 0 1.25rem 0",
-          }}
-        >
-          {t.clarify.heroTitle}
-        </h1>
+        {!hasClarificationHistory && (
+          <>
+            <h1
+              style={{
+                fontSize: "clamp(2rem, 5vw, 2.85rem)",
+                fontWeight: 700,
+                lineHeight: 1.15,
+                letterSpacing: "-0.03em",
+                color: "#111",
+                margin: "0 0 1.25rem 0",
+              }}
+            >
+              {t.clarify.heroTitle}
+            </h1>
 
-        <div style={{ maxWidth: "640px", minWidth: 0, width: "100%" }}>
-          <p style={{ fontSize: "0.95rem", color: "#444", lineHeight: 1.65, margin: 0 }}>
-            {t.clarify.descriptionParagraph}
-          </p>
-        </div>
-        
-        <div
-            style={{
-              borderTop: "1px solid #e7e5e4",
-              marginTop: "2.25rem",
-              marginBottom: "2.25rem",
-      }}
-      />
-          
-        {iterations.length === 0 && (
-          <InterpretationInput
-            textareaRef={topInputRef}
-            id="clarify-input"
-            label={t.clarify.inputLabel}
-            helperText={t.clarify.helperText}
-            placeholder={t.clarify.inputPlaceholder}
-            value={topInput}
-            onChange={(e) => setTopInput(e.target.value)}
-            disabled={loading}
-            voiceEnabled
-            clarifyLoading={loading}
-            onSend={() => submitToClarify("clarify", "top")}
-          />
+            <div style={{ maxWidth: "640px", minWidth: 0, width: "100%" }}>
+              <p style={{ fontSize: "0.95rem", color: "#444", lineHeight: 1.65, margin: 0 }}>
+                {t.clarify.descriptionParagraph}
+              </p>
+            </div>
+
+            <div
+              style={{
+                borderTop: "1px solid #e7e5e4",
+                marginTop: "2.25rem",
+                marginBottom: "2.25rem",
+              }}
+            />
+            <div style={{ minHeight: "clamp(180px, 30vh, 320px)" }} />
+          </>
         )}
 
         {error && (
@@ -1132,8 +1105,49 @@ function handleReturnHome(): void {
           
         {!isDone && renderClarificationPath()}
         {!isDone && result && renderSupplementaryResult(result)}
-        {!isDone && renderFollowupBox()}
           <Footer />
+        </div>
+      )}
+      {!isDone && (
+        <div
+          style={{
+            position: "fixed",
+            left: "50%",
+            transform: "translateX(-50%)",
+            bottom: "max(24px, env(safe-area-inset-bottom))",
+            width: "100%",
+            maxWidth: "780px",
+            paddingLeft: "1.25rem",
+            paddingRight: "1.25rem",
+            boxSizing: "border-box",
+            zIndex: 30,
+            pointerEvents: "none",
+          }}
+        >
+          <div style={{ pointerEvents: "auto" }}>
+            <InterpretationInput
+              textareaRef={topInputRef}
+              id="clarify-input-composer"
+              helperText={composerHelperText}
+              placeholder={composerPlaceholder}
+              value={composerValue}
+              onChange={(e) => {
+                if (hasClarificationHistory) {
+                  setFollowupInput(e.target.value);
+                } else {
+                  setTopInput(e.target.value);
+                }
+              }}
+              disabled={loading}
+              voiceEnabled
+              clarifyLoading={loading}
+              onSend={() => submitToClarify("clarify", composerSource)}
+              surfaceVariant="composer"
+              cardStyle={{
+                borderColor: "#dfdcd6",
+              }}
+            />
+          </div>
         </div>
       )}
     </main>

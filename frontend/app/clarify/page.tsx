@@ -8,6 +8,7 @@ import OnboardingModal from "../../components/OnboardingModal";
 import { useRouter } from "next/navigation";
 import DoneState from "../../components/DoneState";
 import Footer from "../../components/footer";
+import InterpretationInput from "../../components/InterpretationInput";
 
 import { getOrCreateAnonymousId } from "../../lib/anonymousSession";
 import { useLanguage } from "../../lib/i18n/useLanguage";
@@ -15,9 +16,6 @@ import { useLanguage } from "../../lib/i18n/useLanguage";
 /** Matches API body when daily free limit is exceeded (see app/api/clarify/route.ts). */
 const FREE_USAGE_LIMIT_ERROR_EN =
   "Free usage includes 20 interactions per day. Access resumes tomorrow or with subscription.";
-
-const WHISPER_TRANSCRIBE_URL =
-  "https://whisper-api-production-b9e8.up.railway.app/transcribe";
 
 type RequestAction = "clarify";
 
@@ -72,9 +70,6 @@ export default function ClarifyPage() {
     useState<ClarifyResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [listeningTarget, setListeningTarget] = useState<
-    "top" | "followup" | null
-  >(null);
   const [history, setHistory] = useState<ConversationTurn[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [isDone, setIsDone] = useState<boolean>(false);
@@ -88,11 +83,6 @@ export default function ClarifyPage() {
   const [copyLabel, setCopyLabel] = useState(t.clarify.copyResult);
   const topInputRef = useRef<HTMLTextAreaElement | null>(null);
   const pathTopRef = useRef<HTMLDivElement | null>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const mediaChunksRef = useRef<BlobPart[]>([]);
-  const mediaStreamRef = useRef<MediaStream | null>(null);
-  const activeMicTargetRef = useRef<"top" | "followup" | null>(null);
-  const skipNextTranscribeRef = useRef(false);
   const resultRef = useRef<HTMLDivElement | null>(null);
   const copyResetTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -108,23 +98,14 @@ export default function ClarifyPage() {
   setCheckedOnboarding(true);
 
     return () => {
-    if (redirectTimeoutRef.current) {
-      clearTimeout(redirectTimeoutRef.current);
-    }
-    if (copyResetTimeoutRef.current) {
-      clearTimeout(copyResetTimeoutRef.current);
-    }
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
-      skipNextTranscribeRef.current = true;
-      mediaRecorderRef.current.stop();
-    }
-    mediaRecorderRef.current = null;
-    mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
-    mediaStreamRef.current = null;
-    mediaChunksRef.current = [];
-    activeMicTargetRef.current = null;
-  };
-}, []);
+      if (redirectTimeoutRef.current) {
+        clearTimeout(redirectTimeoutRef.current);
+      }
+      if (copyResetTimeoutRef.current) {
+        clearTimeout(copyResetTimeoutRef.current);
+      }
+    };
+  }, []);
 
   function normalizeQuestion(text: string): string {
     return text
@@ -222,127 +203,6 @@ export default function ClarifyPage() {
     );
   }
 
-  function releaseMediaStream(): void {
-    mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
-    mediaStreamRef.current = null;
-  }
-
-  function startListening(target: "top" | "followup"): void {
-    void (async () => {
-      try {
-        if (
-          mediaRecorderRef.current?.state === "recording" &&
-          activeMicTargetRef.current === target
-        ) {
-          mediaRecorderRef.current.stop();
-          return;
-        }
-
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaStreamRef.current = stream;
-
-        let mimeType = "";
-        if (typeof MediaRecorder !== "undefined") {
-          if (MediaRecorder.isTypeSupported("audio/webm;codecs=opus")) {
-            mimeType = "audio/webm;codecs=opus";
-          } else if (MediaRecorder.isTypeSupported("audio/webm")) {
-            mimeType = "audio/webm";
-          } else if (MediaRecorder.isTypeSupported("audio/mp4")) {
-            mimeType = "audio/mp4";
-          }
-        }
-
-        const recorder = new MediaRecorder(
-          stream,
-          mimeType ? { mimeType } : undefined
-        );
-        mediaChunksRef.current = [];
-
-        recorder.ondataavailable = (event) => {
-          if (event.data.size > 0) {
-            mediaChunksRef.current.push(event.data);
-          }
-        };
-
-        activeMicTargetRef.current = target;
-
-        recorder.onstop = async () => {
-          if (mediaRecorderRef.current !== recorder) {
-            return;
-          }
-
-          const capturedTarget = activeMicTargetRef.current;
-          activeMicTargetRef.current = null;
-          mediaRecorderRef.current = null;
-          releaseMediaStream();
-          setListeningTarget(null);
-
-          if (skipNextTranscribeRef.current) {
-            skipNextTranscribeRef.current = false;
-            mediaChunksRef.current = [];
-            return;
-          }
-
-          const chunks = mediaChunksRef.current;
-          mediaChunksRef.current = [];
-          const blobType = recorder.mimeType || mimeType || "audio/webm";
-          const audioBlob = new Blob(chunks, { type: blobType });
-
-          if (audioBlob.size === 0) {
-            return;
-          }
-
-          try {
-            const formData = new FormData();
-            const ext = blobType.includes("webm")
-              ? "webm"
-              : blobType.includes("mp4")
-                ? "mp4"
-                : "webm";
-            formData.append("file", audioBlob, `recording.${ext}`);
-
-            const response = await fetch(WHISPER_TRANSCRIBE_URL, {
-              method: "POST",
-              body: formData,
-            });
-
-            if (!response.ok) {
-              throw new Error("Transcription failed");
-            }
-
-            const data = (await response.json()) as { text?: string };
-            const transcript = data.text || "";
-
-            if (capturedTarget === "top") {
-              setTopInput((prev) => {
-                if (!prev) return transcript;
-                return `${prev} ${transcript}`;
-              });
-            } else if (capturedTarget === "followup") {
-              setFollowupInput((prev) => {
-                if (!prev) return transcript;
-                return `${prev} ${transcript}`;
-              });
-            }
-          } catch (err) {
-            console.error(err);
-          }
-        };
-
-        mediaRecorderRef.current = recorder;
-        recorder.start();
-        setListeningTarget(target);
-        setError(null);
-      } catch (err) {
-        console.error(err);
-        setListeningTarget(null);
-        releaseMediaStream();
-        mediaRecorderRef.current = null;
-        mediaChunksRef.current = [];
-      }
-    })();
-  }
-
   function formatResponseForHistory(response: VirekaResponse): string {
     if (response.mode === "close") {
       return response.message;
@@ -378,7 +238,7 @@ export default function ClarifyPage() {
     action: RequestAction,
     source: "top" | "followup",
     overrideInput?: string
-  ): Promise<void> {
+  ): Promise<boolean> {
     const sourceValue = source === "top" ? topInput : followupInput;
     const effectiveInput =
       typeof overrideInput === "string" ? overrideInput : sourceValue;
@@ -386,7 +246,7 @@ export default function ClarifyPage() {
 
     if (action === "clarify" && !trimmed) {
       setError(t.clarify.pleaseEnterASituationOrResponse);
-      return;
+      return false;
     }
 
     setLoading(true);
@@ -484,6 +344,7 @@ export default function ClarifyPage() {
           block: "start",
         });
       }, 100);
+      return true;
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "";
       if (msg === FREE_USAGE_LIMIT_ERROR_EN) {
@@ -491,13 +352,10 @@ export default function ClarifyPage() {
       } else {
         setError(msg || t.clarify.anUnexpectedErrorOccurred);
       }
+      return false;
     } finally {
       setLoading(false);
     }
-  }
-
-  function handleClarify(source: "top" | "followup"): void {
-    void submitToClarify("clarify", source);
   }
 
   function handleBeginOnboarding(): void {
@@ -607,31 +465,10 @@ function handleStartNew(): void {
 function handleReturnHome(): void {
   router.push("/");
 }
-
-function handleDone(): void {
-  if (loading || !result) return;
-  setIsDone(true);
-
-  if (redirectTimeoutRef.current) {
-    clearTimeout(redirectTimeoutRef.current);
-  }
-
-  setTimeout(() => {
-    resultRef.current?.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    });
-  }, 100);
-}
   
   const panels = getPanels();
   const archivedPanels = panels.slice(0, -1);
   const activePanel = panels.length > 0 ? panels[panels.length - 1] : null;
-  const isTopClarifyDisabled = loading || !topInput.trim();
-  const isFollowupClarifyDisabled = loading || !followupInput.trim();
-  const isTopMicDisabled = loading || listeningTarget === "followup";
-  const isFollowupMicDisabled = loading || listeningTarget === "top";
-  const isDoneDisabled = loading || !result || isDone;
 
   function renderList(items: string[] | undefined, label: string) {
     if (!items || items.length === 0) return null;
@@ -1099,279 +936,23 @@ function handleDone(): void {
     );
   }
 
-  function renderTopActionRow() {
-  return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "1fr auto 1fr",
-        alignItems: "center",
-        columnGap: "0.75rem",
-        width: "100%",
-        minWidth: 0,
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "flex-start",
-          alignItems: "center",
-          minWidth: 0,
-        }}
-      >
-        <button
-          type="button"
-          onClick={() => startListening("top")}
-          disabled={isTopMicDisabled}
-          style={{
-            padding: "0.7rem 1rem",
-            backgroundColor: "#fff",
-            color: "#111",
-            border: "1px solid #d6d3d1",
-            borderRadius: "999px",
-            fontSize: "0.9rem",
-            fontWeight: 600,
-            cursor: isTopMicDisabled ? "not-allowed" : "pointer",
-            whiteSpace: "nowrap",
-            opacity: isTopMicDisabled ? 0.6 : 1,
-          }}
-        >
-          {listeningTarget === "top" ? t.clarify.listening : t.clarify.mic}
-        </button>
-      </div>
-
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <button
-          type="button"
-          onClick={() => handleClarify("top")}
-          disabled={isTopClarifyDisabled}
-          style={{
-            flexShrink: 0,
-            padding: "0.85rem 2.3rem",
-            backgroundColor: isTopClarifyDisabled ? "#d6d3d1" : "#111",
-            color: isTopClarifyDisabled ? "#6f6a64" : "#fff",
-            border: isTopClarifyDisabled ? "1px solid #d6d3d1" : "1px solid #111",
-            borderRadius: "999px",
-            fontSize: "0.9rem",
-            fontWeight: 600,
-            cursor: isTopClarifyDisabled ? "not-allowed" : "pointer",
-            transition: "background-color 0.15s, border-color 0.15s, box-shadow 0.15s",
-            letterSpacing: "-0.01em",
-            whiteSpace: "nowrap",
-            boxShadow: isTopClarifyDisabled ? "none" : "0 1px 2px rgba(0,0,0,0.08)",
-          }}
-          onMouseEnter={(e) => {
-            if (!isTopClarifyDisabled) {
-              e.currentTarget.style.backgroundColor = "#333";
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!isTopClarifyDisabled) {
-              e.currentTarget.style.backgroundColor = "#111";
-            }
-          }}
-        >
-          {loading ? t.clarify.loadingText : t.clarify.simpleAction}
-        </button>
-      </div>
-
-      <div />
-    </div>
-  );
-}
-
   function renderFollowupBox() {
     if (!result || isDone || !lastClarifyResult) return null;
 
     return (
-      <div
-        style={{
-          marginTop: "1.75rem",
-          backgroundColor: "#ffffff",
-          borderRadius: "16px",
-          border: "1px solid #e7e5e4",
-          padding: "1.6rem 1.25rem 1.35rem",
-          maxWidth: "100%",
-          minWidth: 0,
-          boxSizing: "border-box",
-        }}
-      >
-        <label
-          htmlFor="clarify-followup-input"
-          style={{
-            display: "block",
-            fontSize: "0.875rem",
-            fontWeight: 600,
-            color: "#111",
-            marginBottom: "0.875rem",
-          }}
-        >
-          {t.clarify.refinement} ({t.clarify.optional})
-        </label>
-
-        <textarea
-          id="clarify-followup-input"
-          value={followupInput}
-          onChange={(e) => setFollowupInput(e.target.value)}
-          disabled={loading}
-          placeholder={t.clarify.followupPlaceholder}
-          rows={6}
-          style={{
-            display: "block",
-            width: "100%",
-            maxWidth: "100%",
-            minWidth: 0,
-            boxSizing: "border-box",
-            backgroundColor: "#fafafa",
-            color: "#111",
-            border: "1px solid #e7e5e4",
-            borderRadius: "10px",
-            padding: "1rem 1.125rem",
-            fontSize: "0.925rem",
-            lineHeight: 1.65,
-            resize: "vertical",
-            outline: "none",
-            fontFamily: "inherit",
-            transition: "border-color 0.15s",
-            opacity: loading ? 0.6 : 1,
-            overflowWrap: "anywhere",
-            wordBreak: "break-word",
-          }}
-          onFocus={(e) => { e.currentTarget.style.borderColor = "#aaa"; }}
-          onBlur={(e) => { e.currentTarget.style.borderColor = "#e7e5e4"; }}
-        />
-
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "stretch",
-            gap: "1rem",
-            marginTop: "1rem",
-          }}
-        >
-          <p style={{ fontSize: "0.8rem", color: "#888", lineHeight: 1.55, margin: 0 }}>
-            {t.clarify.followupHelper}
-          </p>
-
-          <div
-  style={{
-    display: "grid",
-    gridTemplateColumns: "1fr auto 1fr",
-    alignItems: "center",
-    columnGap: "0.75rem",
-    marginTop: "0.35rem",
-    width: "100%",
-  }}
->
-  <div
-    style={{
-      display: "flex",
-      justifyContent: "flex-start",
-      alignItems: "center",
-      minWidth: 0,
-    }}
-  >
-    <button
-      type="button"
-      onClick={() => startListening("followup")}
-      disabled={isFollowupMicDisabled}
-      style={{
-        padding: "0.7rem 1rem",
-        backgroundColor: "#fff",
-        color: "#111",
-        border: "1px solid #d6d3d1",
-        borderRadius: "999px",
-        fontSize: "0.9rem",
-        fontWeight: 600,
-        cursor: isFollowupMicDisabled ? "not-allowed" : "pointer",
-        whiteSpace: "nowrap",
-        opacity: isFollowupMicDisabled ? 0.6 : 1,
-      }}
-    >
-      {listeningTarget === "followup" ? t.clarify.listening : t.clarify.mic}
-    </button>
-  </div>
-
-  <div
-    style={{
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-    }}
-  >
-    <button
-      type="button"
-      onClick={() => handleClarify("followup")}
-      disabled={isFollowupClarifyDisabled}
-      style={{
-        flexShrink: 0,
-        padding: "0.85rem 2.3rem",
-        backgroundColor: isFollowupClarifyDisabled ? "#d6d3d1" : "#111",
-        color: isFollowupClarifyDisabled ? "#6f6a64" : "#fff",
-        border: isFollowupClarifyDisabled ? "1px solid #d6d3d1" : "1px solid #111",
-        borderRadius: "999px",
-        fontSize: "0.9rem",
-        fontWeight: 600,
-        cursor: isFollowupClarifyDisabled ? "not-allowed" : "pointer",
-        transition: "background-color 0.15s, border-color 0.15s, box-shadow 0.15s",
-        letterSpacing: "-0.01em",
-        whiteSpace: "nowrap",
-        boxShadow: isFollowupClarifyDisabled ? "none" : "0 1px 2px rgba(0,0,0,0.08)",
-      }}
-      onMouseEnter={(e) => {
-        if (!isFollowupClarifyDisabled) {
-          e.currentTarget.style.backgroundColor = "#333";
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (!isFollowupClarifyDisabled) {
-          e.currentTarget.style.backgroundColor = "#111";
-        }
-      }}
-    >
-      {loading ? t.clarify.loadingText : t.clarify.simpleAction}
-    </button>
-  </div>
-
-  <div
-    style={{
-      display: "flex",
-      justifyContent: "flex-end",
-      alignItems: "center",
-      minWidth: 0,
-    }}
-  >
-    <button
-      type="button"
-      onClick={handleDone}
-      disabled={isDoneDisabled}
-      style={{
-        flexShrink: 0,
-        padding: "0.7rem 1.15rem",
-        backgroundColor: "#faf9f7",
-        color: "#6f6a64",
-        border: "1px solid #d8d5cf",
-        borderRadius: "999px",
-        fontSize: "0.9rem",
-        fontWeight: 600,
-        cursor: isDoneDisabled ? "not-allowed" : "pointer",
-        whiteSpace: "nowrap",
-        opacity: isDoneDisabled ? 0.6 : 1,
-      }}
-    >
-      {t.clarify.doneButton}
-    </button>
-  </div>
-</div>
-        </div>
-      </div>
+      <InterpretationInput
+        id="clarify-followup-input"
+        label={`${t.clarify.refinement} (${t.clarify.optional})`}
+        helperText={t.clarify.followupHelper}
+        placeholder={t.clarify.followupPlaceholder}
+        value={followupInput}
+        onChange={(e) => setFollowupInput(e.target.value)}
+        disabled={loading}
+        voiceEnabled
+        clarifyLoading={loading}
+        onSend={() => submitToClarify("clarify", "followup")}
+        cardStyle={{ marginTop: "1.75rem" }}
+      />
     );
   }
 
@@ -1493,93 +1074,20 @@ function handleDone(): void {
       />
           
         {iterations.length === 0 && (
-  <div
-    style={{
-      backgroundColor: "#ffffff",
-      borderRadius: "16px",
-      border: "1px solid #e7e5e4",
-      padding: "1.6rem 1.25rem 1.35rem",
-      maxWidth: "100%",
-      minWidth: 0,
-      boxSizing: "border-box",
-    }}
-  >
-    <label
-      htmlFor="clarify-input"
-      style={{
-        display: "block",
-        fontSize: "0.875rem",
-        fontWeight: 600,
-        color: "#111",
-        marginBottom: "0.875rem",
-      }}
-    >
-      {t.clarify.inputLabel}
-    </label>
-
-    <textarea
-      ref={topInputRef}
-      id="clarify-input"
-      value={topInput}
-      onChange={(e) => setTopInput(e.target.value)}
-      disabled={loading}
-      placeholder={t.clarify.inputPlaceholder}
-      rows={8}
-      style={{
-        display: "block",
-        width: "100%",
-        maxWidth: "100%",
-        minWidth: 0,
-        boxSizing: "border-box",
-        backgroundColor: "#fafafa",
-        color: "#111",
-        border: "1px solid #e7e5e4",
-        borderRadius: "10px",
-        padding: "1rem 1.125rem",
-        fontSize: "0.925rem",
-        lineHeight: 1.65,
-        resize: "vertical",
-        outline: "none",
-        fontFamily: "inherit",
-        transition: "border-color 0.15s",
-        opacity: loading ? 0.6 : 1,
-        overflowWrap: "anywhere",
-        wordBreak: "break-word",
-      }}
-      onFocus={(e) => {
-        e.currentTarget.style.borderColor = "#aaa";
-      }}
-      onBlur={(e) => {
-        e.currentTarget.style.borderColor = "#e7e5e4";
-      }}
-    />
-
-    <div
-  style={{
-    display: "flex",
-    flexDirection: "column",
-    gap: "1rem",
-    marginTop: "1rem",
-    minWidth: 0,
-  }}
->
-  <p
-    style={{
-      fontSize: "0.8rem",
-      color: "#888",
-      lineHeight: 1.55,
-      margin: 0,
-      maxWidth: "480px",
-      minWidth: 0,
-    }}
-  >
-    {t.clarify.helperText}
-  </p>
-
-      {renderTopActionRow()}
-    </div>
-  </div>
-)}
+          <InterpretationInput
+            textareaRef={topInputRef}
+            id="clarify-input"
+            label={t.clarify.inputLabel}
+            helperText={t.clarify.helperText}
+            placeholder={t.clarify.inputPlaceholder}
+            value={topInput}
+            onChange={(e) => setTopInput(e.target.value)}
+            disabled={loading}
+            voiceEnabled
+            clarifyLoading={loading}
+            onSend={() => submitToClarify("clarify", "top")}
+          />
+        )}
 
         {error && (
   <div style={{ marginTop: "1rem" }}>

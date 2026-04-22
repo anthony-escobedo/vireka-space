@@ -2,8 +2,24 @@ import "./globals.css"
 import { LanguageProvider } from "../lib/i18n/LanguageProvider"
 
 export const metadata = {
-  title: "VIREKA Space",
-  description: "Clarity before decision. Clarity before prompting.",
+  title: "VIREKA Space — Clarity Before Decision",
+  description:
+    "VIREKA Space helps clarify how situations are being understood before decisions are made or AI prompts are written.",
+  openGraph: {
+    title: "VIREKA Space — Clarity Before Decision",
+    description:
+      "VIREKA Space helps clarify how situations are being understood before decisions are made or AI prompts are written.",
+    url: "https://www.vireka.space",
+    siteName: "VIREKA Space",
+    images: ["/og-image.png"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "VIREKA Space — Clarity Before Decision",
+    description:
+      "VIREKA Space helps clarify how situations are being understood before decisions are made or AI prompts are written.",
+    images: ["/og-image.png"],
+  },
 }
 
 export const viewport = {

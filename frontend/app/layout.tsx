@@ -9,16 +9,16 @@ export const metadata = {
     title: "VIREKA Space — Clarity Before Decision. Clarity Before AI.",
     description:
       "VIREKA Space helps clarify how situations are being understood before decisions are made or AI prompts are written. It supports clearer interpretation by separating what appears, what is inferred, and what remains uncertain.",
-    url: "https://www.vireka.space",
+    url: "https://vireka.space",
     siteName: "VIREKA Space",
-    images: ["/og-image.png"],
+    images: ["https://vireka.space/og-image.png"],
   },
   twitter: {
     card: "summary_large_image",
     title: "VIREKA Space — Clarity Before Decision. Clarity Before AI.",
     description:
       "VIREKA Space helps clarify how situations are being understood before decisions are made or AI prompts are written. It supports clearer interpretation by separating what appears, what is inferred, and what remains uncertain.",
-    images: ["/og-image.png"],
+    images: ["https://vireka.space/og-image.png"],
   },
 }
 

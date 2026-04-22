@@ -73,11 +73,42 @@ function fitTextareaHeight(el: HTMLTextAreaElement | null): void {
 
 function pickRecorderMime(): string {
   if (typeof MediaRecorder === "undefined") return "";
-  if (MediaRecorder.isTypeSupported("audio/webm;codecs=opus")) {
-    return "audio/webm;codecs=opus";
+  const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
+  const isSafari =
+    /Safari/i.test(ua) &&
+    !/Chrome|Chromium|CriOS|Edg|OPR|Firefox|FxiOS/i.test(ua);
+
+  const candidates = isSafari
+    ? ["audio/mp4", "audio/webm;codecs=opus", "audio/webm"]
+    : ["audio/webm;codecs=opus", "audio/webm", "audio/mp4"];
+
+  for (const mime of candidates) {
+    if (MediaRecorder.isTypeSupported(mime)) return mime;
   }
-  if (MediaRecorder.isTypeSupported("audio/webm")) return "audio/webm";
-  if (MediaRecorder.isTypeSupported("audio/mp4")) return "audio/mp4";
+  return "";
+}
+
+function extensionForAudioMime(mimeType: string): string {
+  const normalized = mimeType.toLowerCase();
+  if (normalized.includes("webm")) return "webm";
+  if (
+    normalized.includes("mp4") ||
+    normalized.includes("m4a") ||
+    normalized.includes("aac")
+  ) {
+    return "m4a";
+  }
+  if (normalized.includes("mpeg") || normalized.includes("mp3")) return "mp3";
+  if (normalized.includes("ogg")) return "ogg";
+  if (normalized.includes("wav")) return "wav";
+  return "audio";
+}
+
+function getTranscriptFromPayload(payload: unknown): string {
+  if (!payload || typeof payload !== "object") return "";
+  const candidate = payload as { text?: unknown; transcript?: unknown };
+  if (typeof candidate.text === "string") return candidate.text.trim();
+  if (typeof candidate.transcript === "string") return candidate.transcript.trim();
   return "";
 }
 
@@ -95,28 +126,28 @@ function SubtleWaveform() {
       style={{
         display: "flex",
         alignItems: "flex-end",
-        gap: 3,
-        height: 14,
+        gap: 4,
+        height: 24,
         flex: 1,
-        minWidth: 48,
-        maxWidth: 140,
+        minWidth: 96,
+        maxWidth: 220,
         justifyContent: "flex-start",
+        padding: "0 2px 2px",
       }}
       aria-hidden
     >
-      {[0, 1, 2, 3, 4].map((i) => {
+      {[0, 1, 2, 3, 4, 5, 6].map((i) => {
         const h =
-          3 +
-          Math.sin((phase / 100) * Math.PI * 2 + i * 0.75) * 4.5;
+          8 + Math.sin((phase / 100) * Math.PI * 2 + i * 0.7) * 6.5;
         return (
           <div
             key={i}
             style={{
-              width: 3,
-              height: Math.max(2, h),
-              borderRadius: 1,
-              backgroundColor: "#b0aba5",
-              opacity: 0.42,
+              width: 4,
+              height: Math.max(4, h),
+              borderRadius: 999,
+              backgroundColor: "#9f9992",
+              opacity: 0.68,
             }}
           />
         );
@@ -405,13 +436,11 @@ const InterpretationInput = forwardRef<
 
         void (async () => {
           try {
-            const ext = blobType.includes("webm")
-              ? "webm"
-              : blobType.includes("mp4")
-                ? "mp4"
-                : "webm";
+            const uploadMimeType = blob.type || blobType || "audio/webm";
+            const ext = extensionForAudioMime(uploadMimeType);
+            const filename = `recording.${ext}`;
             const formData = new FormData();
-            formData.append("file", blob, `recording.${ext}`);
+            formData.append("file", blob, filename);
 
             const response = await fetch(transcribeUrl, {
               method: "POST",
@@ -419,18 +448,34 @@ const InterpretationInput = forwardRef<
             });
 
             if (!response.ok) {
-              throw new Error("transcribe");
+              const errorBody = await response.text().catch(() => "");
+              throw new Error(
+                `transcribe:${response.status}:${errorBody.slice(0, 300)}`
+              );
             }
 
-            const data = (await response.json()) as { text?: string };
-            const transcript = (data.text || "").trim();
+            const raw = await response.text();
+            let transcript = "";
+            try {
+              const parsed = raw ? (JSON.parse(raw) as unknown) : null;
+              transcript = getTranscriptFromPayload(parsed);
+            } catch {
+              transcript = raw.trim();
+            }
+
             if (transcript) {
               appendTranscript(transcript);
             }
             setMicState("ready");
             setVoiceError(null);
-          } catch {
-            console.error("Transcription failed");
+          } catch (err) {
+            console.error("Transcription failed", {
+              error: err,
+              blobType: blob.type,
+              recorderMimeType: recorder.mimeType,
+              preferredMimeType: mimeTypeRef.current,
+              bytes: blob.size,
+            });
             setVoiceError("Couldn't transcribe audio");
             setMicState("error");
             revokeAudioUrl();

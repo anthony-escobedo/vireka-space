@@ -2,22 +2,22 @@ import "./globals.css"
 import { LanguageProvider } from "../lib/i18n/LanguageProvider"
 
 export const metadata = {
-  title: "VIREKA Space — Clarity Before Decision",
+  title: "VIREKA Space — Clarity Before Decision. Clarity Before AI.",
   description:
-    "VIREKA Space helps clarify how situations are being understood before decisions are made or AI prompts are written.",
+    "VIREKA Space helps clarify how situations are being understood before decisions are made or AI prompts are written. It supports clearer interpretation by separating what appears, what is inferred, and what remains uncertain.",
   openGraph: {
-    title: "VIREKA Space — Clarity Before Decision",
+    title: "VIREKA Space — Clarity Before Decision. Clarity Before AI.",
     description:
-      "VIREKA Space helps clarify how situations are being understood before decisions are made or AI prompts are written.",
+      "VIREKA Space helps clarify how situations are being understood before decisions are made or AI prompts are written. It supports clearer interpretation by separating what appears, what is inferred, and what remains uncertain.",
     url: "https://www.vireka.space",
     siteName: "VIREKA Space",
     images: ["/og-image.png"],
   },
   twitter: {
     card: "summary_large_image",
-    title: "VIREKA Space — Clarity Before Decision",
+    title: "VIREKA Space — Clarity Before Decision. Clarity Before AI.",
     description:
-      "VIREKA Space helps clarify how situations are being understood before decisions are made or AI prompts are written.",
+      "VIREKA Space helps clarify how situations are being understood before decisions are made or AI prompts are written. It supports clearer interpretation by separating what appears, what is inferred, and what remains uncertain.",
     images: ["/og-image.png"],
   },
 }

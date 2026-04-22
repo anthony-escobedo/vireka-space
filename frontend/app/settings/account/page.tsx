@@ -24,9 +24,6 @@ export default function AccountPage() {
           <br />
           <br />
           {t.account.authenticationMethods}
-          <br />
-          <br />
-          {t.account.functionalityMayExpand}
         </p>
       </section>
     </StaticPageShell>

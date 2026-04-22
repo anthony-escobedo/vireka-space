@@ -240,27 +240,31 @@ export interface TranslationDictionary {
         question: string;
         answer: string[];
       };
-      whyClarify: {
-        question: string;
-        answer: string[];
-      };
-      aiImprovement: {
-        question: string;
-        answer: string[];
-      };
-      promptEngineering: {
-        question: string;
-        answer: string[];
-      };
-      aiAgents: {
-        question: string;
-        answer: string[];
-      };
       providesAnswers: {
         question: string;
         answer: string[];
       };
-      alignment: {
+      isAITool: {
+        question: string;
+        answer: string[];
+      };
+      worksWithAI: {
+        question: string;
+        answer: string[];
+      };
+      clarifyVsAIInteraction: {
+        question: string;
+        answer: string[];
+      };
+      whyNotUseAIDirectly: {
+        question: string;
+        answer: string[];
+      };
+      whenShouldIUseIt: {
+        question: string;
+        answer: string[];
+      };
+      benefitOfUsingIt: {
         question: string;
         answer: string[];
       };

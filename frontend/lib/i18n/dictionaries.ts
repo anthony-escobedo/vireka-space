@@ -163,7 +163,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       accountRequiredForSubscription: 'An account is only required when subscribing to extended access.',
       signInAllowsSubscription: 'Sign-in allows subscription status, usage allowances, and access continuity to be associated with the same user.',
       authenticationMethods: 'Authentication may be completed using a supported sign-in provider or email verification.',
-      functionalityMayExpand: 'Account functionality may expand as the service develops.',
+      functionalityMayExpand: '',
     },
     plan: {
       pageTitle: 'Usage structure',
@@ -201,20 +201,24 @@ const dictionaries: Record<Language, TranslationDictionary> = {
           content: [
             'VIREKA Space was created to support clarity at a point that often goes unnoticed. Before a decision is made or an AI prompt is written, a situation is already being interpreted. That interpretation quietly shapes what feels reasonable, what seems necessary, what appears to make sense, and what it feels appropriate to ask.',
             'Sometimes a situation feels difficult not because it is complex, but because several interpretations seem possible at the same time, each suggesting a slightly different direction. Certain elements feel clear, others feel uncertain, and some assumptions may already be forming without being fully seen. When interpretation is unclear, decisions can feel pressured, and prompts can feel harder to form.',
-            'VIREKA Space provides a simple structure that helps make these conditions more visible. Instead of suggesting what should be done, the system helps bring attention to how the situation is being understood. As the structure of interpretation becomes clearer, it often becomes easier to sense whether enough clarity exists for a decision or for forming a prompt. In many cases, this also clarifies the intention guiding the question itself.',
+            'VIREKA Space provides a simple structure that helps make these conditions more visible. Instead of suggesting what should be done, the system helps bring attention to how the situation is being understood. As the structure of interpretation becomes clearer, it often becomes easier to sense whether enough clarity exists for a decision or for forming a prompt.',
           ],
         },
         effect: {
           title: 'Effect',
           content: [
-            'This can support a quieter kind of confidence. Not certainty in the outcome, but greater ease in how the situation itself is being seen.',
-            'AI systems respond to how situations are described. Even small differences in wording can influence what the system emphasizes, how it reasons, and what kinds of responses appear plausible. When interpretation becomes clearer, interaction with AI often becomes more coherent as well.',
+            'Clarity often changes the experience of a situation without altering the situation itself.',
+            'When the structure of interpretation becomes more visible, decisions tend to feel less forced. What once appeared complex may separate into distinct elements, some already clear, others still uncertain.',
+            'This does not provide answers or recommendations. It reduces the friction that comes from unclear framing, making it easier to recognize whether a decision is ready to be made or whether further clarification is needed.',
           ],
         },
         structuralImplication: {
           title: "Structural Implication",
           content: [
-            'Interpretation does not only influence individual decisions. It also influences how systems are designed. The way a situation is understood shapes the direction of thought, the questions that arise, and the structures that are created in response. In this sense, design begins before implementation. It begins in how something is seen.'
+            'Interpretation does not only influence individual decisions. It shapes how situations are framed before they are translated into actions, instructions, or systems.',
+            'In many cases, what appears as a technical or operational issue originates earlier, at the level of how a situation is understood. Once that understanding is translated into a prompt, workflow, or system design, its structure is carried forward and often amplified.',
+            'VIREKA Space operates at this earlier point. By making interpretation more visible before it becomes fixed, it allows the initial conditions shaping outcomes to be seen more clearly.',
+            'As clarity emerges, it can be carried forward into interaction with AI. Rather than beginning with an unstructured prompt, AI use can begin from a clearer understanding of what is actually being asked. In this way, VIREKA Space functions as a structural layer that precedes execution, allowing AI systems to be used from a more grounded starting point.'
           ]
         },
         orientation: {
@@ -224,7 +228,8 @@ const dictionaries: Record<Language, TranslationDictionary> = {
         origin: {
           title: 'Origin',
           content: [
-            'The ideas underlying VIREKA Space are explored in Beyond Thought: Awareness as Design Intelligence, which considers how awareness influences interpretation, reasoning, and design. VIREKA Space brings these ideas into a practical environment where interpretation can become more visible before action is taken.',
+            'VIREKA Space is informed by the perspective developed in Beyond Thought: Awareness as Design Intelligence.',
+            'It reflects an interest in how clarity emerges when the structure of a situation is made visible before being translated into decisions, prompts, or systems.',
           ],
         },
       },
@@ -238,71 +243,60 @@ const dictionaries: Record<Language, TranslationDictionary> = {
         whatIsVirekaSpace: {
           question: 'What is VIREKA Space?',
           answer: [
-            'VIREKA Space helps clarify how a situation is being understood before a decision is made or an AI prompt is written.',
-            'It distinguishes what appears to be happening, what may be assumed, what remains uncertain, and what may be influencing how meaning is forming. The aim is not to provide answers, but to support clearer visibility into how a situation is being made sense of.',
-            'This can be useful in situations where interpretation influences decisions, communication, or interaction with AI, especially when multiple interpretations seem possible or when meaning is still forming.',
-          ],
-        },
-        whyClarify: {
-          question: 'Why clarify a situation before using AI?',
-          answer: [
-            'AI systems respond according to how situations are framed. Even highly capable models depend on the clarity of the problem they receive.',
-            'Clarifying what is known, what may be assumed, and what remains unclear helps ensure the system is working on the right problem. Small differences in interpretation can lead to very different outputs.',
-            'As the structure of the situation becomes clearer, prompts often become simpler, and outputs often require fewer revisions.',
-          ],
-        },
-        aiImprovement: {
-          question: 'If AI keeps improving, won\'t it figure out what we mean anyway?',
-          answer: [
-            'As AI systems become more capable, they generate outputs across more domains and at greater speed. This increases the importance of clarity about what is actually being asked.',
-            'These systems tend to amplify the consequences of the framing conditions they receive. When a situation is misunderstood, a system may confidently produce responses that appear coherent but do not address the underlying issue.',
-            'As generation becomes easier, the value of clarifying what should be generated often increases rather than decreases.',
-          ],
-        },
-        promptEngineering: {
-          question: 'How is VIREKA Space different from prompt engineering?',
-          answer: [
-            'Prompt engineering focuses on improving how instructions are written once the intended task has already been defined.',
-            'VIREKA Space operates earlier. It helps clarify how the situation itself is being understood before requirements are defined, supporting clearer design of prompts, workflows, or decisions that follow.',
-            'Instead of focusing only on how a prompt should be phrased, VIREKA invites exploration of questions such as:',
-            '• What appears to be happening?',
-            '• What assumptions may be influencing interpretation?',
-            '• What may still be unclear?',
-            'When meaning becomes more visible, prompts tend to become simpler, more relevant, and more aligned with what is actually intended.',
-          ],
-        },
-        aiAgents: {
-          question:
-            'Where does VIREKA Space fit in workflows that include AI agents or automated systems?',
-          answer: [
-            'As AI systems increasingly operate through multi-step processes, small misunderstandings can propagate further before being noticed.',
-            'For example, a team may ask an AI system to “improve performance,” assuming the issue is speed. The system produces optimized code, revised workflows, and new documentation. Later, it becomes clear that the underlying issue relates to unclear decision criteria rather than processing time.',
-            'In this situation, substantial output may be generated before the underlying situation and intention become fully visible. Effort is spent evaluating and implementing results that respond to a different understanding of the problem.',
-            'Clarifying interpretation earlier can reduce unnecessary output generation, revision cycles, and downstream correction costs, and can increase the likelihood that automated systems are working toward relevant outcomes.',
-            'As workflows become more automated, early interpretation increasingly shapes what develops downstream.',
+            'VIREKA Space is a structured environment for clarifying how a situation is being understood before a decision is made or an AI prompt is written.',
+            'It helps make visible what appears to be happening, what is being interpreted, and what remains uncertain, so that the structure of a situation can be seen more clearly before action is taken.',
           ],
         },
         providesAnswers: {
-          question:
-            'Does VIREKA Space make decisions, provide answers, or offer coaching or therapy?',
+          question: 'Does VIREKA Space provide answers or recommendations?',
           answer: [
-            'VIREKA Space does not make decisions and does not attempt to generate conclusions or prescribe answers for situations.',
-            'It focuses on clarifying how situations are being understood so responses and decisions can form with greater visibility into:',
-            '• what is known',
-            '• what may be influencing interpretation',
-            '• what may still require attention',
-            'It does not provide psychological guidance, personal advice, or prescriptive conclusions.',
-            'The aim is to support clearer understanding before conclusions form, not to replace human judgment.',
+            'VIREKA Space does not provide answers, advice, or recommendations.',
+            'It helps make the structure of interpretation more visible so that it becomes clearer whether a decision can be made or how a prompt might be formed.',
           ],
         },
-        alignment: {
-          question: 'How does VIREKA Space relate to AI alignment?',
+        isAITool: {
+          question: 'Is this an AI tool?',
           answer: [
-            'Technical alignment research focuses on ensuring that AI systems behave according to specified objectives.',
-            'VIREKA Space operates earlier, supporting clarity about how situations and objectives are being defined before they are translated into instructions.',
-            'In many cases, what appears to be the objective may be influenced by assumptions, pressures, or expectations that have not yet been fully examined. Clarifying interpretation can help reveal what is actually intended before instructions are even formed.',
-            'Clearer understanding helps ensure that what is specified more accurately reflects the situation that is actually being addressed.',
-            'This can matter both in individual prompting and in the design of systems that operate at scale.',
+            'VIREKA Space does not function as a typical AI tool that generates answers or outputs.',
+            'It operates earlier, supporting clarity about how a situation is being understood before it is translated into a prompt or instruction.',
+            'It can be used alongside AI, but it does not replace it.',
+          ],
+        },
+        worksWithAI: {
+          question: 'How does it work with AI?',
+          answer: [
+            'VIREKA Space can be used before or alongside interaction with AI systems.',
+            'It helps clarify what is being asked, what may be assumed, and what remains unclear, so that AI interaction can begin from a more structured starting point rather than from an unformed or ambiguous prompt.',
+          ],
+        },
+        clarifyVsAIInteraction: {
+          question:
+            'What is the difference between “Clarify a Situation” and “AI Interaction”?',
+          answer: [
+            'Clarify a Situation focuses on the situation itself. It helps make visible what appears to be happening, how it is being interpreted, and what remains uncertain.',
+            'AI Interaction focuses on how a situation is translated into a prompt or interaction with AI. It helps clarify what the prompt is attempting to do, what may be missing, and how the interaction is being structured.',
+          ],
+        },
+        whyNotUseAIDirectly: {
+          question: 'Why not just use ChatGPT or another AI directly?',
+          answer: [
+            'AI systems respond to how a situation is described. When that description is unclear or incomplete, the response reflects that structure, even if the system itself is functioning correctly.',
+            'VIREKA Space operates before that step, helping make the structure of the situation more visible so that interaction with AI can begin from a clearer starting point.',
+          ],
+        },
+        whenShouldIUseIt: {
+          question: 'When should I use VIREKA Space?',
+          answer: [
+            'VIREKA Space can be used when a situation feels unclear, when multiple interpretations seem possible, or when it is difficult to determine what to ask or how to proceed.',
+            'It can also be used before interacting with AI, especially when a prompt feels incomplete, imprecise, or difficult to formulate.',
+          ],
+        },
+        benefitOfUsingIt: {
+          question: 'What is the benefit of using it?',
+          answer: [
+            'When the structure of a situation becomes more visible, decisions often feel less forced and interaction with AI becomes more coherent.',
+            'When that structure is unclear, interaction with AI can involve repeated prompting, revision, and adjustment as the intended direction is gradually clarified. Over time, this can lead to unnecessary use of time, attention, and, in some cases, cost.',
+            'VIREKA Space reduces this by helping establish a clearer starting point before interaction begins.',
           ],
         },
       },
@@ -586,7 +580,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       accountRequiredForSubscription: 'Una cuenta solo se requiere al suscribirse al acceso extendido.',
       signInAllowsSubscription: 'El inicio de sesión permite que el estado de suscripción, los límites de uso y la continuidad de acceso se asocien con el mismo usuario.',
       authenticationMethods: 'La autenticación puede completarse usando un proveedor de inicio de sesión compatible o verificación por correo electrónico.',
-      functionalityMayExpand: 'La funcionalidad de la cuenta puede expandirse a medida que el servicio se desarrolla.',
+      functionalityMayExpand: '',
     },
     plan: {
       pageTitle: 'Estructura de uso',
@@ -648,7 +642,8 @@ const dictionaries: Record<Language, TranslationDictionary> = {
         origin: {
           title: 'Origen',
           content: [
-            'VIREKA Space se desarrolló a partir de la investigación presentada en Beyond Thought: Awareness as Design Intelligence. Ese trabajo explora cómo la conciencia puede entenderse no solo como experiencia, sino también como una forma de inteligencia de diseño que influye en cómo se perciben las condiciones, cómo se forman las interpretaciones y cómo surgen las decisiones. El sistema aplica estos principios de manera práctica, ofreciendo una estructura sencilla que ayuda a hacer visible cómo se está comprendiendo una situación antes de actuar o formular un prompt.',
+            'VIREKA Space está influenciado por la perspectiva desarrollada en Beyond Thought: Awareness as Design Intelligence.',
+            'Refleja un interés en cómo la claridad emerge cuando la estructura de una situación se hace visible antes de ser traducida en decisiones, prompts o sistemas.',
           ],
         },
       },
@@ -662,71 +657,60 @@ const dictionaries: Record<Language, TranslationDictionary> = {
         whatIsVirekaSpace: {
           question: '¿Qué es VIREKA Space?',
           answer: [
-            'VIREKA Space ayuda a clarificar cómo se está comprendiendo una situación antes de tomar una decisión o escribir un prompt para IA.',
-            'Distingue lo que parece estar ocurriendo, lo que puede estar siendo asumido, lo que permanece incierto y lo que puede estar influyendo en cómo se está formando el significado. El objetivo no es proporcionar respuestas, sino apoyar mayor claridad sobre cómo una situación está siendo comprendida.',
-            'Puede ser útil en situaciones donde la interpretación influye en decisiones, comunicación o interacción con IA, especialmente cuando varias interpretaciones parecen posibles o cuando el significado aún se está formando.',
-          ],
-        },
-        whyClarify: {
-          question: '¿Por qué clarificar una situación antes de usar IA?',
-          answer: [
-            'Los sistemas de IA responden según cómo se interpretan las situaciones. Incluso los modelos más avanzados dependen de la claridad del problema que reciben.',
-            'Clarificar lo que se conoce, lo que puede estar siendo asumido y lo que permanece incierto ayuda a asegurar que el sistema esté trabajando sobre el problema adecuado. Pequeñas diferencias en la interpretación pueden producir resultados muy distintos.',
-            'A medida que la estructura de la situación se vuelve más clara, los prompts suelen simplificarse y los resultados suelen requerir menos revisiones.',
-          ],
-        },
-        aiImprovement: {
-          question: 'Si la IA sigue mejorando, ¿no terminará entendiendo lo que queremos decir?',
-          answer: [
-            'A medida que los sistemas de IA se vuelven más capaces, generan resultados en más ámbitos y a mayor velocidad. Esto aumenta la importancia de tener claridad sobre lo que realmente se está solicitando.',
-            'Estos sistemas tienden a amplificar las consecuencias de la forma en que se interpreta una situación. Cuando una situación se comprende de manera imprecisa, el sistema puede producir resultados coherentes que, sin embargo, no abordan el problema de fondo.',
-            'A medida que generar resultados se vuelve más fácil, el valor de clarificar qué debería generarse suele aumentar en lugar de disminuir.',
-          ],
-        },
-        promptEngineering: {
-          question: '¿En qué se diferencia VIREKA Space del prompt engineering?',
-          answer: [
-            'El prompt engineering se enfoca en mejorar cómo se formulan las instrucciones una vez que la tarea ya ha sido definida.',
-            'VIREKA Space opera en una etapa anterior. Ayuda a clarificar cómo se está comprendiendo la situación antes de definir los requisitos, apoyando un diseño más claro de prompts, procesos o decisiones posteriores.',
-            'En lugar de centrarse únicamente en cómo redactar un prompt, VIREKA invita a explorar preguntas como:',
-            '• ¿Qué parece estar ocurriendo?',
-            '• ¿Qué suposiciones pueden estar influyendo en la interpretación?',
-            '• ¿Qué puede permanecer incierto?',
-            'Cuando el significado se vuelve más visible, los prompts suelen volverse más simples, más relevantes y más alineados con lo que realmente se pretende expresar.',
-          ],
-        },
-        aiAgents: {
-          question:
-            '¿Dónde encaja VIREKA Space en flujos de trabajo que incluyen agentes de IA o sistemas automatizados?',
-          answer: [
-            'A medida que los sistemas de IA operan cada vez más mediante procesos de múltiples pasos, pequeños malentendidos pueden propagarse antes de ser detectados.',
-            'Por ejemplo, un equipo puede pedir a un sistema de IA “mejorar el rendimiento”, asumiendo que el problema es la velocidad. El sistema produce código optimizado, flujos de trabajo revisados y nueva documentación. Más tarde se vuelve claro que el problema de fondo estaba relacionado con criterios de decisión poco claros y no con el tiempo de procesamiento.',
-            'En este tipo de situaciones, puede generarse una cantidad considerable de resultados antes de que la situación y la intención subyacente se vuelvan plenamente visibles. Se invierte tiempo en evaluar e implementar resultados que responden a una comprensión distinta del problema.',
-            'Clarificar la interpretación desde el inicio puede reducir generación innecesaria de resultados, ciclos de revisión y costos de corrección posteriores, y aumentar la probabilidad de que los sistemas automatizados estén trabajando hacia resultados relevantes.',
-            'A medida que los flujos de trabajo se automatizan, la interpretación inicial influye cada vez más en lo que se desarrolla después.',
+            'VIREKA Space es un entorno estructurado para aclarar cómo se está comprendiendo una situación antes de tomar una decisión o escribir un prompt de IA.',
+            'Ayuda a hacer visible lo que parece estar ocurriendo, lo que se está interpretando y lo que permanece incierto, de modo que la estructura de una situación pueda verse con mayor claridad antes de actuar.',
           ],
         },
         providesAnswers: {
-          question:
-            '¿VIREKA Space toma decisiones, proporciona respuestas o ofrece coaching o terapia?',
+          question: '¿VIREKA Space proporciona respuestas o recomendaciones?',
           answer: [
-            'VIREKA Space no toma decisiones ni intenta generar conclusiones o prescribir respuestas para situaciones.',
-            'Se enfoca en clarificar cómo se está comprendiendo una situación para que respuestas y decisiones puedan formarse con mayor visibilidad sobre:',
-            '• lo que se conoce',
-            '• lo que puede estar influyendo en la interpretación',
-            '• lo que puede requerir mayor atención',
-            'No proporciona orientación psicológica, asesoramiento personal ni conclusiones prescriptivas.',
-            'El objetivo es apoyar una comprensión más clara antes de que se formen conclusiones, no reemplazar el juicio humano.',
+            'VIREKA Space no proporciona respuestas, consejos ni recomendaciones.',
+            'Ayuda a hacer más visible la estructura de la interpretación para que resulte más claro si puede tomarse una decisión o cómo podría formularse un prompt.',
           ],
         },
-        alignment: {
-          question: '¿Cómo se relaciona VIREKA Space con la alineación de la IA?',
+        isAITool: {
+          question: '¿Es una herramienta de IA?',
           answer: [
-            'La investigación en alineación técnica busca asegurar que los sistemas de IA se comporten de acuerdo con objetivos especificados.',
-            'VIREKA Space opera en una etapa anterior, apoyando claridad sobre cómo las situaciones y los objetivos se están definiendo antes de traducirse en instrucciones.',
-            'En muchos casos, lo que parece ser el objetivo puede estar influido por suposiciones, presiones o expectativas que aún no han sido plenamente examinadas. Clarificar la interpretación puede ayudar a hacer visible lo que realmente se pretende antes de formular instrucciones.',
-            'Una comprensión más clara ayuda a que lo que se especifica refleje con mayor precisión la situación que realmente se busca abordar.',
-            'Esto puede ser relevante tanto en el uso individual de IA como en el diseño de sistemas que operan a escala.',
+            'VIREKA Space no funciona como una herramienta de IA típica que genera respuestas o resultados.',
+            'Opera en una etapa anterior, aportando claridad sobre cómo se está comprendiendo una situación antes de traducirla en un prompt o instrucción.',
+            'Puede utilizarse junto con la IA, pero no la sustituye.',
+          ],
+        },
+        worksWithAI: {
+          question: '¿Cómo funciona con la IA?',
+          answer: [
+            'VIREKA Space puede utilizarse antes o junto con la interacción con sistemas de IA.',
+            'Ayuda a aclarar qué se está preguntando, qué puede estar siendo asumido y qué permanece incierto, de modo que la interacción con la IA pueda comenzar desde un punto de partida más estructurado en lugar de un prompt ambiguo o poco formado.',
+          ],
+        },
+        clarifyVsAIInteraction: {
+          question:
+            '¿Cuál es la diferencia entre “Aclarar una situación” e “Interacción con IA”?',
+          answer: [
+            'Aclarar una situación se centra en la situación misma. Ayuda a hacer visible lo que parece estar ocurriendo, cómo se está interpretando y qué permanece incierto.',
+            'Interacción con IA se centra en cómo una situación se traduce en un prompt o interacción con la IA. Ayuda a aclarar qué intenta hacer el prompt, qué puede faltar y cómo se está estructurando la interacción.',
+          ],
+        },
+        whyNotUseAIDirectly: {
+          question: '¿Por qué no usar directamente ChatGPT u otra IA?',
+          answer: [
+            'Los sistemas de IA responden a cómo se describe una situación. Cuando esa descripción es poco clara o incompleta, la respuesta refleja esa estructura, incluso si el sistema mismo está funcionando correctamente.',
+            'VIREKA Space opera antes de ese paso, ayudando a hacer más visible la estructura de la situación para que la interacción con la IA pueda comenzar desde un punto de partida más claro.',
+          ],
+        },
+        whenShouldIUseIt: {
+          question: '¿Cuándo debería usar VIREKA Space?',
+          answer: [
+            'VIREKA Space puede utilizarse cuando una situación se siente poco clara, cuando varias interpretaciones parecen posibles o cuando resulta difícil determinar qué preguntar o cómo proceder.',
+            'También puede utilizarse antes de interactuar con la IA, especialmente cuando un prompt se siente incompleto, impreciso o difícil de formular.',
+          ],
+        },
+        benefitOfUsingIt: {
+          question: '¿Cuál es el beneficio de usarlo?',
+          answer: [
+            'Cuando la estructura de una situación se vuelve más visible, las decisiones suelen sentirse menos forzadas y la interacción con la IA se vuelve más coherente.',
+            'Cuando esa estructura no está clara, la interacción con la IA puede implicar repetición de prompts, revisiones y ajustes a medida que la dirección pretendida se va aclarando gradualmente. Con el tiempo, esto puede implicar un uso innecesario de tiempo, atención y, en algunos casos, coste.',
+            'VIREKA Space reduce esto al ayudar a establecer un punto de partida más claro antes de que la interacción comience.',
           ],
         },
       },
@@ -1010,7 +994,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       accountRequiredForSubscription: 'Uma conta é necessária apenas ao assinar o acesso estendido.',
       signInAllowsSubscription: 'O login permite que status de assinatura, limites de uso e continuidade de acesso sejam associados ao mesmo usuário.',
       authenticationMethods: 'A autenticação pode ser concluída usando um provedor de login suportado ou verificação por e-mail.',
-      functionalityMayExpand: 'A funcionalidade da conta pode expandir conforme o serviço se desenvolve.',
+      functionalityMayExpand: '',
     },
     plan: {
       pageTitle: 'Estrutura de uso',
@@ -1072,7 +1056,8 @@ const dictionaries: Record<Language, TranslationDictionary> = {
         origin: {
           title: 'Origem',
           content: [
-            'A VIREKA Space foi desenvolvida a partir da pesquisa apresentada em Beyond Thought: Awareness as Design Intelligence. Esse trabalho explora como a consciência pode ser compreendida não apenas como experiência, mas também como uma forma de inteligência de design que influencia como as condições são percebidas, como interpretações se formam e como decisões surgem. O sistema aplica esses princípios de forma prática, oferecendo uma estrutura simples que ajuda a tornar visível como uma situação está sendo compreendida antes de agir ou formular um prompt.',
+            'O VIREKA Space é influenciado pela perspectiva desenvolvida em Beyond Thought: Awareness as Design Intelligence.',
+            'Reflete um interesse em como a clareza emerge quando a estrutura de uma situação se torna visível antes de ser traduzida em decisões, prompts ou sistemas.',
           ],
         },
       },
@@ -1086,72 +1071,60 @@ const dictionaries: Record<Language, TranslationDictionary> = {
         whatIsVirekaSpace: {
           question: 'O que é o VIREKA Space?',
           answer: [
-            'O VIREKA Space ajuda a esclarecer como uma situação está sendo compreendida antes que uma decisão seja tomada ou um prompt de IA seja escrito.',
-            'Distingue o que parece estar acontecendo, o que pode estar sendo assumido, o que permanece incerto e o que pode estar influenciando como o significado está se formando. O objetivo não é fornecer respostas, mas apoiar maior clareza sobre como uma situação está sendo compreendida.',
-            'Isso pode ser útil em situações em que a interpretação influencia decisões, comunicação ou interação com IA, especialmente quando várias interpretações parecem possíveis ou quando o significado ainda está se formando.',
-          ],
-        },
-        whyClarify: {
-          question: 'Por que esclarecer uma situação antes de usar IA?',
-          answer: [
-            'Sistemas de IA respondem de acordo com como as situações são enquadradas. Mesmo modelos altamente capazes dependem da clareza do problema que recebem.',
-            'Esclarecer o que é conhecido, o que pode estar sendo assumido e o que permanece incerto ajuda a garantir que o sistema esteja trabalhando no problema certo. Pequenas diferenças na interpretação podem levar a resultados muito diferentes.',
-            'À medida que a estrutura da situação se torna mais clara, os prompts costumam ficar mais simples, e os resultados costumam exigir menos revisões.',
-          ],
-        },
-        aiImprovement: {
-          question:
-            'Se a IA continua melhorando, ela não vai acabar entendendo o que queremos dizer?',
-          answer: [
-            'À medida que os sistemas de IA se tornam mais capazes, geram resultados em mais domínios e com maior velocidade. Isso aumenta a importância da clareza sobre o que está realmente sendo solicitado.',
-            'Esses sistemas tendem a amplificar as consequências da forma como uma situação é interpretada. Quando uma situação é compreendida de maneira imprecisa, o sistema pode produzir resultados coerentes que, no entanto, não abordam o problema de fundo.',
-            'À medida que gerar resultados fica mais fácil, o valor de esclarecer o que deveria ser gerado costuma aumentar em vez de diminuir.',
-          ],
-        },
-        promptEngineering: {
-          question: 'Em que o VIREKA Space difere da engenharia de prompts?',
-          answer: [
-            'A engenharia de prompts foca em melhorar como as instruções são escritas depois que a tarefa pretendida já foi definida.',
-            'O VIREKA Space atua mais cedo. Ajuda a esclarecer como a própria situação está sendo compreendida antes que os requisitos sejam definidos, apoiando um desenho mais claro de prompts, fluxos de trabalho ou decisões que seguem.',
-            'Em vez de focar apenas em como um prompt deve ser formulado, o VIREKA convida à exploração de perguntas como:',
-            '• O que parece estar acontecendo?',
-            '• Que suposições podem estar influenciando a interpretação?',
-            '• O que ainda pode estar incerto?',
-            'Quando o significado se torna mais visível, os prompts tendem a ficar mais simples, mais relevantes e mais alinhados com o que realmente se pretende.',
-          ],
-        },
-        aiAgents: {
-          question:
-            'Onde o VIREKA Space se encaixa em fluxos de trabalho que incluem agentes de IA ou sistemas automatizados?',
-          answer: [
-            'À medida que sistemas de IA operam cada vez mais por processos de várias etapas, pequenos mal-entendidos podem se propagar mais antes de serem percebidos.',
-            'Por exemplo, uma equipe pode pedir a um sistema de IA para “melhorar o desempenho”, assumindo que o problema é velocidade. O sistema produz código otimizado, fluxos revisados e nova documentação. Depois, fica claro que a questão de fundo está ligada a critérios de decisão pouco claros, e não ao tempo de processamento.',
-            'Nessa situação, pode ser gerada uma quantidade substancial de resultados antes de a situação subjacente e a intenção se tornarem plenamente visíveis. Esforço é gasto avaliando e implementando resultados que respondem a uma compreensão diferente do problema.',
-            'Esclarecer a interpretação mais cedo pode reduzir geração desnecessária de resultados, ciclos de revisão e custos de correção posteriores, e aumentar a probabilidade de que sistemas automatizados estejam trabalhando rumo a resultados relevantes.',
-            'À medida que os fluxos de trabalho se tornam mais automatizados, a interpretação inicial molda cada vez mais o que se desenvolve adiante.',
+            'O VIREKA Space é um ambiente estruturado para esclarecer como uma situação está sendo compreendida antes que uma decisão seja tomada ou um prompt de IA seja escrito.',
+            'Ele ajuda a tornar visível o que parece estar acontecendo, o que está sendo interpretado e o que permanece incerto, para que a estrutura de uma situação possa ser vista com mais clareza antes da ação.',
           ],
         },
         providesAnswers: {
-          question:
-            'O VIREKA Space toma decisões, fornece respostas ou oferece coaching ou terapia?',
+          question: 'O VIREKA Space fornece respostas ou recomendações?',
           answer: [
-            'O VIREKA Space não toma decisões e não tenta gerar conclusões ou prescrever respostas para situações.',
-            'Foca em esclarecer como as situações estão sendo compreendidas para que respostas e decisões possam se formar com maior visibilidade sobre:',
-            '• o que é conhecido',
-            '• o que pode estar influenciando a interpretação',
-            '• o que ainda pode exigir atenção',
-            'Não fornece orientação psicológica, conselhos pessoais nem conclusões prescritivas.',
-            'O objetivo é apoiar uma compreensão mais clara antes que conclusões se formem, não substituir o julgamento humano.',
+            'O VIREKA Space não fornece respostas, conselhos ou recomendações.',
+            'Ele ajuda a tornar mais visível a estrutura da interpretação para que fique mais claro se uma decisão pode ser tomada ou como um prompt pode ser formulado.',
           ],
         },
-        alignment: {
-          question: 'Como o VIREKA Space se relaciona com o alinhamento de IA?',
+        isAITool: {
+          question: 'Isso é uma ferramenta de IA?',
           answer: [
-            'A pesquisa técnica em alinhamento foca em garantir que sistemas de IA se comportem de acordo com objetivos especificados.',
-            'O VIREKA Space atua mais cedo, apoiando clareza sobre como situações e objetivos estão sendo definidos antes de serem traduzidos em instruções.',
-            'Em muitos casos, o que parece ser o objetivo pode ser influenciado por suposições, pressões ou expectativas que ainda não foram plenamente examinadas. Esclarecer a interpretação pode ajudar a revelar o que realmente se pretende antes mesmo de as instruções serem formuladas.',
-            'Uma compreensão mais clara ajuda a garantir que o que é especificado reflita com mais precisão a situação que está realmente sendo abordada.',
-            'Isso pode importar tanto no uso individual de prompts quanto no desenho de sistemas que operam em escala.',
+            'O VIREKA Space não funciona como uma ferramenta de IA típica que gera respostas ou resultados.',
+            'Ele atua antes, oferecendo clareza sobre como uma situação está sendo compreendida antes de ser traduzida em um prompt ou instrução.',
+            'Pode ser usado junto com IA, mas não a substitui.',
+          ],
+        },
+        worksWithAI: {
+          question: 'Como funciona com IA?',
+          answer: [
+            'O VIREKA Space pode ser usado antes ou junto com a interação com sistemas de IA.',
+            'Ele ajuda a esclarecer o que está sendo perguntado, o que pode estar sendo assumido e o que permanece incerto, para que a interação com a IA comece a partir de um ponto de partida mais estruturado, em vez de um prompt ambíguo ou pouco formado.',
+          ],
+        },
+        clarifyVsAIInteraction: {
+          question:
+            'Qual é a diferença entre “Clarificar uma situação” e “Interação com IA”?',
+          answer: [
+            'Clarificar uma situação foca na própria situação. Ajuda a tornar visível o que parece estar acontecendo, como está sendo interpretado e o que permanece incerto.',
+            'Interação com IA foca em como uma situação é traduzida em um prompt ou interação com IA. Ajuda a esclarecer o que o prompt está tentando fazer, o que pode estar faltando e como a interação está sendo estruturada.',
+          ],
+        },
+        whyNotUseAIDirectly: {
+          question: 'Por que não usar diretamente o ChatGPT ou outra IA?',
+          answer: [
+            'Sistemas de IA respondem com base em como uma situação é descrita. Quando essa descrição é pouco clara ou incompleta, a resposta reflete essa estrutura, mesmo que o próprio sistema esteja funcionando corretamente.',
+            'O VIREKA Space atua antes desse ponto, ajudando a tornar mais visível a estrutura da situação para que a interação com IA possa começar a partir de um ponto de partida mais claro.',
+          ],
+        },
+        whenShouldIUseIt: {
+          question: 'Quando devo usar o VIREKA Space?',
+          answer: [
+            'O VIREKA Space pode ser usado quando uma situação parece pouco clara, quando múltiplas interpretações parecem possíveis ou quando é difícil determinar o que perguntar ou como proceder.',
+            'Ele também pode ser usado antes de interagir com IA, especialmente quando um prompt parece incompleto, impreciso ou difícil de formular.',
+          ],
+        },
+        benefitOfUsingIt: {
+          question: 'Qual é o benefício de usar isso?',
+          answer: [
+            'Quando a estrutura de uma situação se torna mais visível, as decisões tendem a parecer menos forçadas e a interação com IA se torna mais coerente.',
+            'Quando essa estrutura não está clara, a interação com IA pode envolver repetição de prompts, revisão e ajustes à medida que a direção pretendida vai sendo esclarecida gradualmente. Com o tempo, isso pode resultar em uso desnecessário de tempo, atenção e, em alguns casos, custo.',
+            'O VIREKA Space reduz isso ao ajudar a estabelecer um ponto de partida mais claro antes de a interação começar.',
           ],
         },
       },

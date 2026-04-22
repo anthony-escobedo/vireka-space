@@ -9,4 +9,4 @@ frontend/.next
 
 *.tsbuildinfo
 
-.DS_Store
+.DS_Store.cursor

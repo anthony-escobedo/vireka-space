@@ -539,7 +539,7 @@ const InterpretationInput = forwardRef<
 
               console.info(`[transcribe attempt ${attemptIndex + 1}]`, {
                 endpoint: urlDebug.resolvedUrl,
-                fieldName: "file"
+                fieldName: "file",
                 filename: candidate.filename,
                 blobType: blob.type,
                 recorderMimeType: recorder.mimeType,

@@ -92,7 +92,7 @@ function extensionForAudioMime(mimeType: string): string {
   const normalized = mimeType.toLowerCase();
   if (normalized.includes("webm")) return "webm";
   if (normalized.includes("m4a") || normalized.includes("aac")) return "m4a";
-  if (normalized.includes("mp4")) return "mp4";
+  if (normalized.includes("mp4")) return "m4a";
   if (normalized.includes("mp3")) return "mp3";
   if (normalized.includes("mpeg") || normalized.includes("mpga")) return "mpeg";
   if (normalized.includes("ogg") || normalized.includes("oga")) return "ogg";

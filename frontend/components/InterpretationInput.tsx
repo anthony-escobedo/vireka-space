@@ -91,13 +91,8 @@ function pickRecorderMime(): string {
 function extensionForAudioMime(mimeType: string): string {
   const normalized = mimeType.toLowerCase();
   if (normalized.includes("webm")) return "webm";
-  if (
-    normalized.includes("mp4") ||
-    normalized.includes("m4a") ||
-    normalized.includes("aac")
-  ) {
-    return "m4a";
-  }
+  if (normalized.includes("mp4")) return "mp4";
+  if (normalized.includes("m4a") || normalized.includes("aac")) return "m4a";
   if (normalized.includes("mpeg") || normalized.includes("mp3")) return "mp3";
   if (normalized.includes("ogg")) return "ogg";
   if (normalized.includes("wav")) return "wav";
@@ -110,6 +105,30 @@ function getTranscriptFromPayload(payload: unknown): string {
   if (typeof candidate.text === "string") return candidate.text.trim();
   if (typeof candidate.transcript === "string") return candidate.transcript.trim();
   return "";
+}
+
+function buildUploadCandidates(mimeType: string): Array<{ fieldName: string; filename: string }> {
+  const normalized = mimeType.toLowerCase();
+  const ext = extensionForAudioMime(normalized);
+  const filenames = new Set<string>([`recording.${ext}`]);
+
+  if (normalized.includes("mp4") || normalized.includes("m4a")) {
+    filenames.add("recording.mp4");
+    filenames.add("recording.m4a");
+  } else if (normalized.includes("webm")) {
+    filenames.add("recording.webm");
+  }
+
+  const candidates: Array<{ fieldName: string; filename: string }> = [];
+  for (const filename of Array.from(filenames)) {
+    candidates.push({ fieldName: "file", filename });
+  }
+  // Compatibility fallback for servers expecting `audio` instead of `file`.
+  for (const filename of Array.from(filenames)) {
+    candidates.push({ fieldName: "audio", filename });
+  }
+
+  return candidates;
 }
 
 function SubtleWaveform() {
@@ -126,28 +145,33 @@ function SubtleWaveform() {
       style={{
         display: "flex",
         alignItems: "flex-end",
-        gap: 4,
-        height: 24,
+        gap: 3,
+        height: 28,
         flex: 1,
-        minWidth: 96,
-        maxWidth: 220,
+        minWidth: 148,
+        maxWidth: 268,
         justifyContent: "flex-start",
         padding: "0 2px 2px",
       }}
       aria-hidden
     >
-      {[0, 1, 2, 3, 4, 5, 6].map((i) => {
-        const h =
-          8 + Math.sin((phase / 100) * Math.PI * 2 + i * 0.7) * 6.5;
+      {Array.from({ length: 15 }, (_, i) => i).map((i, totalBars) => {
+        const center = (totalBars - 1) / 2;
+        const distanceFromCenter = Math.abs(i - center) / center;
+        const envelope = 1 - distanceFromCenter * 0.5;
+        const waveA = Math.sin((phase / 100) * Math.PI * 2 + i * 0.5);
+        const waveB = Math.sin((phase / 100) * Math.PI * 2 * 1.8 + i * 0.23);
+        const motion = (waveA * 0.65 + waveB * 0.35 + 1) / 2;
+        const h = 6 + envelope * (6 + motion * 11);
         return (
           <div
             key={i}
             style={{
-              width: 4,
+              width: 5,
               height: Math.max(4, h),
               borderRadius: 999,
-              backgroundColor: "#9f9992",
-              opacity: 0.68,
+              backgroundColor: "#969089",
+              opacity: i % 2 === 0 ? 0.76 : 0.62,
             }}
           />
         );
@@ -437,35 +461,63 @@ const InterpretationInput = forwardRef<
         void (async () => {
           try {
             const uploadMimeType = blob.type || blobType || "audio/webm";
-            const ext = extensionForAudioMime(uploadMimeType);
-            const filename = `recording.${ext}`;
-            const formData = new FormData();
-            formData.append("file", blob, filename);
+            const candidates = buildUploadCandidates(uploadMimeType);
 
-            const response = await fetch(transcribeUrl, {
-              method: "POST",
-              body: formData,
+            console.info("Transcription upload start", {
+              blobType: blob.type,
+              recorderMimeType: recorder.mimeType,
+              preferredMimeType: mimeTypeRef.current,
+              bytes: blob.size,
+              attempts: candidates.map((c) => `${c.fieldName}:${c.filename}`),
             });
 
-            if (!response.ok) {
-              const errorBody = await response.text().catch(() => "");
-              throw new Error(
-                `transcribe:${response.status}:${errorBody.slice(0, 300)}`
-              );
-            }
-
-            const raw = await response.text();
             let transcript = "";
-            try {
-              const parsed = raw ? (JSON.parse(raw) as unknown) : null;
-              transcript = getTranscriptFromPayload(parsed);
-            } catch {
-              transcript = raw.trim();
+            let lastFailureDetail = "";
+
+            for (const candidate of candidates) {
+              const formData = new FormData();
+              formData.append(candidate.fieldName, blob, candidate.filename);
+
+              const response = await fetch(transcribeUrl, {
+                method: "POST",
+                body: formData,
+              });
+
+              const raw = await response.text().catch(() => "");
+              const snippet = raw.slice(0, 300);
+
+              console.info("Transcription upload attempt", {
+                fieldName: candidate.fieldName,
+                filename: candidate.filename,
+                status: response.status,
+                ok: response.ok,
+                responseSnippet: snippet,
+              });
+
+              if (!response.ok) {
+                lastFailureDetail = `status=${response.status} field=${candidate.fieldName} filename=${candidate.filename} body=${snippet}`;
+                continue;
+              }
+
+              try {
+                const parsed = raw ? (JSON.parse(raw) as unknown) : null;
+                transcript = getTranscriptFromPayload(parsed);
+              } catch {
+                transcript = raw.trim();
+              }
+
+              if (transcript) {
+                break;
+              }
+
+              lastFailureDetail = `empty transcript field=${candidate.fieldName} filename=${candidate.filename} body=${snippet}`;
             }
 
-            if (transcript) {
-              appendTranscript(transcript);
+            if (!transcript) {
+              throw new Error(lastFailureDetail || "No transcript returned");
             }
+
+            appendTranscript(transcript);
             setMicState("ready");
             setVoiceError(null);
           } catch (err) {

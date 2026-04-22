@@ -131,6 +131,35 @@ function buildUploadCandidates(mimeType: string): Array<{ fieldName: string; fil
   return candidates;
 }
 
+function getTranscribeUrlDebugInfo(url: string): {
+  isValid: boolean;
+  resolvedUrl: string;
+  reason?: string;
+} {
+  const trimmed = url.trim();
+  if (!trimmed) {
+    return {
+      isValid: false,
+      resolvedUrl: "",
+      reason: "empty URL",
+    };
+  }
+
+  try {
+    const resolved = new URL(trimmed, window.location.origin);
+    return {
+      isValid: true,
+      resolvedUrl: resolved.toString(),
+    };
+  } catch (err) {
+    return {
+      isValid: false,
+      resolvedUrl: trimmed,
+      reason: err instanceof Error ? err.message : "invalid URL",
+    };
+  }
+}
+
 function SubtleWaveform() {
   const [phase, setPhase] = useState(0);
   useEffect(() => {
@@ -462,8 +491,13 @@ const InterpretationInput = forwardRef<
           try {
             const uploadMimeType = blob.type || blobType || "audio/webm";
             const candidates = buildUploadCandidates(uploadMimeType);
+            const urlDebug = getTranscribeUrlDebugInfo(transcribeUrl);
 
-            console.info("Transcription upload start", {
+            console.info("[transcribe] upload start", {
+              transcribeUrl,
+              resolvedTranscribeUrl: urlDebug.resolvedUrl,
+              transcribeUrlIsValid: urlDebug.isValid,
+              transcribeUrlInvalidReason: urlDebug.reason ?? null,
               blobType: blob.type,
               recorderMimeType: recorder.mimeType,
               preferredMimeType: mimeTypeRef.current,
@@ -471,27 +505,50 @@ const InterpretationInput = forwardRef<
               attempts: candidates.map((c) => `${c.fieldName}:${c.filename}`),
             });
 
+            if (!urlDebug.isValid) {
+              throw new Error(`Invalid transcribe URL: ${urlDebug.reason ?? "unknown"}`);
+            }
+
             let transcript = "";
             let lastFailureDetail = "";
 
-            for (const candidate of candidates) {
+            for (let attemptIndex = 0; attemptIndex < candidates.length; attemptIndex += 1) {
+              const candidate = candidates[attemptIndex];
               const formData = new FormData();
               formData.append(candidate.fieldName, blob, candidate.filename);
 
-              const response = await fetch(transcribeUrl, {
+              const response = await fetch(urlDebug.resolvedUrl, {
                 method: "POST",
                 body: formData,
               });
 
               const raw = await response.text().catch(() => "");
               const snippet = raw.slice(0, 300);
+              let parsedJson: unknown = null;
+              try {
+                parsedJson = raw ? JSON.parse(raw) : null;
+              } catch {
+                parsedJson = null;
+              }
+              const parsedError =
+                parsedJson &&
+                typeof parsedJson === "object" &&
+                "error" in parsedJson
+                  ? (parsedJson as { error?: unknown }).error
+                  : undefined;
 
-              console.info("Transcription upload attempt", {
+              console.info(`[transcribe attempt ${attemptIndex + 1}]`, {
+                endpoint: urlDebug.resolvedUrl,
                 fieldName: candidate.fieldName,
                 filename: candidate.filename,
+                blobType: blob.type,
+                recorderMimeType: recorder.mimeType,
+                fileSize: blob.size,
                 status: response.status,
                 ok: response.ok,
                 responseSnippet: snippet,
+                parsedJson,
+                parsedError,
               });
 
               if (!response.ok) {
@@ -499,10 +556,9 @@ const InterpretationInput = forwardRef<
                 continue;
               }
 
-              try {
-                const parsed = raw ? (JSON.parse(raw) as unknown) : null;
-                transcript = getTranscriptFromPayload(parsed);
-              } catch {
+              if (parsedJson) {
+                transcript = getTranscriptFromPayload(parsedJson);
+              } else {
                 transcript = raw.trim();
               }
 
@@ -521,8 +577,9 @@ const InterpretationInput = forwardRef<
             setMicState("ready");
             setVoiceError(null);
           } catch (err) {
-            console.error("Transcription failed", {
+            console.error("[transcribe] failed", {
               error: err,
+              transcribeUrl,
               blobType: blob.type,
               recorderMimeType: recorder.mimeType,
               preferredMimeType: mimeTypeRef.current,

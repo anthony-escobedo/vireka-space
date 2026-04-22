@@ -163,6 +163,33 @@ function PauseIcon() {
   );
 }
 
+function CancelIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M6 6l12 12M18 6 6 18"
+        stroke="currentColor"
+        strokeWidth="1.9"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function ConfirmIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M5 12.5 10 17l9-10"
+        stroke="currentColor"
+        strokeWidth="1.9"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 function SendArrowIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -580,11 +607,10 @@ const InterpretationInput = forwardRef<
                 alignItems: "center",
                 justifyContent: "center",
                 flexShrink: 0,
-                fontSize: "1rem",
-                lineHeight: 1,
+                opacity: disabled ? 0.6 : 1,
               }}
             >
-              ?
+              <CancelIcon />
             </button>
             <button
               type="button"
@@ -603,11 +629,10 @@ const InterpretationInput = forwardRef<
                 alignItems: "center",
                 justifyContent: "center",
                 flexShrink: 0,
-                fontSize: "1rem",
-                lineHeight: 1,
+                opacity: disabled ? 0.6 : 1,
               }}
             >
-              ?
+              <ConfirmIcon />
             </button>
           </>
         ) : micState === "transcribing" ? (
@@ -796,17 +821,19 @@ const InterpretationInput = forwardRef<
         }}
       />
 
-      <p
-        style={{
-          fontSize: "0.8rem",
-          color: "#888",
-          lineHeight: 1.55,
-          margin: isComposer ? "0.2rem 0 0 0" : "0.75rem 0 0 0",
-          minWidth: 0,
-        }}
-      >
-        {helperText}
-      </p>
+      {helperText.trim().length > 0 ? (
+        <p
+          style={{
+            fontSize: "0.8rem",
+            color: "#888",
+            lineHeight: 1.55,
+            margin: isComposer ? "0.2rem 0 0 0" : "0.75rem 0 0 0",
+            minWidth: 0,
+          }}
+        >
+          {helperText}
+        </p>
+      ) : null}
 
       <div
         style={{

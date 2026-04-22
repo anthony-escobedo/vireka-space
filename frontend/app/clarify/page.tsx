@@ -7,7 +7,6 @@ import CollapsibleLayer from "../../components/CollapsibleLayer";
 import OnboardingModal from "../../components/OnboardingModal";
 import { useRouter } from "next/navigation";
 import DoneState from "../../components/DoneState";
-import Footer from "../../components/footer";
 import InterpretationInput from "../../components/InterpretationInput";
 
 import { getOrCreateAnonymousId } from "../../lib/anonymousSession";
@@ -468,9 +467,6 @@ function handleReturnHome(): void {
   const composerPlaceholder = hasClarificationHistory
     ? t.clarify.followupPlaceholder
     : t.clarify.inputPlaceholder;
-  const composerHelperText = hasClarificationHistory
-    ? t.clarify.followupHelper
-    : t.clarify.helperText;
   const composerSource: "top" | "followup" = hasClarificationHistory
     ? "followup"
     : "top";
@@ -1045,12 +1041,6 @@ function handleReturnHome(): void {
               {t.clarify.heroTitle}
             </h1>
 
-            <div style={{ maxWidth: "640px", minWidth: 0, width: "100%" }}>
-              <p style={{ fontSize: "0.95rem", color: "#444", lineHeight: 1.65, margin: 0 }}>
-                {t.clarify.descriptionParagraph}
-              </p>
-            </div>
-
             <div
               style={{
                 borderTop: "1px solid #e7e5e4",
@@ -1105,7 +1095,6 @@ function handleReturnHome(): void {
           
         {!isDone && renderClarificationPath()}
         {!isDone && result && renderSupplementaryResult(result)}
-          <Footer />
         </div>
       )}
       {!isDone && (
@@ -1128,7 +1117,7 @@ function handleReturnHome(): void {
             <InterpretationInput
               textareaRef={topInputRef}
               id="clarify-input-composer"
-              helperText={composerHelperText}
+              helperText=""
               placeholder={composerPlaceholder}
               value={composerValue}
               onChange={(e) => {

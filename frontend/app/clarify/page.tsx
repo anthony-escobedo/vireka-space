@@ -16,39 +16,8 @@ import { useLanguage } from "../../lib/i18n/useLanguage";
 const FREE_USAGE_LIMIT_ERROR_EN =
   "Free usage includes 20 interactions per day. Access resumes tomorrow or with subscription.";
 
-declare global {
-  interface Window {
-    SpeechRecognition?: new () => SpeechRecognition;
-    webkitSpeechRecognition?: new () => SpeechRecognition;
-  }
-
-  interface SpeechRecognition extends EventTarget {
-    continuous: boolean;
-    interimResults: boolean;
-    lang: string;
-    onstart: (() => void) | null;
-    onresult: ((event: SpeechRecognitionEvent) => void) | null;
-    onerror: ((event: SpeechRecognitionErrorEvent) => void) | null;
-    onend: (() => void) | null;
-    start(): void;
-    stop(): void;
-  }
-
-  interface SpeechRecognitionEvent {
-    results: {
-      [key: number]: {
-        [key: number]: {
-          transcript: string;
-        };
-      };
-      length: number;
-    };
-  }
-
-  interface SpeechRecognitionErrorEvent {
-    error: string;
-  }
-}
+const WHISPER_TRANSCRIBE_URL =
+  "https://whisper-api-production-b9e8.up.railway.app/transcribe";
 
 type RequestAction = "clarify";
 
@@ -119,7 +88,11 @@ export default function ClarifyPage() {
   const [copyLabel, setCopyLabel] = useState(t.clarify.copyResult);
   const topInputRef = useRef<HTMLTextAreaElement | null>(null);
   const pathTopRef = useRef<HTMLDivElement | null>(null);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const mediaChunksRef = useRef<BlobPart[]>([]);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
+  const activeMicTargetRef = useRef<"top" | "followup" | null>(null);
+  const skipNextTranscribeRef = useRef(false);
   const resultRef = useRef<HTMLDivElement | null>(null);
   const copyResetTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -141,25 +114,17 @@ export default function ClarifyPage() {
     if (copyResetTimeoutRef.current) {
       clearTimeout(copyResetTimeoutRef.current);
     }
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+      skipNextTranscribeRef.current = true;
+      mediaRecorderRef.current.stop();
     }
+    mediaRecorderRef.current = null;
+    mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
+    mediaStreamRef.current = null;
+    mediaChunksRef.current = [];
+    activeMicTargetRef.current = null;
   };
 }, []);
-
-  function cleanTranscript(text: string): string {
-    let t = text.trim();
-    if (!t) return "";
-    t = t.charAt(0).toUpperCase() + t.slice(1);
-    t = t.replace(/\b(and|but|so|because)\b/gi, ", $1");
-    t = t.replace(/,\s*,/g, ",");
-    t = t.replace(/^,\s*/, "");
-    t = t.replace(/\s+/g, " ");
-    if (!/[.!?]$/.test(t)) {
-      t += ".";
-    }
-    return t;
-  }
 
   function normalizeQuestion(text: string): string {
     return text
@@ -257,60 +222,125 @@ export default function ClarifyPage() {
     );
   }
 
+  function releaseMediaStream(): void {
+    mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
+    mediaStreamRef.current = null;
+  }
+
   function startListening(target: "top" | "followup"): void {
-    const SpeechRecognitionCtor =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
+    void (async () => {
+      try {
+        if (
+          mediaRecorderRef.current?.state === "recording" &&
+          activeMicTargetRef.current === target
+        ) {
+          mediaRecorderRef.current.stop();
+          return;
+        }
 
-    if (!SpeechRecognitionCtor) {
-  setError(t.clarify.speechRecognitionNotSupported);
-  return;
-}
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaStreamRef.current = stream;
 
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
-      recognitionRef.current = null;
-    }
+        let mimeType = "";
+        if (typeof MediaRecorder !== "undefined") {
+          if (MediaRecorder.isTypeSupported("audio/webm;codecs=opus")) {
+            mimeType = "audio/webm;codecs=opus";
+          } else if (MediaRecorder.isTypeSupported("audio/webm")) {
+            mimeType = "audio/webm";
+          } else if (MediaRecorder.isTypeSupported("audio/mp4")) {
+            mimeType = "audio/mp4";
+          }
+        }
 
-    const recognition = new SpeechRecognitionCtor();
-    recognitionRef.current = recognition;
-    const capturedTarget = target;
-
-    recognition.continuous = false;
-    recognition.interimResults = false;
-    recognition.lang = "en-US";
-
-    recognition.onstart = () => {
-      setListeningTarget(capturedTarget);
-      setError(null);
-    };
-
-    recognition.onresult = (event) => {
-      if (recognitionRef.current !== recognition) {
-        return;
-      }
-      let transcript = event.results[0][0].transcript;
-      transcript = cleanTranscript(transcript);
-      if (capturedTarget === "top") {
-        setTopInput((prev) =>
-          prev.trim() ? `${prev.trim()} ${transcript}` : transcript
+        const recorder = new MediaRecorder(
+          stream,
+          mimeType ? { mimeType } : undefined
         );
-      } else {
-        setFollowupInput((prev) =>
-          prev.trim() ? `${prev.trim()} ${transcript}` : transcript
-        );
+        mediaChunksRef.current = [];
+
+        recorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            mediaChunksRef.current.push(event.data);
+          }
+        };
+
+        activeMicTargetRef.current = target;
+
+        recorder.onstop = async () => {
+          if (mediaRecorderRef.current !== recorder) {
+            return;
+          }
+
+          const capturedTarget = activeMicTargetRef.current;
+          activeMicTargetRef.current = null;
+          mediaRecorderRef.current = null;
+          releaseMediaStream();
+          setListeningTarget(null);
+
+          if (skipNextTranscribeRef.current) {
+            skipNextTranscribeRef.current = false;
+            mediaChunksRef.current = [];
+            return;
+          }
+
+          const chunks = mediaChunksRef.current;
+          mediaChunksRef.current = [];
+          const blobType = recorder.mimeType || mimeType || "audio/webm";
+          const audioBlob = new Blob(chunks, { type: blobType });
+
+          if (audioBlob.size === 0) {
+            return;
+          }
+
+          try {
+            const formData = new FormData();
+            const ext = blobType.includes("webm")
+              ? "webm"
+              : blobType.includes("mp4")
+                ? "mp4"
+                : "webm";
+            formData.append("file", audioBlob, `recording.${ext}`);
+
+            const response = await fetch(WHISPER_TRANSCRIBE_URL, {
+              method: "POST",
+              body: formData,
+            });
+
+            if (!response.ok) {
+              throw new Error("Transcription failed");
+            }
+
+            const data = (await response.json()) as { text?: string };
+            const transcript = data.text || "";
+
+            if (capturedTarget === "top") {
+              setTopInput((prev) => {
+                if (!prev) return transcript;
+                return `${prev} ${transcript}`;
+              });
+            } else if (capturedTarget === "followup") {
+              setFollowupInput((prev) => {
+                if (!prev) return transcript;
+                return `${prev} ${transcript}`;
+              });
+            }
+          } catch (err) {
+            console.error(err);
+          }
+        };
+
+        mediaRecorderRef.current = recorder;
+        recorder.start();
+        setListeningTarget(target);
+        setError(null);
+      } catch (err) {
+        console.error(err);
+        setListeningTarget(null);
+        releaseMediaStream();
+        mediaRecorderRef.current = null;
+        mediaChunksRef.current = [];
       }
-    };
-
-    recognition.onerror = (event) => {
-      setError(t.clarify.microphoneError + event.error);
-    };
-
-    recognition.onend = () => {
-      setListeningTarget(null);
-      recognitionRef.current = null;
-    };
-
-    recognition.start();
+    })();
   }
 
   function formatResponseForHistory(response: VirekaResponse): string {
@@ -599,10 +629,8 @@ function handleDone(): void {
   const activePanel = panels.length > 0 ? panels[panels.length - 1] : null;
   const isTopClarifyDisabled = loading || !topInput.trim();
   const isFollowupClarifyDisabled = loading || !followupInput.trim();
-  const isTopMicDisabled =
-    loading || listeningTarget === "top" || listeningTarget === "followup";
-  const isFollowupMicDisabled =
-    loading || listeningTarget === "top" || listeningTarget === "followup";
+  const isTopMicDisabled = loading || listeningTarget === "followup";
+  const isFollowupMicDisabled = loading || listeningTarget === "top";
   const isDoneDisabled = loading || !result || isDone;
 
   function renderList(items: string[] | undefined, label: string) {

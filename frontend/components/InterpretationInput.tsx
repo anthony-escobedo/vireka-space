@@ -515,7 +515,7 @@ const InterpretationInput = forwardRef<
             for (let attemptIndex = 0; attemptIndex < candidates.length; attemptIndex += 1) {
               const candidate = candidates[attemptIndex];
               const formData = new FormData();
-              formData.append(candidate.fieldName, blob, candidate.filename);
+              formData.append("file", blob, candidate.filename);
 
               const response = await fetch(urlDebug.resolvedUrl, {
                 method: "POST",
@@ -539,7 +539,7 @@ const InterpretationInput = forwardRef<
 
               console.info(`[transcribe attempt ${attemptIndex + 1}]`, {
                 endpoint: urlDebug.resolvedUrl,
-                fieldName: candidate.fieldName,
+                fieldName: "file"
                 filename: candidate.filename,
                 blobType: blob.type,
                 recorderMimeType: recorder.mimeType,

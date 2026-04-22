@@ -41,7 +41,7 @@ export type InterpretationInputProps = {
   /** Return `true` when clarify (or send) succeeded so voice UI resets to idle. */
   onSend?: () => Promise<boolean>;
   transcribeUrl?: string;
-  /** Parent loading (e.g. POST /api/clarify) ù disables send control. */
+  /** Parent loading (e.g. POST /api/clarify) - disables send control. */
   clarifyLoading?: boolean;
 };
 
@@ -619,7 +619,7 @@ const InterpretationInput = forwardRef<
             }}
           >
             <Spinner />
-            <span>Transcribingù</span>
+            <span>Transcribing...</span>
           </div>
         ) : (
           <div

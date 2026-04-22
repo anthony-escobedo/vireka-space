@@ -443,7 +443,7 @@ const InterpretationInput = forwardRef<
       mediaChunksRef.current = [];
       discardRecordingRef.current = false;
       recorder.ondataavailable = (ev) => {
-        console.log("[mic] chunk received", {
+        console.log("[mic] dataavailable", {
           size: ev.data?.size,
           type: ev.data?.type,
         });
@@ -451,13 +451,31 @@ const InterpretationInput = forwardRef<
       };
 
       recorder.onstop = () => {
-        if (activeRecorderRef.current !== recorder) return;
-        console.log("[mic] recorder stopped");
+        console.log("[mic] onstop fired", {
+          mediaRecorderState: recorder.state,
+          activeRecorderIs: activeRecorderRef.current
+            ? "set"
+            : "null",
+          isStaleDifferentRecorder:
+            activeRecorderRef.current != null &&
+            activeRecorderRef.current !== recorder,
+        });
+        if (
+          activeRecorderRef.current != null &&
+          activeRecorderRef.current !== recorder
+        ) {
+          console.log(
+            "[mic] onstop ignored: activeRecorderRef is a different MediaRecorder (new session started)"
+          );
+          return;
+        }
+        console.log("[mic] recorder stopped (handler running)");
         activeRecorderRef.current = null;
         mediaRecorderRef.current = null;
         releaseStream();
 
         if (discardRecordingRef.current) {
+          console.log("[mic] onstop: discarding (discard flag)");
           discardRecordingRef.current = false;
           mediaChunksRef.current = [];
           setMicState("idle");
@@ -465,10 +483,10 @@ const InterpretationInput = forwardRef<
         }
 
         const chunks = mediaChunksRef.current;
-        console.log("[mic] total chunks", chunks?.length);
+        console.log("[mic] total chunk parts", chunks?.length);
         mediaChunksRef.current = [];
         const blobType = recorder.mimeType || mimeTypeRef.current || "audio/webm";
-        console.log("[mic] building blob", {
+        console.log("[mic] building blob from chunks", {
           chunkCount: chunks?.length,
         });
         const blob = new Blob(chunks, { type: blobType });
@@ -478,133 +496,145 @@ const InterpretationInput = forwardRef<
         });
 
         if (blob.size === 0) {
+          console.log("[mic] upload skipped: empty blob (size 0)");
           setVoiceError("No audio captured");
           setMicState("error");
           return;
         }
 
-        revokeAudioUrl();
-        audioBlobRef.current = blob;
-        const url = URL.createObjectURL(blob);
-        audioObjectUrlRef.current = url;
-        setAudioUrl(url);
-        setMicState("transcribing");
+        const transcribe = (audioBlob: Blob) => {
+          console.log("[mic] transcribe(blob) starting upload path", {
+            size: audioBlob.size,
+            type: audioBlob.type,
+          });
+          revokeAudioUrl();
+          audioBlobRef.current = audioBlob;
+          const url = URL.createObjectURL(audioBlob);
+          audioObjectUrlRef.current = url;
+          setAudioUrl(url);
+          setMicState("transcribing");
 
-        void (async () => {
-          try {
-            const uploadMimeType = blob.type || blobType || "audio/webm";
-            const filename = getTranscribeUploadFilename(uploadMimeType);
-            const urlDebug = getTranscribeUrlDebugInfo(transcribeUrl);
-
-            console.info("[transcribe] upload start", {
-              transcribeUrl,
-              resolvedTranscribeUrl: urlDebug.resolvedUrl,
-              transcribeUrlIsValid: urlDebug.isValid,
-              transcribeUrlInvalidReason: urlDebug.reason ?? null,
-              blobType: blob.type,
-              recorderMimeType: recorder.mimeType,
-              preferredMimeType: mimeTypeRef.current,
-              bytes: blob.size,
-              fieldName: "file",
-              filename,
-            });
-
-            if (!urlDebug.isValid) {
-              throw new Error(`Invalid transcribe URL: ${urlDebug.reason ?? "unknown"}`);
-            }
-
-            const formData = new FormData();
-            formData.append("file", blob, filename);
-
-            console.log("[mic] uploading", {
-              url: urlDebug.resolvedUrl,
-              fieldName: "file",
-              filename,
-              size: blob?.size,
-              type: blob?.type,
-            });
-
-            const response = await fetch(urlDebug.resolvedUrl, {
-              method: "POST",
-              body: formData,
-            });
-
-            console.log("[mic] upload response", {
-              status: response?.status,
-              ok: response?.ok,
-            });
-
-            const responseText = await response.text().catch(() => "");
-            console.log("[mic] upload response body", responseText);
-            const snippet = responseText.slice(0, 300);
-            let parsedJson: unknown = null;
+          void (async () => {
             try {
-              parsedJson = responseText ? JSON.parse(responseText) : null;
-            } catch {
-              parsedJson = null;
-            }
-            const parsedError =
-              parsedJson &&
-              typeof parsedJson === "object" &&
-              "error" in parsedJson
-                ? (parsedJson as { error?: unknown }).error
-                : undefined;
+              const uploadMimeType = audioBlob.type || blobType || "audio/webm";
+              const filename = getTranscribeUploadFilename(uploadMimeType);
+              const urlDebug = getTranscribeUrlDebugInfo(transcribeUrl);
 
-            console.info("[transcribe] upload result", {
-              endpoint: urlDebug.resolvedUrl,
-              fieldName: "file",
-              filename,
-              blobType: blob.type,
-              recorderMimeType: recorder.mimeType,
-              fileSize: blob.size,
-              status: response.status,
-              ok: response.ok,
-              responseSnippet: snippet,
-              parsedJson,
-              parsedError,
-            });
+              console.info("[transcribe] upload start", {
+                transcribeUrl,
+                resolvedTranscribeUrl: urlDebug.resolvedUrl,
+                transcribeUrlIsValid: urlDebug.isValid,
+                transcribeUrlInvalidReason: urlDebug.reason ?? null,
+                blobType: audioBlob.type,
+                recorderMimeType: recorder.mimeType,
+                preferredMimeType: mimeTypeRef.current,
+                bytes: audioBlob.size,
+                fieldName: "file",
+                filename,
+              });
 
-            if (!response.ok) {
-              throw new Error(
-                `status=${response.status} field=file filename=${filename} body=${snippet}`
-              );
-            }
+              if (!urlDebug.isValid) {
+                throw new Error(
+                  `Invalid transcribe URL: ${urlDebug.reason ?? "unknown"}`
+                );
+              }
 
-            let transcript = "";
-            if (parsedJson) {
-              transcript = getTranscriptFromPayload(parsedJson);
-            } else {
-              transcript = responseText.trim();
-            }
-            if (!transcript) {
-              throw new Error(
-                `empty transcript field=file filename=${filename} body=${snippet}`
-              );
-            }
+              const formData = new FormData();
+              formData.append("file", audioBlob, filename);
 
-            appendTranscript(transcript);
-            setMicState("ready");
-            setVoiceError(null);
-          } catch (err) {
-            console.error("[mic] error", err);
-            console.error("[transcribe] failed", {
-              error: err,
-              transcribeUrl,
-              blobType: blob.type,
-              recorderMimeType: recorder.mimeType,
-              preferredMimeType: mimeTypeRef.current,
-              bytes: blob.size,
-            });
-            setVoiceError("Couldn't transcribe audio");
-            setMicState("error");
-            revokeAudioUrl();
-          }
-        })();
+              console.log("[mic] before fetch to /transcribe", {
+                url: urlDebug.resolvedUrl,
+                fieldName: "file",
+                filename,
+                size: audioBlob?.size,
+                type: audioBlob?.type,
+              });
+
+              const response = await fetch(urlDebug.resolvedUrl, {
+                method: "POST",
+                body: formData,
+              });
+
+              console.log("[mic] upload response", {
+                status: response?.status,
+                ok: response?.ok,
+              });
+
+              const responseText = await response.text().catch(() => "");
+              console.log("[mic] upload response body", responseText);
+              const snippet = responseText.slice(0, 300);
+              let parsedJson: unknown = null;
+              try {
+                parsedJson = responseText ? JSON.parse(responseText) : null;
+              } catch {
+                parsedJson = null;
+              }
+              const parsedError =
+                parsedJson &&
+                typeof parsedJson === "object" &&
+                "error" in parsedJson
+                  ? (parsedJson as { error?: unknown }).error
+                  : undefined;
+
+              console.info("[transcribe] upload result", {
+                endpoint: urlDebug.resolvedUrl,
+                fieldName: "file",
+                filename,
+                blobType: audioBlob.type,
+                recorderMimeType: recorder.mimeType,
+                fileSize: audioBlob.size,
+                status: response.status,
+                ok: response.ok,
+                responseSnippet: snippet,
+                parsedJson,
+                parsedError,
+              });
+
+              if (!response.ok) {
+                throw new Error(
+                  `status=${response.status} field=file filename=${filename} body=${snippet}`
+                );
+              }
+
+              let transcript = "";
+              if (parsedJson) {
+                transcript = getTranscriptFromPayload(parsedJson);
+              } else {
+                transcript = responseText.trim();
+              }
+              if (!transcript) {
+                throw new Error(
+                  `empty transcript field=file filename=${filename} body=${snippet}`
+                );
+              }
+
+              appendTranscript(transcript);
+              setMicState("ready");
+              setVoiceError(null);
+            } catch (err) {
+              console.error("[mic] error", err);
+              console.error("[transcribe] failed", {
+                error: err,
+                transcribeUrl,
+                blobType: audioBlob.type,
+                recorderMimeType: recorder.mimeType,
+                preferredMimeType: mimeTypeRef.current,
+                bytes: audioBlob.size,
+              });
+              setVoiceError("Couldn't transcribe audio");
+              setMicState("error");
+              revokeAudioUrl();
+            }
+          })();
+        };
+        transcribe(blob);
       };
 
       mediaRecorderRef.current = recorder;
       activeRecorderRef.current = recorder;
-      recorder.start();
+      const startTimesliceMs = 200;
+      console.log("[mic] recorder.start", { startTimesliceMs });
+      recorder.start(startTimesliceMs);
       setMicState("recording");
     } catch (err) {
       console.error("[mic] error", err);

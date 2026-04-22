@@ -91,12 +91,14 @@ function pickRecorderMime(): string {
 function extensionForAudioMime(mimeType: string): string {
   const normalized = mimeType.toLowerCase();
   if (normalized.includes("webm")) return "webm";
-  if (normalized.includes("mp4")) return "mp4";
   if (normalized.includes("m4a") || normalized.includes("aac")) return "m4a";
-  if (normalized.includes("mpeg") || normalized.includes("mp3")) return "mp3";
-  if (normalized.includes("ogg")) return "ogg";
+  if (normalized.includes("mp4")) return "mp4";
+  if (normalized.includes("mp3")) return "mp3";
+  if (normalized.includes("mpeg") || normalized.includes("mpga")) return "mpeg";
+  if (normalized.includes("ogg") || normalized.includes("oga")) return "ogg";
   if (normalized.includes("wav")) return "wav";
-  return "audio";
+  if (normalized.includes("flac")) return "flac";
+  return "webm";
 }
 
 function getTranscriptFromPayload(payload: unknown): string {
@@ -107,28 +109,9 @@ function getTranscriptFromPayload(payload: unknown): string {
   return "";
 }
 
-function buildUploadCandidates(mimeType: string): Array<{ fieldName: string; filename: string }> {
-  const normalized = mimeType.toLowerCase();
-  const ext = extensionForAudioMime(normalized);
-  const filenames = new Set<string>([`recording.${ext}`]);
-
-  if (normalized.includes("mp4") || normalized.includes("m4a")) {
-    filenames.add("recording.mp4");
-    filenames.add("recording.m4a");
-  } else if (normalized.includes("webm")) {
-    filenames.add("recording.webm");
-  }
-
-  const candidates: Array<{ fieldName: string; filename: string }> = [];
-  for (const filename of Array.from(filenames)) {
-    candidates.push({ fieldName: "file", filename });
-  }
-  // Compatibility fallback for servers expecting `audio` instead of `file`.
-  for (const filename of Array.from(filenames)) {
-    candidates.push({ fieldName: "audio", filename });
-  }
-
-  return candidates;
+/** One filename for multipart "file" — extension follows `extensionForAudioMime(blob MIME)`. */
+function getTranscribeUploadFilename(mimeType: string): string {
+  return `recording.${extensionForAudioMime(mimeType)}`;
 }
 
 function getTranscribeUrlDebugInfo(url: string): {
@@ -440,9 +423,12 @@ const InterpretationInput = forwardRef<
   };
 
   const startRecording = useCallback(async () => {
+    console.log("[mic] start requested");
     setVoiceError(null);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      console.log("[mic] stream acquired", stream);
+      console.log("[mic] audio tracks", stream?.getAudioTracks?.());
       mediaStreamRef.current = stream;
       const mimeType = pickRecorderMime();
       mimeTypeRef.current = mimeType;
@@ -450,14 +436,23 @@ const InterpretationInput = forwardRef<
         stream,
         mimeType ? { mimeType } : undefined
       );
+      console.log("[mic] recorder created", {
+        mimeType: recorder?.mimeType,
+        state: recorder?.state,
+      });
       mediaChunksRef.current = [];
       discardRecordingRef.current = false;
       recorder.ondataavailable = (ev) => {
+        console.log("[mic] chunk received", {
+          size: ev.data?.size,
+          type: ev.data?.type,
+        });
         if (ev.data.size > 0) mediaChunksRef.current.push(ev.data);
       };
 
       recorder.onstop = () => {
         if (activeRecorderRef.current !== recorder) return;
+        console.log("[mic] recorder stopped");
         activeRecorderRef.current = null;
         mediaRecorderRef.current = null;
         releaseStream();
@@ -470,9 +465,17 @@ const InterpretationInput = forwardRef<
         }
 
         const chunks = mediaChunksRef.current;
+        console.log("[mic] total chunks", chunks?.length);
         mediaChunksRef.current = [];
         const blobType = recorder.mimeType || mimeTypeRef.current || "audio/webm";
+        console.log("[mic] building blob", {
+          chunkCount: chunks?.length,
+        });
         const blob = new Blob(chunks, { type: blobType });
+        console.log("[mic] blob created", {
+          size: blob?.size,
+          type: blob?.type,
+        });
 
         if (blob.size === 0) {
           setVoiceError("No audio captured");
@@ -490,7 +493,7 @@ const InterpretationInput = forwardRef<
         void (async () => {
           try {
             const uploadMimeType = blob.type || blobType || "audio/webm";
-            const candidates = buildUploadCandidates(uploadMimeType);
+            const filename = getTranscribeUploadFilename(uploadMimeType);
             const urlDebug = getTranscribeUrlDebugInfo(transcribeUrl);
 
             console.info("[transcribe] upload start", {
@@ -502,81 +505,88 @@ const InterpretationInput = forwardRef<
               recorderMimeType: recorder.mimeType,
               preferredMimeType: mimeTypeRef.current,
               bytes: blob.size,
-              attempts: candidates.map((c) => `${c.fieldName}:${c.filename}`),
+              fieldName: "file",
+              filename,
             });
 
             if (!urlDebug.isValid) {
               throw new Error(`Invalid transcribe URL: ${urlDebug.reason ?? "unknown"}`);
             }
 
-            let transcript = "";
-            let lastFailureDetail = "";
+            const formData = new FormData();
+            formData.append("file", blob, filename);
 
-            for (let attemptIndex = 0; attemptIndex < candidates.length; attemptIndex += 1) {
-              const candidate = candidates[attemptIndex];
-              const formData = new FormData();
-              formData.append("file", blob, candidate.filename);
+            console.log("[mic] uploading", {
+              url: urlDebug.resolvedUrl,
+              fieldName: "file",
+              filename,
+              size: blob?.size,
+              type: blob?.type,
+            });
 
-              const response = await fetch(urlDebug.resolvedUrl, {
-                method: "POST",
-                body: formData,
-              });
+            const response = await fetch(urlDebug.resolvedUrl, {
+              method: "POST",
+              body: formData,
+            });
 
-              const raw = await response.text().catch(() => "");
-              const snippet = raw.slice(0, 300);
-              let parsedJson: unknown = null;
-              try {
-                parsedJson = raw ? JSON.parse(raw) : null;
-              } catch {
-                parsedJson = null;
-              }
-              const parsedError =
-                parsedJson &&
-                typeof parsedJson === "object" &&
-                "error" in parsedJson
-                  ? (parsedJson as { error?: unknown }).error
-                  : undefined;
+            console.log("[mic] upload response", {
+              status: response?.status,
+              ok: response?.ok,
+            });
 
-              console.info(`[transcribe attempt ${attemptIndex + 1}]`, {
-                endpoint: urlDebug.resolvedUrl,
-                fieldName: "file",
-                filename: candidate.filename,
-                blobType: blob.type,
-                recorderMimeType: recorder.mimeType,
-                fileSize: blob.size,
-                status: response.status,
-                ok: response.ok,
-                responseSnippet: snippet,
-                parsedJson,
-                parsedError,
-              });
+            const responseText = await response.text().catch(() => "");
+            console.log("[mic] upload response body", responseText);
+            const snippet = responseText.slice(0, 300);
+            let parsedJson: unknown = null;
+            try {
+              parsedJson = responseText ? JSON.parse(responseText) : null;
+            } catch {
+              parsedJson = null;
+            }
+            const parsedError =
+              parsedJson &&
+              typeof parsedJson === "object" &&
+              "error" in parsedJson
+                ? (parsedJson as { error?: unknown }).error
+                : undefined;
 
-              if (!response.ok) {
-                lastFailureDetail = `status=${response.status} field=${candidate.fieldName} filename=${candidate.filename} body=${snippet}`;
-                continue;
-              }
+            console.info("[transcribe] upload result", {
+              endpoint: urlDebug.resolvedUrl,
+              fieldName: "file",
+              filename,
+              blobType: blob.type,
+              recorderMimeType: recorder.mimeType,
+              fileSize: blob.size,
+              status: response.status,
+              ok: response.ok,
+              responseSnippet: snippet,
+              parsedJson,
+              parsedError,
+            });
 
-              if (parsedJson) {
-                transcript = getTranscriptFromPayload(parsedJson);
-              } else {
-                transcript = raw.trim();
-              }
-
-              if (transcript) {
-                break;
-              }
-
-              lastFailureDetail = `empty transcript field=${candidate.fieldName} filename=${candidate.filename} body=${snippet}`;
+            if (!response.ok) {
+              throw new Error(
+                `status=${response.status} field=file filename=${filename} body=${snippet}`
+              );
             }
 
+            let transcript = "";
+            if (parsedJson) {
+              transcript = getTranscriptFromPayload(parsedJson);
+            } else {
+              transcript = responseText.trim();
+            }
             if (!transcript) {
-              throw new Error(lastFailureDetail || "No transcript returned");
+              throw new Error(
+                `empty transcript field=file filename=${filename} body=${snippet}`
+              );
             }
 
             appendTranscript(transcript);
             setMicState("ready");
             setVoiceError(null);
           } catch (err) {
+            console.error("[mic] error", err);
             console.error("[transcribe] failed", {
               error: err,
               transcribeUrl,
@@ -596,7 +606,8 @@ const InterpretationInput = forwardRef<
       activeRecorderRef.current = recorder;
       recorder.start();
       setMicState("recording");
-    } catch {
+    } catch (err) {
+      console.error("[mic] error", err);
       console.error("Microphone access denied or unavailable");
       setVoiceError("Mic unavailable");
       setMicState("error");

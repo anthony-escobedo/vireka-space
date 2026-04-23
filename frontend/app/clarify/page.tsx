@@ -463,6 +463,12 @@ function handleReturnHome(): void {
   const archivedPanels = panels.slice(0, -1);
   const activePanel = panels.length > 0 ? panels[panels.length - 1] : null;
   const hasClarificationHistory = iterations.length > 0;
+  const hasInitialClarifyResponse = iterations.some((it) => it.source === "top");
+  const canShowDoneButton =
+    hasInitialClarifyResponse &&
+    result !== null &&
+    result.mode === "clarify" &&
+    !loading;
   const composerValue = hasClarificationHistory ? followupInput : topInput;
   const composerPlaceholder = hasClarificationHistory
     ? t.clarify.followupPlaceholder
@@ -1114,6 +1120,37 @@ function handleReturnHome(): void {
           }}
         >
           <div style={{ pointerEvents: "auto" }}>
+            {canShowDoneButton ? (
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  marginBottom: "0.4rem",
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setIsDone(true)}
+                  disabled={loading}
+                  style={{
+                    fontSize: "0.72rem",
+                    fontWeight: 500,
+                    letterSpacing: "0.02em",
+                    color: "#8a8580",
+                    background: "transparent",
+                    border: "none",
+                    padding: "0.15rem 0.1rem",
+                    cursor: loading ? "not-allowed" : "pointer",
+                    textDecoration: "underline",
+                    textDecorationColor: "rgba(138, 133, 128, 0.4)",
+                    textUnderlineOffset: "0.2em",
+                    opacity: loading ? 0.45 : 1,
+                  }}
+                >
+                  {t.clarify.doneButton}
+                </button>
+              </div>
+            ) : null}
             <InterpretationInput
               textareaRef={topInputRef}
               id="clarify-input-composer"

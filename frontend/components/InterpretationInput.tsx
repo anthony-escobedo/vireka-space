@@ -18,6 +18,9 @@ import { WHISPER_TRANSCRIBE_URL } from "../lib/whisperTranscribeUrl";
 
 const TEXTAREA_MIN_PX = 72;
 const TEXTAREA_MAX_PX = 160;
+/** Single-line feel for bottom composer; grows with `fitTextareaHeight` up to max. */
+const COMPOSER_TEXT_MIN_PX = 32;
+const COMPOSER_TEXT_MAX_PX = 120;
 
 export type MicState = "idle" | "recording" | "transcribing" | "ready" | "error";
 
@@ -61,13 +64,15 @@ function mergeRefs<T>(
   };
 }
 
-function fitTextareaHeight(el: HTMLTextAreaElement | null): void {
+function fitTextareaHeight(
+  el: HTMLTextAreaElement | null,
+  bounds?: { min: number; max: number }
+): void {
   if (!el) return;
+  const min = bounds?.min ?? TEXTAREA_MIN_PX;
+  const max = bounds?.max ?? TEXTAREA_MAX_PX;
   el.style.height = "auto";
-  const next = Math.min(
-    Math.max(el.scrollHeight, TEXTAREA_MIN_PX),
-    TEXTAREA_MAX_PX
-  );
+  const next = Math.min(Math.max(el.scrollHeight, min), max);
   el.style.height = `${next}px`;
 }
 
@@ -143,14 +148,58 @@ function getTranscribeUrlDebugInfo(url: string): {
   }
 }
 
-const WAVE_BARS = 40;
-const WAVE_ROW_H = 32;
-const WAVE_GROUND = 6;
-const WAVE_GAIN = 2.8;
-const WAVE_LVL_MIN = 0.14;
-const WAVE_LVL_MAX = 0.78;
-const WAVE_VIS_MIN_PX = 6;
-const WAVE_VIS_MAX_PX = 28;
+/** One shared context: created + resumed in `startRecording` (user gesture) for iOS/Safari; not closed on waveform unmount. */
+let sharedWaveformAudioContext: AudioContext | null = null;
+
+function getSharedWaveformAudioContext(): AudioContext {
+  if (typeof window === "undefined") {
+    throw new Error("no window");
+  }
+  if (sharedWaveformAudioContext && sharedWaveformAudioContext.state === "closed") {
+    sharedWaveformAudioContext = null;
+  }
+  if (sharedWaveformAudioContext) {
+    return sharedWaveformAudioContext;
+  }
+  const Ctor =
+    window.AudioContext ||
+    (window as unknown as { webkitAudioContext: typeof AudioContext })
+      .webkitAudioContext;
+  if (!Ctor) {
+    throw new Error("no AudioContext");
+  }
+  sharedWaveformAudioContext = new Ctor();
+  return sharedWaveformAudioContext;
+}
+
+function prewarmWaveformAudioContextForGesture(): void {
+  if (typeof window === "undefined") return;
+  try {
+    const ctx = getSharedWaveformAudioContext();
+    if (ctx.state === "suspended") {
+      void ctx.resume();
+    }
+  } catch {
+    /* visualizer only */
+  }
+}
+
+/**
+ * Thin “listening” strip tunables (Phase 1 — swap inner render in Phase 2 for canvas if desired).
+ * @see WAVE_* constants and AnalyserNode smoothing in RecordingLiveWaveform
+ */
+const WAVE_BARS = 72;
+const WAVE_BAR_PX = 1;
+const WAVE_GAP_PX = 0.5;
+const WAVE_ROW_H_PX = 14;
+const WAVE_GAIN = 1.75;
+const WAVE_LVL_MIN = 0.08;
+const WAVE_LVL_MAX = 0.45;
+const WAVE_VIS_MIN_PX = 1.5;
+const WAVE_VIS_MAX_PX = 6.5;
+const WAVE_SMOOTH_EXP = 0.82;
+const WAVE_SMOOTH_FRAME = 0.64;
+const WAVE_LINE_OPACITY = 0.38;
 
 function FallbackSineWaveform() {
   const [phase, setPhase] = useState(0);
@@ -166,36 +215,35 @@ function FallbackSineWaveform() {
       style={{
         display: "flex",
         alignItems: "flex-end",
-        gap: 2,
-        height: WAVE_ROW_H,
+        gap: WAVE_GAP_PX,
+        height: WAVE_ROW_H_PX,
         flex: 1,
         minWidth: 0,
         maxWidth: "100%",
         width: "100%",
         alignSelf: "stretch",
         justifyContent: "flex-start",
-        padding: "0 2px 2px",
+        padding: "0 0 0",
       }}
       aria-hidden
     >
-      {Array.from({ length: WAVE_BARS }, (_, i) => i).map((i, totalBars) => {
-        const center = (totalBars - 1) / 2;
-        const distanceFromCenter = Math.abs(i - center) / (center || 1);
-        const envelope = 1 - distanceFromCenter * 0.4;
+      {Array.from({ length: WAVE_BARS }, (_, i) => i).map((i) => {
         const waveA = Math.sin((phase / 100) * Math.PI * 2 + i * 0.5);
         const waveB = Math.sin((phase / 100) * Math.PI * 2 * 1.8 + i * 0.23);
         const motion = (waveA * 0.65 + waveB * 0.35 + 1) / 2;
-        const h = 7 + envelope * (7 + motion * 12);
+        const h =
+          WAVE_VIS_MIN_PX +
+          motion * (WAVE_VIS_MAX_PX - WAVE_VIS_MIN_PX) * 0.32;
         return (
           <div
             key={i}
             style={{
-              flex: "1 1 0",
-              minWidth: 2,
-              height: Math.max(WAVE_GROUND, h),
-              borderRadius: 999,
-              backgroundColor: "#969089",
-              opacity: i % 2 === 0 ? 0.78 : 0.64,
+              width: WAVE_BAR_PX,
+              minWidth: WAVE_BAR_PX,
+              flex: "0 0 auto",
+              height: h,
+              borderRadius: 0,
+              backgroundColor: `rgba(120, 116, 110, ${WAVE_LINE_OPACITY * 0.9})`,
             }}
           />
         );
@@ -231,22 +279,8 @@ function RecordingLiveWaveform({
       return;
     }
 
-    const AudioContextCtor =
-      typeof window !== "undefined" &&
-      (window.AudioContext ||
-        (
-          window as unknown as {
-            webkitAudioContext: typeof window.AudioContext;
-          }
-        ).webkitAudioContext);
-    if (!AudioContextCtor) {
-      setUseFallback(true);
-      return;
-    }
-
     let cancelled = false;
     let raf = 0;
-    let ac: AudioContext | null = null;
     let source: MediaStreamAudioSourceNode | null = null;
     let analyser: AnalyserNode | null = null;
     let freqData = new Uint8Array(256);
@@ -268,15 +302,13 @@ function RecordingLiveWaveform({
           m += (freqData[start + k] ?? 0) / 255;
         }
         m /= w;
-        const t = Math.min(1, Math.pow(Math.min(1, m * WAVE_GAIN), 0.75));
-        const p = 0.52;
-        s[b] = s[b] * p + t * (1 - p);
-        const c = (WAVE_BARS - 1) / 2;
-        const tEnv =
-          c > 0
-            ? 0.9 + 0.1 * (1 - (Math.abs(b - c) / c) * (Math.abs(b - c) / c))
-            : 1;
-        const v = Math.min(1, s[b] * tEnv * 1.08);
+        const t = Math.min(
+          1,
+          Math.pow(Math.min(1, m * WAVE_GAIN), WAVE_SMOOTH_EXP)
+        );
+        s[b] =
+          s[b] * WAVE_SMOOTH_FRAME + t * (1 - WAVE_SMOOTH_FRAME);
+        const v = Math.min(1, s[b] * 0.92);
         next.push(
           WAVE_LVL_MIN + (WAVE_LVL_MAX - WAVE_LVL_MIN) * Math.max(0, v)
         );
@@ -287,33 +319,24 @@ function RecordingLiveWaveform({
 
     void (async () => {
       try {
-        const ctx = new AudioContextCtor() as AudioContext;
-        ac = ctx;
+        const ctx = getSharedWaveformAudioContext();
         if (ctx.state === "suspended") {
           await ctx.resume();
         }
         if (cancelled) {
-          if (ac.state !== "closed") {
-            void ac.close();
-            ac = null;
-          }
           return;
         }
         source = ctx.createMediaStreamSource(stream);
         analyser = ctx.createAnalyser();
         analyser.fftSize = 1024;
-        analyser.smoothingTimeConstant = 0.64;
-        analyser.minDecibels = -92;
-        analyser.maxDecibels = -28;
+        analyser.smoothingTimeConstant = 0.78;
+        analyser.minDecibels = -88;
+        analyser.maxDecibels = -34;
         freqData = new Uint8Array(analyser.frequencyBinCount);
         source.connect(analyser);
         raf = requestAnimationFrame(tick);
       } catch {
         if (!cancelled) setUseFallback(true);
-        if (ac && ac.state !== "closed") {
-          void ac.close();
-          ac = null;
-        }
       }
     })();
 
@@ -337,10 +360,6 @@ function RecordingLiveWaveform({
           }
         }
         analyser = null;
-        if (ac && ac.state !== "closed") {
-          void ac.close();
-        }
-        ac = null;
       } catch {
         /* ignore */
       }
@@ -356,15 +375,15 @@ function RecordingLiveWaveform({
       style={{
         display: "flex",
         alignItems: "flex-end",
-        gap: 2,
-        height: WAVE_ROW_H,
+        gap: WAVE_GAP_PX,
+        height: WAVE_ROW_H_PX,
         flex: 1,
         minWidth: 0,
         maxWidth: "100%",
         width: "100%",
         alignSelf: "stretch",
         justifyContent: "flex-start",
-        padding: "0 2px 2px",
+        padding: "0 0 0",
       }}
       aria-hidden
     >
@@ -376,12 +395,12 @@ function RecordingLiveWaveform({
           <div
             key={i}
             style={{
-              flex: "1 1 0",
-              minWidth: 2,
+              width: WAVE_BAR_PX,
+              minWidth: WAVE_BAR_PX,
+              flex: "0 0 auto",
               height: h,
-              borderRadius: 999,
-              backgroundColor: "#969089",
-              opacity: i % 2 === 0 ? 0.82 : 0.7,
+              borderRadius: 0,
+              backgroundColor: `rgba(120, 116, 110, ${WAVE_LINE_OPACITY + t * 0.18})`,
             }}
           />
         );
@@ -526,9 +545,15 @@ const InterpretationInput = forwardRef<
   const mimeTypeRef = useRef("");
   const audioElRef = useRef<HTMLAudioElement | null>(null);
 
+  const isComposer = surfaceVariant === "composer";
   const syncHeight = useCallback(() => {
-    fitTextareaHeight(innerRef.current);
-  }, []);
+    fitTextareaHeight(
+      innerRef.current,
+      isComposer
+        ? { min: COMPOSER_TEXT_MIN_PX, max: COMPOSER_TEXT_MAX_PX }
+        : undefined
+    );
+  }, [isComposer]);
 
   useLayoutEffect(() => {
     syncHeight();
@@ -584,6 +609,14 @@ const InterpretationInput = forwardRef<
   useImperativeHandle(ref, () => ({ resetVoice }), [resetVoice]);
 
   useEffect(() => {
+    if (!voiceEnabled) return;
+    if (value.trim() !== "") return;
+    if (micState === "recording" || micState === "transcribing") return;
+    if (micState === "idle" && !audioUrl) return;
+    resetVoice();
+  }, [value, voiceEnabled, micState, audioUrl, resetVoice]);
+
+  useEffect(() => {
     return () => {
       discardRecordingRef.current = true;
       try {
@@ -619,12 +652,20 @@ const InterpretationInput = forwardRef<
 
   const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     onChange(e);
-    requestAnimationFrame(() => fitTextareaHeight(e.currentTarget));
+    requestAnimationFrame(() =>
+      fitTextareaHeight(
+        e.currentTarget,
+        isComposer
+          ? { min: COMPOSER_TEXT_MIN_PX, max: COMPOSER_TEXT_MAX_PX }
+          : undefined
+      )
+    );
   };
 
   const startRecording = useCallback(async () => {
     console.log("[mic] start requested");
     setVoiceError(null);
+    prewarmWaveformAudioContextForGesture();
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       console.log("[mic] stream acquired", stream);
@@ -1004,7 +1045,7 @@ const InterpretationInput = forwardRef<
           alignItems: "center",
           gap: "0.5rem",
           width: "100%",
-          minHeight: 36,
+          minHeight: 30,
           minWidth: 0,
         }}
       >
@@ -1173,8 +1214,6 @@ const InterpretationInput = forwardRef<
     </>
   ) : null;
 
-  const isComposer = surfaceVariant === "composer";
-
   return (
     <div
       style={{
@@ -1182,7 +1221,7 @@ const InterpretationInput = forwardRef<
         borderRadius: isComposer ? "18px" : "16px",
         border: "1px solid #e7e5e4",
         boxShadow: isComposer ? "0 2px 10px rgba(0, 0, 0, 0.06)" : "0 1px 3px rgba(0, 0, 0, 0.05)",
-        padding: isComposer ? "0.95rem 1rem 0.9rem" : "1.5rem 1.25rem 1.25rem",
+        padding: isComposer ? "0.5rem 0.65rem 0.45rem" : "1.5rem 1.25rem 1.25rem",
         maxWidth: "100%",
         minWidth: 0,
         boxSizing: "border-box",
@@ -1219,16 +1258,16 @@ const InterpretationInput = forwardRef<
           maxWidth: "100%",
           minWidth: 0,
           boxSizing: "border-box",
-          minHeight: TEXTAREA_MIN_PX,
-          maxHeight: TEXTAREA_MAX_PX,
-          height: isComposer ? "56px" : TEXTAREA_MIN_PX,
+          minHeight: isComposer ? COMPOSER_TEXT_MIN_PX : TEXTAREA_MIN_PX,
+          maxHeight: isComposer ? COMPOSER_TEXT_MAX_PX : TEXTAREA_MAX_PX,
+          height: isComposer ? "auto" : TEXTAREA_MIN_PX,
           backgroundColor: isComposer ? "transparent" : "#fafaf8",
           color: "#111",
           border: isComposer ? "1px solid transparent" : "1px solid #e7e5e4",
           borderRadius: isComposer ? "10px" : "12px",
-          padding: isComposer ? "0.45rem 0.2rem 0.4rem 0.2rem" : "0.75rem 1rem",
+          padding: isComposer ? "0.28rem 0.2rem" : "0.75rem 1rem",
           fontSize: "0.925rem",
-          lineHeight: 1.65,
+          lineHeight: isComposer ? 1.45 : 1.65,
           resize: "none",
           outline: "none",
           fontFamily: "inherit",

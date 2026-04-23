@@ -143,7 +143,11 @@ function getTranscribeUrlDebugInfo(url: string): {
   }
 }
 
-function SubtleWaveform() {
+const WAVE_BARS = 15;
+const WAVE_BAR_W = 5;
+const WAVE_GROUND = 4;
+
+function FallbackSineWaveform() {
   const [phase, setPhase] = useState(0);
   useEffect(() => {
     const id = window.setInterval(() => {
@@ -167,7 +171,7 @@ function SubtleWaveform() {
       }}
       aria-hidden
     >
-      {Array.from({ length: 15 }, (_, i) => i).map((i, totalBars) => {
+      {Array.from({ length: WAVE_BARS }, (_, i) => i).map((i, totalBars) => {
         const center = (totalBars - 1) / 2;
         const distanceFromCenter = Math.abs(i - center) / center;
         const envelope = 1 - distanceFromCenter * 0.5;
@@ -179,11 +183,187 @@ function SubtleWaveform() {
           <div
             key={i}
             style={{
-              width: 5,
+              width: WAVE_BAR_W,
               height: Math.max(4, h),
               borderRadius: 999,
               backgroundColor: "#969089",
               opacity: i % 2 === 0 ? 0.76 : 0.62,
+            }}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+function RecordingLiveWaveform({
+  stream,
+  isActive,
+}: {
+  stream: MediaStream | null;
+  isActive: boolean;
+}) {
+  const [levels, setLevels] = useState(() =>
+    Array.from({ length: WAVE_BARS }, () => WAVE_GROUND / 28)
+  );
+  const [useFallback, setUseFallback] = useState(false);
+  const smoothRef = useRef<number[]>(
+    Array.from({ length: WAVE_BARS }, () => WAVE_GROUND / 28)
+  );
+
+  useEffect(() => {
+    if (useFallback) return;
+    if (!isActive) {
+      const ground = WAVE_GROUND / 28;
+      smoothRef.current = Array.from({ length: WAVE_BARS }, () => ground);
+      setLevels(() => Array.from({ length: WAVE_BARS }, () => ground));
+      return;
+    }
+    if (!stream || !stream.active || !stream.getAudioTracks().length) {
+      return;
+    }
+
+    const AudioContextCtor =
+      typeof window !== "undefined" &&
+      (window.AudioContext ||
+        (
+          window as unknown as {
+            webkitAudioContext: typeof window.AudioContext;
+          }
+        ).webkitAudioContext);
+    if (!AudioContextCtor) {
+      setUseFallback(true);
+      return;
+    }
+
+    let cancelled = false;
+    let raf = 0;
+    let ac: AudioContext | null = null;
+    let source: MediaStreamAudioSourceNode | null = null;
+    let analyser: AnalyserNode | null = null;
+    let freqData = new Uint8Array(256);
+
+    const tick = () => {
+      if (cancelled) return;
+      if (!analyser) {
+        return;
+      }
+      analyser.getByteFrequencyData(freqData);
+      const s = smoothRef.current;
+      const nBins = Math.min(freqData.length, 200);
+      const w = Math.max(1, Math.floor(nBins / WAVE_BARS));
+      const next: number[] = [];
+      for (let b = 0; b < WAVE_BARS; b += 1) {
+        const start = 1 + b * w;
+        let m = 0;
+        for (let k = 0; k < w; k += 1) {
+          m += (freqData[start + k] ?? 0) / 255;
+        }
+        m /= w;
+        const t = 0.2 + 0.8 * Math.sqrt(Math.min(1, m * 2.2));
+        const p = 0.7;
+        s[b] = s[b] * p + t * (1 - p);
+        const c = (WAVE_BARS - 1) / 2;
+        const env = c > 0 ? 1 - Math.abs(b - c) / c : 1;
+        const shaped = 0.38 * s[b] * (0.5 + 0.5 * env * env);
+        next.push(shaped);
+      }
+      setLevels([...next]);
+      raf = requestAnimationFrame(tick);
+    };
+
+    void (async () => {
+      try {
+        const ctx = new AudioContextCtor() as AudioContext;
+        ac = ctx;
+        if (ctx.state === "suspended") {
+          await ctx.resume();
+        }
+        if (cancelled) {
+          if (ac.state !== "closed") {
+            void ac.close();
+            ac = null;
+          }
+          return;
+        }
+        source = ctx.createMediaStreamSource(stream);
+        analyser = ctx.createAnalyser();
+        analyser.fftSize = 512;
+        analyser.smoothingTimeConstant = 0.86;
+        analyser.minDecibels = -80;
+        analyser.maxDecibels = -22;
+        freqData = new Uint8Array(analyser.frequencyBinCount);
+        source.connect(analyser);
+        raf = requestAnimationFrame(tick);
+      } catch {
+        if (!cancelled) setUseFallback(true);
+        if (ac && ac.state !== "closed") {
+          void ac.close();
+          ac = null;
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(raf);
+      try {
+        if (source) {
+          try {
+            source.disconnect();
+          } catch {
+            /* ignore */
+          }
+        }
+        source = null;
+        if (analyser) {
+          try {
+            analyser.disconnect();
+          } catch {
+            /* ignore */
+          }
+        }
+        analyser = null;
+        if (ac && ac.state !== "closed") {
+          void ac.close();
+        }
+        ac = null;
+      } catch {
+        /* ignore */
+      }
+    };
+  }, [stream, isActive, useFallback]);
+
+  if (useFallback) {
+    return <FallbackSineWaveform />;
+  }
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "flex-end",
+        gap: 3,
+        height: 28,
+        flex: 1,
+        minWidth: 148,
+        maxWidth: 268,
+        justifyContent: "flex-start",
+        padding: "0 2px 2px",
+      }}
+      aria-hidden
+    >
+      {levels.map((lv, i) => {
+        const h = 4 + lv * 22;
+        return (
+          <div
+            key={i}
+            style={{
+              width: WAVE_BAR_W,
+              height: Math.max(WAVE_GROUND, h),
+              borderRadius: 999,
+              backgroundColor: "#969089",
+              opacity: i % 2 === 0 ? 0.78 : 0.64,
             }}
           />
         );
@@ -316,6 +496,7 @@ const InterpretationInput = forwardRef<
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [voiceError, setVoiceError] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [analysisStream, setAnalysisStream] = useState<MediaStream | null>(null);
 
   const audioObjectUrlRef = useRef<string | null>(null);
   const audioBlobRef = useRef<Blob | null>(null);
@@ -345,6 +526,7 @@ const InterpretationInput = forwardRef<
   }, []);
 
   const releaseStream = useCallback(() => {
+    setAnalysisStream(null);
     mediaStreamRef.current?.getTracks().forEach((t) => t.stop());
     mediaStreamRef.current = null;
   }, []);
@@ -430,6 +612,7 @@ const InterpretationInput = forwardRef<
       console.log("[mic] stream acquired", stream);
       console.log("[mic] audio tracks", stream?.getAudioTracks?.());
       mediaStreamRef.current = stream;
+      setAnalysisStream(stream);
       const mimeType = pickRecorderMime();
       mimeTypeRef.current = mimeType;
       const recorder = new MediaRecorder(
@@ -809,7 +992,11 @@ const InterpretationInput = forwardRef<
       >
         {micState === "recording" ? (
           <>
-            <SubtleWaveform />
+            <RecordingLiveWaveform
+              key={analysisStream?.id ?? "none"}
+              stream={analysisStream}
+              isActive={micState === "recording"}
+            />
             <button
               type="button"
               onClick={cancelRecording}

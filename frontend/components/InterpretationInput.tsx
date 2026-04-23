@@ -143,9 +143,14 @@ function getTranscribeUrlDebugInfo(url: string): {
   }
 }
 
-const WAVE_BARS = 15;
-const WAVE_BAR_W = 5;
-const WAVE_GROUND = 4;
+const WAVE_BARS = 40;
+const WAVE_ROW_H = 32;
+const WAVE_GROUND = 6;
+const WAVE_GAIN = 2.8;
+const WAVE_LVL_MIN = 0.14;
+const WAVE_LVL_MAX = 0.78;
+const WAVE_VIS_MIN_PX = 6;
+const WAVE_VIS_MAX_PX = 28;
 
 function FallbackSineWaveform() {
   const [phase, setPhase] = useState(0);
@@ -161,11 +166,13 @@ function FallbackSineWaveform() {
       style={{
         display: "flex",
         alignItems: "flex-end",
-        gap: 3,
-        height: 28,
+        gap: 2,
+        height: WAVE_ROW_H,
         flex: 1,
-        minWidth: 148,
-        maxWidth: 268,
+        minWidth: 0,
+        maxWidth: "100%",
+        width: "100%",
+        alignSelf: "stretch",
         justifyContent: "flex-start",
         padding: "0 2px 2px",
       }}
@@ -173,21 +180,22 @@ function FallbackSineWaveform() {
     >
       {Array.from({ length: WAVE_BARS }, (_, i) => i).map((i, totalBars) => {
         const center = (totalBars - 1) / 2;
-        const distanceFromCenter = Math.abs(i - center) / center;
-        const envelope = 1 - distanceFromCenter * 0.5;
+        const distanceFromCenter = Math.abs(i - center) / (center || 1);
+        const envelope = 1 - distanceFromCenter * 0.4;
         const waveA = Math.sin((phase / 100) * Math.PI * 2 + i * 0.5);
         const waveB = Math.sin((phase / 100) * Math.PI * 2 * 1.8 + i * 0.23);
         const motion = (waveA * 0.65 + waveB * 0.35 + 1) / 2;
-        const h = 6 + envelope * (6 + motion * 11);
+        const h = 7 + envelope * (7 + motion * 12);
         return (
           <div
             key={i}
             style={{
-              width: WAVE_BAR_W,
-              height: Math.max(4, h),
+              flex: "1 1 0",
+              minWidth: 2,
+              height: Math.max(WAVE_GROUND, h),
               borderRadius: 999,
               backgroundColor: "#969089",
-              opacity: i % 2 === 0 ? 0.76 : 0.62,
+              opacity: i % 2 === 0 ? 0.78 : 0.64,
             }}
           />
         );
@@ -204,17 +212,17 @@ function RecordingLiveWaveform({
   isActive: boolean;
 }) {
   const [levels, setLevels] = useState(() =>
-    Array.from({ length: WAVE_BARS }, () => WAVE_GROUND / 28)
+    Array.from({ length: WAVE_BARS }, () => WAVE_LVL_MIN)
   );
   const [useFallback, setUseFallback] = useState(false);
   const smoothRef = useRef<number[]>(
-    Array.from({ length: WAVE_BARS }, () => WAVE_GROUND / 28)
+    Array.from({ length: WAVE_BARS }, () => WAVE_LVL_MIN)
   );
 
   useEffect(() => {
     if (useFallback) return;
     if (!isActive) {
-      const ground = WAVE_GROUND / 28;
+      const ground = WAVE_LVL_MIN;
       smoothRef.current = Array.from({ length: WAVE_BARS }, () => ground);
       setLevels(() => Array.from({ length: WAVE_BARS }, () => ground));
       return;
@@ -250,7 +258,7 @@ function RecordingLiveWaveform({
       }
       analyser.getByteFrequencyData(freqData);
       const s = smoothRef.current;
-      const nBins = Math.min(freqData.length, 200);
+      const nBins = Math.min(freqData.length, 240);
       const w = Math.max(1, Math.floor(nBins / WAVE_BARS));
       const next: number[] = [];
       for (let b = 0; b < WAVE_BARS; b += 1) {
@@ -260,13 +268,18 @@ function RecordingLiveWaveform({
           m += (freqData[start + k] ?? 0) / 255;
         }
         m /= w;
-        const t = 0.2 + 0.8 * Math.sqrt(Math.min(1, m * 2.2));
-        const p = 0.7;
+        const t = Math.min(1, Math.pow(Math.min(1, m * WAVE_GAIN), 0.75));
+        const p = 0.52;
         s[b] = s[b] * p + t * (1 - p);
         const c = (WAVE_BARS - 1) / 2;
-        const env = c > 0 ? 1 - Math.abs(b - c) / c : 1;
-        const shaped = 0.38 * s[b] * (0.5 + 0.5 * env * env);
-        next.push(shaped);
+        const tEnv =
+          c > 0
+            ? 0.9 + 0.1 * (1 - (Math.abs(b - c) / c) * (Math.abs(b - c) / c))
+            : 1;
+        const v = Math.min(1, s[b] * tEnv * 1.08);
+        next.push(
+          WAVE_LVL_MIN + (WAVE_LVL_MAX - WAVE_LVL_MIN) * Math.max(0, v)
+        );
       }
       setLevels([...next]);
       raf = requestAnimationFrame(tick);
@@ -288,10 +301,10 @@ function RecordingLiveWaveform({
         }
         source = ctx.createMediaStreamSource(stream);
         analyser = ctx.createAnalyser();
-        analyser.fftSize = 512;
-        analyser.smoothingTimeConstant = 0.86;
-        analyser.minDecibels = -80;
-        analyser.maxDecibels = -22;
+        analyser.fftSize = 1024;
+        analyser.smoothingTimeConstant = 0.64;
+        analyser.minDecibels = -92;
+        analyser.maxDecibels = -28;
         freqData = new Uint8Array(analyser.frequencyBinCount);
         source.connect(analyser);
         raf = requestAnimationFrame(tick);
@@ -343,27 +356,32 @@ function RecordingLiveWaveform({
       style={{
         display: "flex",
         alignItems: "flex-end",
-        gap: 3,
-        height: 28,
+        gap: 2,
+        height: WAVE_ROW_H,
         flex: 1,
-        minWidth: 148,
-        maxWidth: 268,
+        minWidth: 0,
+        maxWidth: "100%",
+        width: "100%",
+        alignSelf: "stretch",
         justifyContent: "flex-start",
         padding: "0 2px 2px",
       }}
       aria-hidden
     >
       {levels.map((lv, i) => {
-        const h = 4 + lv * 22;
+        const span = WAVE_LVL_MAX - WAVE_LVL_MIN || 1;
+        const t = (lv - WAVE_LVL_MIN) / span;
+        const h = WAVE_VIS_MIN_PX + t * (WAVE_VIS_MAX_PX - WAVE_VIS_MIN_PX);
         return (
           <div
             key={i}
             style={{
-              width: WAVE_BAR_W,
-              height: Math.max(WAVE_GROUND, h),
+              flex: "1 1 0",
+              minWidth: 2,
+              height: h,
               borderRadius: 999,
               backgroundColor: "#969089",
-              opacity: i % 2 === 0 ? 0.78 : 0.64,
+              opacity: i % 2 === 0 ? 0.82 : 0.7,
             }}
           />
         );

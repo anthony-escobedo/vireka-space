@@ -7,7 +7,7 @@ import Link from "next/link";
 import CollapsibleLayer from "../../components/CollapsibleLayer";
 import OnboardingModal from "../../components/OnboardingModal";
 import DoneState from "../../components/DoneState";
-import Footer from "../../components/footer";
+import InterpretationInput from "../../components/InterpretationInput";
 
 import { getOrCreateAnonymousId } from "../../lib/anonymousSession";
 import { useLanguage } from "../../lib/i18n/useLanguage";
@@ -15,40 +15,6 @@ import { useLanguage } from "../../lib/i18n/useLanguage";
 /** Matches API body when daily free limit is exceeded (see app/api/clarify/route.ts). */
 const FREE_USAGE_LIMIT_ERROR_EN =
   "Free usage includes 20 interactions per day. Access resumes tomorrow or with subscription.";
-
-declare global {
-  interface Window {
-    SpeechRecognition?: new () => SpeechRecognition;
-    webkitSpeechRecognition?: new () => SpeechRecognition;
-  }
-
-  interface SpeechRecognition extends EventTarget {
-    continuous: boolean;
-    interimResults: boolean;
-    lang: string;
-    onstart: (() => void) | null;
-    onresult: ((event: SpeechRecognitionEvent) => void) | null;
-    onerror: ((event: SpeechRecognitionErrorEvent) => void) | null;
-    onend: (() => void) | null;
-    start(): void;
-    stop(): void;
-  }
-
-  interface SpeechRecognitionEvent {
-    results: {
-      [key: number]: {
-        [key: number]: {
-          transcript: string;
-        };
-      };
-      length: number;
-    };
-  }
-
-  interface SpeechRecognitionErrorEvent {
-    error: string;
-  }
-}
 
 type RequestAction = "clarify" | "integrated_view";
 
@@ -108,9 +74,6 @@ export default function AIInteractionPage() {
     useState<ClarifyResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [listeningTarget, setListeningTarget] = useState<
-    "top" | "followup" | null
-  >(null);
   const [history, setHistory] = useState<ConversationTurn[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [isDone, setIsDone] = useState<boolean>(false);
@@ -122,8 +85,8 @@ export default function AIInteractionPage() {
   const [checkedOnboarding, setCheckedOnboarding] = useState(false);
   const { t, language } = useLanguage();
   const [copyLabel, setCopyLabel] = useState(t.aiInteraction.copyResult);
+  const topInputRef = useRef<HTMLTextAreaElement | null>(null);
   const pathTopRef = useRef<HTMLDivElement | null>(null);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
   const resultRef = useRef<HTMLDivElement | null>(null);
   const copyResetTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -149,23 +112,8 @@ export default function AIInteractionPage() {
     if (copyResetTimeoutRef.current) {
       clearTimeout(copyResetTimeoutRef.current);
     }
-    recognitionRef.current?.stop?.();
   };
 }, []);
-
-  function cleanTranscript(text: string): string {
-    let t = text.trim();
-    if (!t) return "";
-    t = t.charAt(0).toUpperCase() + t.slice(1);
-    t = t.replace(/\b(and|but|so|because)\b/gi, ", $1");
-    t = t.replace(/,\s*,/g, ",");
-    t = t.replace(/^,\s*/, "");
-    t = t.replace(/\s+/g, " ");
-    if (!/[.!?]$/.test(t)) {
-      t += ".";
-    }
-    return t;
-  }
 
   function normalizeQuestion(text: string): string {
     return text
@@ -263,62 +211,6 @@ export default function AIInteractionPage() {
     );
   }
 
-  function startListening(target: "top" | "followup"): void {
-    const SpeechRecognitionCtor =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
-
-    if (!SpeechRecognitionCtor) {
-  setError(t.aiInteraction.speechRecognitionNotSupported);
-  return;
-}
-
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
-      recognitionRef.current = null;
-    }
-
-    const recognition = new SpeechRecognitionCtor();
-    recognitionRef.current = recognition;
-    const capturedTarget = target;
-
-    recognition.continuous = false;
-    recognition.interimResults = false;
-    recognition.lang = "en-US";
-
-    recognition.onstart = () => {
-      setListeningTarget(capturedTarget);
-      setError(null);
-    };
-
-    recognition.onresult = (event) => {
-      if (recognitionRef.current !== recognition) {
-        return;
-      }
-      let transcript = event.results[0][0].transcript;
-      transcript = cleanTranscript(transcript);
-      if (capturedTarget === "top") {
-        setTopInput((prev) =>
-          prev.trim() ? `${prev.trim()} ${transcript}` : transcript
-        );
-      } else {
-        setFollowupInput((prev) =>
-          prev.trim() ? `${prev.trim()} ${transcript}` : transcript
-        );
-      }
-    };
-
-    recognition.onerror = (event) => {
-      setError(t.aiInteraction.microphoneError + event.error);
-    };
-
-    recognition.onend = () => {
-      setListeningTarget(null);
-      recognitionRef.current = null;
-    };
-
-    recognition.start();
-  }
-
   function formatResponseForHistory(response: VirekaResponse): string {
   if (response.mode === "close") {
     return response.message;
@@ -358,7 +250,7 @@ export default function AIInteractionPage() {
     action: RequestAction,
     source: "top" | "followup",
     overrideInput?: string
-  ): Promise<void> {
+  ): Promise<boolean> {
     const sourceValue = source === "top" ? topInput : followupInput;
     const effectiveInput =
       typeof overrideInput === "string" ? overrideInput : sourceValue;
@@ -366,7 +258,7 @@ export default function AIInteractionPage() {
 
     if (action === "clarify" && !trimmed) {
       setError(t.aiInteraction.pleaseEnterASituationOrResponse);
-      return;
+      return false;
     }
 
     setLoading(true);
@@ -464,6 +356,7 @@ export default function AIInteractionPage() {
           block: "start",
         });
       }, 100);
+      return true;
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "";
       if (msg === FREE_USAGE_LIMIT_ERROR_EN) {
@@ -471,13 +364,10 @@ export default function AIInteractionPage() {
       } else {
         setError(msg || t.aiInteraction.anUnexpectedErrorOccurred);
       }
+      return false;
     } finally {
       setLoading(false);
     }
-  }
-
-  function handleClarify(source: "top" | "followup"): void {
-    void submitToClarify("clarify", source);
   }
 
   function handleIntegratedView(): void {
@@ -591,6 +481,7 @@ function handleReturnHome(): void {
   function handleBeginOnboarding(): void {
   window.localStorage.setItem("vireka_onboarding_accepted", "true");
   setShowOnboarding(false);
+  topInputRef.current?.focus();
 }
 
 function handleDismissOnboarding(): void {
@@ -618,14 +509,20 @@ function handleDismissOnboarding(): void {
   const panels = getPanels();
   const archivedPanels = panels.slice(0, -1);
   const activePanel = panels.length > 0 ? panels[panels.length - 1] : null;
-
-  const isTopClarifyDisabled = loading || !topInput.trim();
-  const isFollowupClarifyDisabled = loading || !followupInput.trim();
-  const isTopMicDisabled =
-    loading || listeningTarget === "top" || listeningTarget === "followup";
-  const isFollowupMicDisabled =
-    loading || listeningTarget === "top" || listeningTarget === "followup";
-  const isDoneDisabled = loading || !result || isDone;
+  const hasClarificationHistory = iterations.length > 0;
+  const hasInitialClarifyResponse = iterations.some((it) => it.source === "top");
+  const canShowDoneButton =
+    hasInitialClarifyResponse &&
+    result !== null &&
+    result.mode === "clarify" &&
+    !loading;
+  const composerValue = hasClarificationHistory ? followupInput : topInput;
+  const composerPlaceholder = hasClarificationHistory
+    ? t.aiInteraction.followupPlaceholder
+    : t.aiInteraction.inputPlaceholder;
+  const composerSource: "top" | "followup" = hasClarificationHistory
+    ? "followup"
+    : "top";
 
   function renderList(items: string[] | undefined, label: string) {
     if (!items || items.length === 0) return null;
@@ -1093,282 +990,6 @@ function renderActiveResponse(panel: ClarificationPanel) {
     );
   }
 
-  function renderTopActionRow() {
-  return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "1fr auto 1fr",
-        alignItems: "center",
-        columnGap: "0.75rem",
-        width: "100%",
-        minWidth: 0,
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "flex-start",
-          alignItems: "center",
-          minWidth: 0,
-        }}
-      >
-        <button
-          type="button"
-          onClick={() => startListening("top")}
-          disabled={isTopMicDisabled}
-          style={{
-            padding: "0.7rem 1rem",
-            backgroundColor: "#fff",
-            color: "#111",
-            border: "1px solid #d6d3d1",
-            borderRadius: "999px",
-            fontSize: "0.9rem",
-            fontWeight: 600,
-            cursor: isTopMicDisabled ? "not-allowed" : "pointer",
-            whiteSpace: "nowrap",
-            opacity: isTopMicDisabled ? 0.6 : 1,
-          }}
-        >
-          {listeningTarget === "top" ? t.aiInteraction.listening : t.aiInteraction.mic}
-        </button>
-      </div>
-
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <button
-          type="button"
-          onClick={() => handleClarify("top")}
-          disabled={isTopClarifyDisabled}
-          style={{
-            flexShrink: 0,
-            padding: "0.85rem 2.3rem",
-            backgroundColor: isTopClarifyDisabled ? "#d6d3d1" : "#111",
-            color: isTopClarifyDisabled ? "#6f6a64" : "#fff",
-            border: isTopClarifyDisabled ? "1px solid #d6d3d1" : "1px solid #111",
-            borderRadius: "999px",
-            fontSize: "0.9rem",
-            fontWeight: 600,
-            cursor: isTopClarifyDisabled ? "not-allowed" : "pointer",
-            transition: "background-color 0.15s, border-color 0.15s, box-shadow 0.15s",
-            letterSpacing: "-0.01em",
-            whiteSpace: "nowrap",
-            boxShadow: isTopClarifyDisabled ? "none" : "0 1px 2px rgba(0,0,0,0.08)",
-          }}
-          onMouseEnter={(e) => {
-            if (!isTopClarifyDisabled) {
-              e.currentTarget.style.backgroundColor = "#333";
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!isTopClarifyDisabled) {
-              e.currentTarget.style.backgroundColor = "#111";
-            }
-          }}
-        >
-          {loading ? t.aiInteraction.loadingText : t.aiInteraction.simpleAction}
-        </button>
-      </div>
-
-      <div />
-    </div>
-  );
-}
-
-  function renderFollowupBox() {
-    if (!result || isDone || !lastClarifyResult) return null;
-
-    return (
-      <div
-        style={{
-          marginTop: "1.75rem",
-          backgroundColor: "#ffffff",
-          borderRadius: "16px",
-          border: "1px solid #e7e5e4",
-          padding: "1.6rem 1.25rem 1.35rem",
-          maxWidth: "100%",
-          minWidth: 0,
-          boxSizing: "border-box",
-        }}
-      >
-        <label
-          htmlFor="ai-followup-input"
-          style={{
-            display: "block",
-            fontSize: "0.875rem",
-            fontWeight: 600,
-            color: "#111",
-            marginBottom: "0.875rem",
-          }}
-        >
-          {t.aiInteraction.refinement} ({t.aiInteraction.optional})
-        </label>
-
-        <textarea
-          id="ai-followup-input"
-          value={followupInput}
-          onChange={(e) => setFollowupInput(e.target.value)}
-          disabled={loading}
-          placeholder={t.aiInteraction.followupPlaceholder}
-          rows={6}
-          style={{
-            display: "block",
-            width: "100%",
-            maxWidth: "100%",
-            minWidth: 0,
-            boxSizing: "border-box",
-            backgroundColor: "#fafafa",
-            color: "#111",
-            border: "1px solid #e7e5e4",
-            borderRadius: "10px",
-            padding: "1rem 1.125rem",
-            fontSize: "0.925rem",
-            lineHeight: 1.65,
-            resize: "vertical",
-            outline: "none",
-            fontFamily: "inherit",
-            transition: "border-color 0.15s",
-            opacity: loading ? 0.6 : 1,
-            overflowWrap: "anywhere",
-            wordBreak: "break-word",
-          }}
-          onFocus={(e) => { e.currentTarget.style.borderColor = "#aaa"; }}
-          onBlur={(e) => { e.currentTarget.style.borderColor = "#e7e5e4"; }}
-        />
-
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "stretch",
-            gap: "1rem",
-            marginTop: "1rem",
-          }}
-        >
-          <p style={{ fontSize: "0.8rem", color: "#888", lineHeight: 1.55, margin: 0 }}>
-            Continue same AI issue, respond to the clarifying question, or add what may help distinguish the prompt, the objective, and the output.
-          </p>
-            
-          <div
-  style={{
-    display: "grid",
-    gridTemplateColumns: "1fr auto 1fr",
-    alignItems: "center",
-    columnGap: "0.75rem",
-    marginTop: "0.35rem",
-    width: "100%",
-  }}
->
-  <div
-    style={{
-      display: "flex",
-      justifyContent: "flex-start",
-      alignItems: "center",
-      minWidth: 0,
-    }}
-  >
-    <button
-      type="button"
-      onClick={() => startListening("followup")}
-      disabled={isFollowupMicDisabled}
-      style={{
-        padding: "0.7rem 1rem",
-        backgroundColor: "#fff",
-        color: "#111",
-        border: "1px solid #d6d3d1",
-        borderRadius: "999px",
-        fontSize: "0.9rem",
-        fontWeight: 600,
-        cursor: isFollowupMicDisabled ? "not-allowed" : "pointer",
-        whiteSpace: "nowrap",
-        opacity: isFollowupMicDisabled ? 0.6 : 1,
-      }}
-    >
-      {listeningTarget === "followup" ? t.aiInteraction.listening : t.aiInteraction.mic}
-    </button>
-  </div>
-
-  <div
-    style={{
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-    }}
-  >
-    <button
-      type="button"
-      onClick={() => handleClarify("followup")}
-      disabled={isFollowupClarifyDisabled}
-      style={{
-        flexShrink: 0,
-        padding: "0.78rem 2rem",
-        backgroundColor: isFollowupClarifyDisabled ? "#d6d3d1" : "#111",
-        color: isFollowupClarifyDisabled ? "#6f6a64" : "#fff",
-        border: isFollowupClarifyDisabled ? "1px solid #d6d3d1" : "1px solid #111",
-        borderRadius: "999px",
-        fontSize: "0.9rem",
-        fontWeight: 600,
-        cursor: isFollowupClarifyDisabled ? "not-allowed" : "pointer",
-        transition: "background-color 0.15s, border-color 0.15s, box-shadow 0.15s",
-        letterSpacing: "-0.01em",
-        whiteSpace: "nowrap",
-        boxShadow: isFollowupClarifyDisabled ? "none" : "0 1px 2px rgba(0,0,0,0.08)",
-      }}
-      onMouseEnter={(e) => {
-        if (!isFollowupClarifyDisabled) {
-          e.currentTarget.style.backgroundColor = "#333";
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (!isFollowupClarifyDisabled) {
-          e.currentTarget.style.backgroundColor = "#111";
-        }
-      }}
-    >
-      {loading ? t.aiInteraction.loadingText : t.aiInteraction.simpleAction}
-    </button>
-  </div>
-
-  <div
-    style={{
-      display: "flex",
-      justifyContent: "flex-end",
-      alignItems: "center",
-      minWidth: 0,
-    }}
-  >
-    <button
-      type="button"
-      onClick={handleDone}
-      disabled={isDoneDisabled}
-      style={{
-        flexShrink: 0,
-        padding: "0.7rem 1.15rem",
-        backgroundColor: "#faf9f7",
-        color: "#6f6a64",
-        border: "1px solid #d8d5cf",
-        borderRadius: "999px",
-        fontSize: "0.9rem",
-        fontWeight: 600,
-        cursor: isDoneDisabled ? "not-allowed" : "pointer",
-        whiteSpace: "nowrap",
-        opacity: isDoneDisabled ? 0.6 : 1,
-      }}
-    >
-      {t.aiInteraction.doneButton}
-    </button>
-  </div>
-</div>
-      </div>
-    </div>
-    );
-  }
-
   function resetSession(): void {
   setTopInput("");
   setFollowupInput("");
@@ -1437,12 +1058,12 @@ function renderActiveResponse(panel: ClarificationPanel) {
             width: "100%",
             boxSizing: "border-box",
             margin: "0 auto",
-            padding: "1.5rem 1.25rem 0.5rem",
+            padding: "1.5rem 1.25rem 240px",
             overflowX: "hidden",
             minWidth: 0,
           }}
         >
-          
+
         <div style={{ marginBottom: "2rem" }}>
           <Link
             href="/"
@@ -1459,6 +1080,8 @@ function renderActiveResponse(panel: ClarificationPanel) {
           </Link>
         </div>
 
+        {!hasClarificationHistory && (
+          <>
         <h1
           style={{
             fontSize: "clamp(2rem, 5vw, 2.85rem)",
@@ -1485,94 +1108,13 @@ function renderActiveResponse(panel: ClarificationPanel) {
             marginBottom: "2.25rem",
           }}
         />
-
-        {iterations.length === 0 && (
-        <div
-          style={{
-            backgroundColor: "#ffffff",
-            borderRadius: "16px",
-            border: "1px solid #e7e5e4",
-            padding: "1.6rem 1.25rem 1.35rem",
-            maxWidth: "100%",
-            minWidth: 0,
-            boxSizing: "border-box",
-          }}
-        >
-          <label
-            htmlFor="ai-input"
-            style={{
-              display: "block",
-              fontSize: "0.875rem",
-              fontWeight: 600,
-              color: "#111",
-              marginBottom: "0.875rem",
-            }}
-          >
-            {t.aiInteraction.inputLabel}
-          </label>
-
-          <textarea
-            id="ai-input"
-            value={topInput}
-            onChange={(e) => setTopInput(e.target.value)}
-            disabled={loading}
-            placeholder={t.aiInteraction.inputPlaceholder}
-            rows={7}
-            style={{
-              display: "block",
-              width: "100%",
-              maxWidth: "100%",
-              minWidth: 0,
-              boxSizing: "border-box",
-              backgroundColor: "#fafafa",
-              color: "#111",
-              border: "1px solid #e7e5e4",
-              borderRadius: "10px",
-              padding: "1rem 1.125rem",
-              fontSize: "0.925rem",
-              lineHeight: 1.65,
-              resize: "vertical",
-              outline: "none",
-              fontFamily: "inherit",
-              transition: "border-color 0.15s",
-              opacity: loading ? 0.6 : 1,
-              overflowWrap: "anywhere",
-              wordBreak: "break-word",
-            }}
-            onFocus={(e) => { e.currentTarget.style.borderColor = "#aaa"; }}
-            onBlur={(e) => { e.currentTarget.style.borderColor = "#e7e5e4"; }}
-          />
-
-        <div
-  style={{
-    display: "flex",
-    flexDirection: "column",
-    gap: "1rem",
-    marginTop: "1rem",
-    minWidth: 0,
-  }}
->
-  <p
-    style={{
-      fontSize: "0.8rem",
-      color: "#888",
-      lineHeight: 1.55,
-      margin: 0,
-      maxWidth: "480px",
-      minWidth: 0,
-    }}
-  >
-    {t.aiInteraction.helperText}
-  </p>
-
-    {renderTopActionRow()}
-  </div>
-</div>
-)}
+        <div style={{ minHeight: "clamp(180px, 30vh, 320px)" }} />
+          </>
+        )}
 
        {error && (
   <div style={{ marginTop: "1rem" }}>
-    
+
     <div
       style={{
         fontSize: "0.68rem",
@@ -1611,14 +1153,85 @@ function renderActiveResponse(panel: ClarificationPanel) {
 
   </div>
 )}
-          
-        {!isDone && renderClarificationPath()}
-        {!isDone && result && renderSupplementaryResult(result)}
-        {!isDone && renderFollowupBox()}
-          
+
+        {renderClarificationPath()}
+        {result && renderSupplementaryResult(result)}
+
           </div>
         )}
-        <Footer />
+      {!isDone && (
+        <div
+          style={{
+            position: "fixed",
+            left: "50%",
+            transform: "translateX(-50%)",
+            bottom: "max(24px, env(safe-area-inset-bottom))",
+            width: "100%",
+            maxWidth: "780px",
+            paddingLeft: "1.25rem",
+            paddingRight: "1.25rem",
+            boxSizing: "border-box",
+            zIndex: 30,
+            pointerEvents: "none",
+          }}
+        >
+          <div style={{ pointerEvents: "auto" }}>
+            {canShowDoneButton ? (
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  marginBottom: "0.4rem",
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={handleDone}
+                  disabled={loading}
+                  style={{
+                    fontSize: "0.72rem",
+                    fontWeight: 500,
+                    letterSpacing: "0.02em",
+                    color: "#8a8580",
+                    background: "transparent",
+                    border: "none",
+                    padding: "0.15rem 0.1rem",
+                    cursor: loading ? "not-allowed" : "pointer",
+                    textDecoration: "underline",
+                    textDecorationColor: "rgba(138, 133, 128, 0.4)",
+                    textUnderlineOffset: "0.2em",
+                    opacity: loading ? 0.45 : 1,
+                  }}
+                >
+                  {t.aiInteraction.doneButton}
+                </button>
+              </div>
+            ) : null}
+            <InterpretationInput
+              textareaRef={topInputRef}
+              id="ai-input-composer"
+              helperText=""
+              placeholder={composerPlaceholder}
+              value={composerValue}
+              onChange={(e) => {
+                if (hasClarificationHistory) {
+                  setFollowupInput(e.target.value);
+                } else {
+                  setTopInput(e.target.value);
+                }
+              }}
+              disabled={loading}
+              voiceEnabled
+              clarifyLoading={loading}
+              onSend={() => submitToClarify("clarify", composerSource)}
+              surfaceVariant="composer"
+              cardStyle={{
+                borderColor: "#dfdcd6",
+              }}
+            />
+          </div>
+        </div>
+      )}
       </main>
     </div>
   );

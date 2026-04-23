@@ -19,7 +19,7 @@ import { WHISPER_TRANSCRIBE_URL } from "../lib/whisperTranscribeUrl";
 const TEXTAREA_MIN_PX = 72;
 const TEXTAREA_MAX_PX = 160;
 /** Single-line feel for bottom composer; grows with `fitTextareaHeight` up to max. */
-const COMPOSER_TEXT_MIN_PX = 32;
+const COMPOSER_TEXT_MIN_PX = 28;
 const COMPOSER_TEXT_MAX_PX = 120;
 
 export type MicState = "idle" | "recording" | "transcribing" | "ready" | "error";
@@ -188,7 +188,7 @@ function prewarmWaveformAudioContextForGesture(): void {
  * Thin “listening” strip tunables (Phase 1 — swap inner render in Phase 2 for canvas if desired).
  * @see WAVE_* constants and AnalyserNode smoothing in RecordingLiveWaveform
  */
-const WAVE_BARS = 72;
+const WAVE_BARS = 64;
 const WAVE_BAR_PX = 1;
 const WAVE_GAP_PX = 0.5;
 const WAVE_ROW_H_PX = 14;
@@ -200,6 +200,39 @@ const WAVE_VIS_MAX_PX = 6.5;
 const WAVE_SMOOTH_EXP = 0.82;
 const WAVE_SMOOTH_FRAME = 0.64;
 const WAVE_LINE_OPACITY = 0.38;
+
+/** Each column flexes to fill width; 1px line is centered in the column (full-width strip). */
+function WaveformBarSlot({
+  heightPx,
+  lineOpacity,
+}: {
+  heightPx: number;
+  lineOpacity: number;
+}) {
+  return (
+    <div
+      style={{
+        flex: "1 1 0",
+        minWidth: 0,
+        display: "flex",
+        alignItems: "flex-end",
+        justifyContent: "center",
+      }}
+    >
+      <div
+        style={{
+          width: WAVE_BAR_PX,
+          minWidth: WAVE_BAR_PX,
+          maxWidth: WAVE_BAR_PX,
+          height: heightPx,
+          flexShrink: 0,
+          borderRadius: 0,
+          backgroundColor: `rgba(120, 116, 110, ${lineOpacity})`,
+        }}
+      />
+    </div>
+  );
+}
 
 function FallbackSineWaveform() {
   const [phase, setPhase] = useState(0);
@@ -227,7 +260,7 @@ function FallbackSineWaveform() {
       }}
       aria-hidden
     >
-      {Array.from({ length: WAVE_BARS }, (_, i) => i).map((i) => {
+      {Array.from({ length: WAVE_BARS }, (_, i) => {
         const waveA = Math.sin((phase / 100) * Math.PI * 2 + i * 0.5);
         const waveB = Math.sin((phase / 100) * Math.PI * 2 * 1.8 + i * 0.23);
         const motion = (waveA * 0.65 + waveB * 0.35 + 1) / 2;
@@ -235,16 +268,10 @@ function FallbackSineWaveform() {
           WAVE_VIS_MIN_PX +
           motion * (WAVE_VIS_MAX_PX - WAVE_VIS_MIN_PX) * 0.32;
         return (
-          <div
+          <WaveformBarSlot
             key={i}
-            style={{
-              width: WAVE_BAR_PX,
-              minWidth: WAVE_BAR_PX,
-              flex: "0 0 auto",
-              height: h,
-              borderRadius: 0,
-              backgroundColor: `rgba(120, 116, 110, ${WAVE_LINE_OPACITY * 0.9})`,
-            }}
+            heightPx={h}
+            lineOpacity={WAVE_LINE_OPACITY * 0.9}
           />
         );
       })}
@@ -392,16 +419,10 @@ function RecordingLiveWaveform({
         const t = (lv - WAVE_LVL_MIN) / span;
         const h = WAVE_VIS_MIN_PX + t * (WAVE_VIS_MAX_PX - WAVE_VIS_MIN_PX);
         return (
-          <div
+          <WaveformBarSlot
             key={i}
-            style={{
-              width: WAVE_BAR_PX,
-              minWidth: WAVE_BAR_PX,
-              flex: "0 0 auto",
-              height: h,
-              borderRadius: 0,
-              backgroundColor: `rgba(120, 116, 110, ${WAVE_LINE_OPACITY + t * 0.18})`,
-            }}
+            heightPx={h}
+            lineOpacity={WAVE_LINE_OPACITY + t * 0.18}
           />
         );
       })}
@@ -1221,7 +1242,7 @@ const InterpretationInput = forwardRef<
         borderRadius: isComposer ? "18px" : "16px",
         border: "1px solid #e7e5e4",
         boxShadow: isComposer ? "0 2px 10px rgba(0, 0, 0, 0.06)" : "0 1px 3px rgba(0, 0, 0, 0.05)",
-        padding: isComposer ? "0.5rem 0.65rem 0.45rem" : "1.5rem 1.25rem 1.25rem",
+        padding: isComposer ? "0.4rem 0.55rem 0.35rem" : "1.5rem 1.25rem 1.25rem",
         maxWidth: "100%",
         minWidth: 0,
         boxSizing: "border-box",
@@ -1265,7 +1286,7 @@ const InterpretationInput = forwardRef<
           color: "#111",
           border: isComposer ? "1px solid transparent" : "1px solid #e7e5e4",
           borderRadius: isComposer ? "10px" : "12px",
-          padding: isComposer ? "0.28rem 0.2rem" : "0.75rem 1rem",
+          padding: isComposer ? "0.22rem 0.2rem" : "0.75rem 1rem",
           fontSize: "0.925rem",
           lineHeight: isComposer ? 1.45 : 1.65,
           resize: "none",

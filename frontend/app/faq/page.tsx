@@ -113,23 +113,20 @@ export default function FAQPage() {
                 {item.question}
               </h2>
 
-              {item.answer.map((paragraph, pIndex) => (
-                <p
-                  key={pIndex}
-                  style={{
-                    marginBottom: 18,
-                    fontSize: 16,
-                    lineHeight: 1.72,
-                    color: "#2b2b2b",
-                    fontWeight: 400,
-                    maxWidth: 640,
-                    wordBreak: "break-word",
-                    overflowWrap: "anywhere",
-                  }}
-                >
-                  {paragraph}
-                </p>
-              ))}
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: 16,
+                  lineHeight: 1.72,
+                  color: "#2b2b2b",
+                  fontWeight: 400,
+                  maxWidth: 640,
+                  wordBreak: "break-word",
+                  overflowWrap: "anywhere",
+                }}
+              >
+                {item.answer.join(" ")}
+              </p>
             </section>
           );
         })}

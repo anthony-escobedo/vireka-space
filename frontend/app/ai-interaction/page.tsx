@@ -66,6 +66,16 @@ type ClarificationPanel = {
   iteration: ClarificationIteration;
 };
 
+type ClarifyContextPayload = {
+  source: "clarify";
+  latestClarification: {
+    submittedInput: string;
+    step: number;
+    source: "top" | "followup";
+    response: ClarifyResponse;
+  };
+};
+
 export default function AIInteractionPage() {
   const [topInput, setTopInput] = useState<string>("");
   const [followupInput, setFollowupInput] = useState<string>("");
@@ -89,6 +99,7 @@ export default function AIInteractionPage() {
   const pathTopRef = useRef<HTMLDivElement | null>(null);
   const resultRef = useRef<HTMLDivElement | null>(null);
   const copyResetTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const contextAdoptedRef = useRef(false);
 
   const router = useRouter();
   const redirectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -114,6 +125,75 @@ export default function AIInteractionPage() {
     }
   };
 }, []);
+
+  function isClarifyResponse(value: unknown): value is ClarifyResponse {
+    if (!value || typeof value !== "object") return false;
+    const candidate = value as Partial<ClarifyResponse>;
+    return (
+      candidate.mode === "clarify" &&
+      Array.isArray(candidate.observable) &&
+      Array.isArray(candidate.interpretive) &&
+      Array.isArray(candidate.unknown) &&
+      Array.isArray(candidate.structural) &&
+      typeof candidate.orientation === "string"
+    );
+  }
+
+  function isClarifyContextPayload(value: unknown): value is ClarifyContextPayload {
+    if (!value || typeof value !== "object") return false;
+    const candidate = value as Partial<ClarifyContextPayload>;
+    if (candidate.source !== "clarify") return false;
+    const latest = candidate.latestClarification;
+    if (!latest || typeof latest !== "object") return false;
+    const latestCandidate = latest as ClarifyContextPayload["latestClarification"];
+    return (
+      typeof latestCandidate.submittedInput === "string" &&
+      typeof latestCandidate.step === "number" &&
+      (latestCandidate.source === "top" || latestCandidate.source === "followup") &&
+      isClarifyResponse(latestCandidate.response)
+    );
+  }
+
+  useEffect(() => {
+    if (contextAdoptedRef.current || typeof window === "undefined") {
+      return;
+    }
+    contextAdoptedRef.current = true;
+
+    const storageKey = "vireka_clarify_context";
+    const raw = window.sessionStorage.getItem(storageKey);
+    if (!raw) return;
+
+    try {
+      const parsed: unknown = JSON.parse(raw);
+      if (!isClarifyContextPayload(parsed)) {
+        window.sessionStorage.removeItem(storageKey);
+        return;
+      }
+
+      const latest = parsed.latestClarification;
+      const adoptedIteration: ClarificationIteration = {
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+        step: latest.step,
+        submittedInput: latest.submittedInput,
+        source: latest.source,
+        response: latest.response,
+      };
+
+      setIterations([adoptedIteration]);
+      setLatestPanelId(`panel-${adoptedIteration.id}`);
+      setOpenPanelIds([]);
+      setLastClarifyResult(latest.response);
+      setResult(latest.response);
+      if (latest.submittedInput.trim()) {
+        setInitialSituation(latest.submittedInput);
+      }
+      window.sessionStorage.removeItem(storageKey);
+    } catch {
+      window.sessionStorage.removeItem(storageKey);
+      // Ignore invalid handoff payload silently.
+    }
+  }, []);
 
   function normalizeQuestion(text: string): string {
     return text

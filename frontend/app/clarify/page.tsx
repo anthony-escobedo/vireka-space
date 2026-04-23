@@ -61,6 +61,16 @@ type ClarificationPanel = {
   iteration: ClarificationIteration;
 };
 
+type ClarifyContextPayload = {
+  source: "clarify";
+  latestClarification: {
+    submittedInput: string;
+    step: number;
+    source: "top" | "followup";
+    response: ClarifyResponse;
+  };
+};
+
 export default function ClarifyPage() {
   const [topInput, setTopInput] = useState<string>("");
   const [followupInput, setFollowupInput] = useState<string>("");
@@ -457,6 +467,30 @@ function handleStartNew(): void {
   
 function handleReturnHome(): void {
   router.push("/");
+}
+
+function handleContinueWithAI(): void {
+  const latestIteration =
+    iterations.length > 0 ? iterations[iterations.length - 1] : null;
+
+  if (latestIteration && typeof window !== "undefined") {
+    const payload: ClarifyContextPayload = {
+      source: "clarify",
+      latestClarification: {
+        submittedInput: latestIteration.submittedInput,
+        step: latestIteration.step,
+        source: latestIteration.source,
+        response: latestIteration.response,
+      },
+    };
+
+    window.sessionStorage.setItem(
+      "vireka_clarify_context",
+      JSON.stringify(payload)
+    );
+  }
+
+  router.push("/ai-interaction");
 }
   
   const panels = getPanels();
@@ -1125,9 +1159,32 @@ function handleReturnHome(): void {
                 style={{
                   display: "flex",
                   justifyContent: "flex-end",
+                  alignItems: "center",
+                  gap: "0.85rem",
                   marginBottom: "0.4rem",
                 }}
               >
+                <button
+                  type="button"
+                  onClick={handleContinueWithAI}
+                  disabled={loading}
+                  style={{
+                    fontSize: "0.72rem",
+                    fontWeight: 500,
+                    letterSpacing: "0.02em",
+                    color: "#8a8580",
+                    background: "transparent",
+                    border: "none",
+                    padding: "0.15rem 0.1rem",
+                    cursor: loading ? "not-allowed" : "pointer",
+                    textDecoration: "underline",
+                    textDecorationColor: "rgba(138, 133, 128, 0.4)",
+                    textUnderlineOffset: "0.2em",
+                    opacity: loading ? 0.45 : 1,
+                  }}
+                >
+                  Continue with AI
+                </button>
                 <button
                   type="button"
                   onClick={() => setIsDone(true)}

@@ -82,7 +82,7 @@ export interface TranslationDictionary {
     initialSituation: string;
     yourInput: string;
     whatAppearsToBeHappening: string;
-    whatMayBeAssumed: string;
+    interpretation: string;
     whatMayRemainUnclear: string;
     whatMayBeInfluencingTheSituation: string;
     integratedView: string;

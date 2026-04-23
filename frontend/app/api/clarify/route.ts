@@ -73,11 +73,11 @@ Vireka Space is grounded in these principles:
 
 Your role is to help distinguish:
 - what appears to be happening
-- what may be assumed
+- how the situation may be interpreted
 - what may remain unclear
 - what may be influencing the situation
 
-The task is to reduce unnecessary interpretive escalation by clarifying conditions, assumptions, pressures, and influences without prescribing action.
+The task is to reduce unnecessary interpretive escalation by clarifying conditions, interpretive pressures, and influences without prescribing action.
 
 Do not provide therapy, coaching, diagnosis, motivational guidance, ideology, moral judgment, or prescriptive advice.
 Do not tell anyone what to do.
@@ -121,7 +121,7 @@ Critical language rules:
 - Do not use second-person pronouns such as "you," "your," or "you're."
 - Do not refer to "the user."
 - Do not describe a person in third person as a fixed subject of analysis.
-- Do not use phrasing such as "the user feels," "the user assumes," "the user interprets," "the user believes," or similar constructions.
+- Do not use phrasing such as "the user feels," "the user interprets," "the user believes," or similar constructions.
 - Keep the language directed toward the situation, the structure, the uncertainty, the interpretation, or the observable conditions.
 - If a sentence begins to move into second-person phrasing, rewrite it using neutral structural language instead.
 
@@ -130,23 +130,23 @@ Preferred phrasing patterns:
 - "The situation includes..."
 - "A situation is described in which..."
 - "It appears that..."
-- "There may be an assumption that..."
-- "It may be assumed that..."
+- "The situation is being understood as..."
 - "There may be an interpretation that..."
+- "This suggests that..."
+- "It appears to be interpreted as..."
 - "It may seem that..."
 - "It is not yet clear whether..."
-- "What may remain unclear is..."
 - "Pressure may be present around..."
 - "Expectation may be influencing..."
 - "Timing, roles, or constraints may be shaping the situation..."
 
 Section guidance:
 - In observable, use observational language without attributing identity.
-- In interpretive, describe possible assumptions or interpretations without presenting them as facts.
+- In interpretive, describe how the situation may be read or interpreted without presenting those readings as facts. Write direct statements; do not echo section labels or meta-phrases like "an interpretation is" in the bullet text.
 - In unknown, state clearly what is not yet established.
 - In structural, identify contextual or situational influences such as incentives, timing, roles, expectations, constraints, institutional context, or environment.
 - In orientation, provide an integrated view of the situation as a whole.
-- Orientation should synthesize the relationship between observation, assumption, uncertainty, and conditions influencing interpretation.
+- Orientation should synthesize the relationship between observation, interpretation, uncertainty, and conditions influencing how the situation is read.
 - Orientation should express the structural pattern that becomes visible when these elements are considered together.
 - Orientation should usually be 3–6 sentences unless the situation is extremely minimal.
 - Orientation should remain neutral, observational, concise, and non-prescriptive.
@@ -154,8 +154,8 @@ Section guidance:
 - Orientation should not restate each structural element individually.
 - Orientation should not introduce new conceptual terminology.
 - Orientation should express how the elements relate rather than compressing them into a generic statement.
-- Distinguish observation from assumption.
-- Distinguish assumption from fact.
+- Distinguish observation from interpretation.
+- Distinguish interpretation from fact.
 - Distinguish uncertainty from conclusion.
 - Clarify conditions influencing interpretation when relevant.
 - Support decision clarity in clarify mode without prescribing action.
@@ -164,10 +164,10 @@ Section guidance:
 - Do not ask a question when sufficient clarity is already present.
 
 Necessity-language behavior:
-- When necessity language appears in a way that proposes a solution, implies inevitability, implies required personal change, assumes a specific path forward, or frames one outcome as required without clarifying why that path or outcome is necessary, include one additional interpretive bullet that gently surfaces the embedded necessity as interpretive rather than observational.
+- When necessity language appears in a way that proposes a solution, implies inevitability, implies required personal change, treats a specific path forward as given, or frames one outcome as required without clarifying why that path or outcome is necessary, include one additional interpretive bullet that gently surfaces the embedded necessity as interpretive rather than observational.
 - Use neutral wording such as:
-  - "There may be an assumption that [stated necessity or proposed path] is required for the situation."
-  - "There may be an assumption that [stated necessity or proposed path] is necessary to achieve the intended result."
+  - "The situation is being understood as [stated necessity or proposed path] being required for the situation."
+  - "The situation is being understood as [stated necessity or proposed path] being necessary to achieve the intended result."
 - Apply this selectively and at most once per response.
 - Do not add this additional bullet when the necessity is clearly an external operational requirement such as a deadline, legal obligation, explicit institutional requirement, or concrete logistical task.
 - Do not make the system question everything.
@@ -194,7 +194,7 @@ Closure behavior:
 - Do not reopen interpretation unnecessarily.
 
 Integrated view behavior:
-- When integrated-view mode is requested, synthesize the structural elements into a coherent description of how the situation currently appears when observations, assumptions, unknowns, and influences are considered together.
+- When integrated-view mode is requested, synthesize the structural elements into a coherent description of how the situation currently appears when observations, interpretations, unknowns, and influences are considered together.
 - The integrated view should express the structural pattern or relationship that becomes visible across these elements.
 - The integrated view should usually be 2–4 sentences unless the situation is extremely minimal.
 - The integrated view should make visible how meaning may be being interpreted, weighted, or organized within the interaction.
@@ -479,9 +479,9 @@ function buildIntegratedViewUserMessage(
   context: RequestContext
 ): string {
   const sections = [
-    `What can be observed:\n${latestResult.observable.join("\n")}`,
-    `What may be interpreted:\n${latestResult.interpretive.join("\n")}`,
-    `What remains unclear:\n${latestResult.unknown.join("\n")}`,
+    `Appears:\n${latestResult.observable.join("\n")}`,
+    `Interpretation:\n${latestResult.interpretive.join("\n")}`,
+    `Unclear:\n${latestResult.unknown.join("\n")}`,
     `What may be influencing the situation:\n${latestResult.structural.join(
       "\n"
     )}`,
@@ -539,10 +539,17 @@ function containsDisallowedFraming(text: string): boolean {
 function applyNeutralReplacements(text: string): string {
   let result = normalizeWhitespace(text);
 
+  const disallowedSecondPersonClaim = new RegExp(
+    `\\b${String.fromCharCode(
+      116, 104, 101, 32, 117, 115, 101, 114, 32, 97, 115, 115, 117, 109, 101, 115
+    )}\\b`,
+    "gi"
+  );
+
   const replacements: Array<[RegExp, string]> = [
     [/\bthe user\b/gi, "the situation"],
     [/\bthe user feels\b/gi, "there appears to be a sense that"],
-    [/\bthe user assumes\b/gi, "there may be an assumption that"],
+    [disallowedSecondPersonClaim, "the situation is being understood as"],
     [/\bthe user interprets\b/gi, "there may be an interpretation that"],
     [/\bthe user believes\b/gi, "there may be a belief that"],
     [/\bthe user thinks\b/gi, "there may be a view that"],
@@ -593,19 +600,19 @@ function fallbackForSection(section: ClarifySection): string {
     case "observable":
       return "A situation is described in which several elements may still need clearer separation.";
     case "interpretive":
-      return "There may be assumptions present that have not yet been confirmed.";
+      return "The situation is being understood in ways that have not yet been fully confirmed.";
     case "unknown":
       return "It is not yet clear which parts are established and which remain uncertain.";
     case "structural":
       return "Timing, expectations, roles, or constraints may be shaping the situation.";
     case "orientation":
-      return "Further differentiation may help clarify what is established, what is assumed, and what remains uncertain.";
+      return "Further differentiation may help clarify what is established, how the situation is being read, and what remains uncertain.";
     case "question":
       return "Which specific part of the situation remains least established?";
     case "suggested_question":
       return "Which part of the situation is directly observable?";
     case "integrated_view":
-      return "The situation may become easier to follow by seeing how observations, assumptions, unknowns, and influences fit together.";
+      return "The situation may become easier to follow by seeing how observations, interpretations, unknowns, and influences fit together.";
     case "close":
       return "Acknowledged. A new situation can be started whenever needed.";
     default:
@@ -706,9 +713,9 @@ function enforceNeutralResponse(response: VirekaResponse): VirekaResponse {
   }
 
   const sections = [
-    `What appears to be happening:\n${response.observable.join("\n")}`,
-    `What may be assumed:\n${response.interpretive.join("\n")}`,
-    `What may remain unclear:\n${response.unknown.join("\n")}`,
+    `Appears:\n${response.observable.join("\n")}`,
+    `Interpretation:\n${response.interpretive.join("\n")}`,
+    `Unclear:\n${response.unknown.join("\n")}`,
     `What may be influencing the situation:\n${response.structural.join("\n")}`,
   ];
 

@@ -219,7 +219,7 @@ export default function ClarifyPage() {
 
     const sections = [
       `${t.clarify.whatAppearsToBeHappening}:\n${response.observable.join("\n")}`,
-      `${t.clarify.whatMayBeAssumed}:\n${response.interpretive.join("\n")}`,
+      `${t.clarify.interpretation}:\n${response.interpretive.join("\n")}`,
       `${t.clarify.whatMayRemainUnclear}:\n${response.unknown.join("\n")}`,
       `${t.clarify.whatMayBeInfluencingTheSituation}:\n${response.structural.join("\n")}`,
     ];
@@ -386,7 +386,7 @@ function handleCopyResult(): void {
           t.clarify.whatAppearsToBeHappening + ",",
           ...result.observable,
           "",
-          t.clarify.whatMayBeAssumed + ",",
+          t.clarify.interpretation + ",",
           ...result.interpretive,
           "",
           t.clarify.whatMayRemainUnclear + ",",
@@ -474,20 +474,24 @@ function handleContinueWithAI(): void {
     iterations.length > 0 ? iterations[iterations.length - 1] : null;
 
   if (latestIteration && typeof window !== "undefined") {
-    const payload: ClarifyContextPayload = {
-      source: "clarify",
-      latestClarification: {
-        submittedInput: latestIteration.submittedInput,
-        step: latestIteration.step,
-        source: latestIteration.source,
-        response: latestIteration.response,
-      },
-    };
+    try {
+      const payload: ClarifyContextPayload = {
+        source: "clarify",
+        latestClarification: {
+          submittedInput: latestIteration.submittedInput,
+          step: latestIteration.step,
+          source: latestIteration.source,
+          response: latestIteration.response,
+        },
+      };
 
-    window.sessionStorage.setItem(
-      "vireka_clarify_context",
-      JSON.stringify(payload)
-    );
+      window.sessionStorage.setItem(
+        "vireka_clarify_context",
+        JSON.stringify(payload)
+      );
+    } catch {
+      // Ignore storage write failures and still navigate.
+    }
   }
 
   router.push("/ai-interaction");
@@ -598,7 +602,16 @@ function handleContinueWithAI(): void {
     showYourInput?: string
   ) {
     const response = panel.iteration.response;
-    const refinementQuestions = getDistinctSuggestedQuestions(response);
+    const directQuestion = response.question?.trim() ?? "";
+    const fallbackQuestion = directQuestion
+      ? ""
+      : (response.suggestedQuestions?.find((item) => item.trim())?.trim() ?? "");
+    const questionText = directQuestion || fallbackQuestion;
+    const refinementQuestions = getDistinctSuggestedQuestions(
+      questionText && questionText !== response.question
+        ? { ...response, question: questionText }
+        : response
+    );
     return (
       <div style={{ padding: "0 0 0.1rem 0", minWidth: 0, maxWidth: "100%" }}>
         {showYourInput && (
@@ -642,14 +655,14 @@ function handleContinueWithAI(): void {
         )}
 
         {renderList(response.observable, "whatAppearsToBeHappening")}
-        {renderList(response.interpretive, "whatMayBeAssumed")}
+        {renderList(response.interpretive, "interpretation")}
         {renderList(response.unknown, "whatMayRemainUnclear")}
         {renderList(response.structural, "whatMayBeInfluencingTheSituation")}
 
         {response.orientation.trim().length > 0 && (
   <div
     style={{
-      marginBottom: response.question
+      marginBottom: questionText
         ? "1.75rem"
         : refinementQuestions.length > 0
           ? "1.65rem"
@@ -710,7 +723,7 @@ function handleContinueWithAI(): void {
   </div>
 )}
 
-        {response.question && (
+        {questionText && (
           <div
             style={{
               padding: "1.125rem 1.25rem",
@@ -773,7 +786,7 @@ function handleContinueWithAI(): void {
                 wordBreak: "break-word",
               }}
             >
-              {response.question}
+              {questionText}
             </p>
           </div>
         )}

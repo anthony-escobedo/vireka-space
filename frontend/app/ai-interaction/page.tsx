@@ -76,6 +76,8 @@ type ClarifyContextPayload = {
   };
 };
 
+type ImportedClarification = ClarifyContextPayload["latestClarification"];
+
 export default function AIInteractionPage() {
   const [topInput, setTopInput] = useState<string>("");
   const [followupInput, setFollowupInput] = useState<string>("");
@@ -95,6 +97,8 @@ export default function AIInteractionPage() {
   const [checkedOnboarding, setCheckedOnboarding] = useState(false);
   const { t, language } = useLanguage();
   const [copyLabel, setCopyLabel] = useState(t.aiInteraction.copyResult);
+  const [importedClarification, setImportedClarification] =
+    useState<ImportedClarification | null>(null);
   const topInputRef = useRef<HTMLTextAreaElement | null>(null);
   const pathTopRef = useRef<HTMLDivElement | null>(null);
   const resultRef = useRef<HTMLDivElement | null>(null);
@@ -172,22 +176,7 @@ export default function AIInteractionPage() {
       }
 
       const latest = parsed.latestClarification;
-      const adoptedIteration: ClarificationIteration = {
-        id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-        step: latest.step,
-        submittedInput: latest.submittedInput,
-        source: latest.source,
-        response: latest.response,
-      };
-
-      setIterations([adoptedIteration]);
-      setLatestPanelId(`panel-${adoptedIteration.id}`);
-      setOpenPanelIds([]);
-      setLastClarifyResult(latest.response);
-      setResult(latest.response);
-      if (latest.submittedInput.trim()) {
-        setInitialSituation(latest.submittedInput);
-      }
+      setImportedClarification(latest);
       window.sessionStorage.removeItem(storageKey);
     } catch {
       window.sessionStorage.removeItem(storageKey);
@@ -1070,6 +1059,66 @@ function renderActiveResponse(panel: ClarificationPanel) {
     );
   }
 
+  function renderImportedClarification() {
+    if (!importedClarification || hasClarificationHistory) return null;
+
+    const questionText = importedClarification.response.question?.trim() ?? "";
+
+    return (
+      <div
+        style={{
+          marginTop: "1.25rem",
+          backgroundColor: "#fcfbf8",
+          border: "1px solid #e7e5e4",
+          borderRadius: "14px",
+          padding: "1rem 1.1rem",
+          maxWidth: "100%",
+          minWidth: 0,
+          boxSizing: "border-box",
+        }}
+      >
+        <h3
+          style={{
+            fontSize: "0.72rem",
+            fontWeight: 700,
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+            color: "#8e8a84",
+            margin: "0 0 0.55rem 0",
+          }}
+        >
+          From Clarify
+        </h3>
+        <p
+          style={{
+            margin: 0,
+            color: "#444",
+            fontSize: "0.9rem",
+            lineHeight: 1.6,
+            overflowWrap: "anywhere",
+            wordBreak: "break-word",
+          }}
+        >
+          {importedClarification.submittedInput}
+        </p>
+        {questionText ? (
+          <p
+            style={{
+              margin: "0.7rem 0 0 0",
+              color: "#333",
+              fontSize: "0.9rem",
+              lineHeight: 1.55,
+              overflowWrap: "anywhere",
+              wordBreak: "break-word",
+            }}
+          >
+            {questionText}
+          </p>
+        ) : null}
+      </div>
+    );
+  }
+
   function resetSession(): void {
   setTopInput("");
   setFollowupInput("");
@@ -1083,6 +1132,7 @@ function renderActiveResponse(panel: ClarificationPanel) {
   setIterations([]);
   setOpenPanelIds([]);
   setLatestPanelId(null);
+  setImportedClarification(null);
 }
 
   return (
@@ -1185,6 +1235,8 @@ function renderActiveResponse(panel: ClarificationPanel) {
         <div style={{ minHeight: "clamp(180px, 30vh, 320px)" }} />
           </>
         )}
+
+        {renderImportedClarification()}
 
        {error && (
   <div style={{ marginTop: "1rem" }}>

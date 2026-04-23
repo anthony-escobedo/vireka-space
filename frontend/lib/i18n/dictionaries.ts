@@ -258,6 +258,15 @@ const dictionaries: Record<Language, TranslationDictionary> = {
             'It helps make the structure of interpretation more visible so that it becomes clearer whether a decision can be made or how a prompt might be formed.',
           ],
         },
+        inputPrivacy: {
+          question: 'Are my inputs private?',
+          answer: [
+            'Inputs are processed to generate responses within the system.',
+            'They are not stored as personal histories or associated with individual identities.',
+            'They are not actively monitored or reviewed as individual user data.',
+            'More detail is available in the Privacy Policy.',
+          ],
+        },
         isAITool: {
           question: 'Is this an AI tool?',
           answer: [
@@ -309,50 +318,50 @@ const dictionaries: Record<Language, TranslationDictionary> = {
         introduction: {
           title: 'Introduction',
           content: [
-            'This policy explains how we collect, use, and protect your information.',
-            'We are committed to transparency and user privacy.',
+            'This policy explains how information is handled within VIREKA Space.',
+            'The system is designed to support clarity and structured understanding while minimizing unnecessary data collection.',
           ],
         },
         informationProvided: {
           title: 'Information You Provide',
           content: [
-            'We collect information you input for clarification purposes.',
-            'This data is used to provide the service and improve functionality.',
+            'Inputs are processed to generate responses within the system.',
+            'They are not stored as user histories or associated with personal identities.',
           ],
         },
         technicalInformation: {
           title: 'Technical Information',
           content: [
-            'We may collect technical data for service improvement.',
-            'This includes usage patterns and system performance data.',
+            'Limited technical data may be collected to understand how the service is used and to improve performance.',
+            'This may include page interactions, usage patterns, and system-level data.',
           ],
         },
         dataUsage: {
           title: 'How We Use Data',
           content: [
-            'Data is used to provide and improve the service.',
+            'Data is used only to provide and improve the service.',
             'We do not sell personal information to third parties.',
           ],
         },
         aiProcessing: {
           title: 'AI Processing',
           content: [
-            'Your inputs may be processed by AI systems.',
-            'We take measures to protect privacy during AI processing.',
+            'Inputs may be processed by external AI systems to generate responses.',
+            'These systems do not receive identifying information about users.',
           ],
         },
         thirdPartyServices: {
           title: 'Third-Party Services',
           content: [
-            'We may use trusted third-party services for functionality.',
-            'These services are selected with privacy in mind.',
+            'Trusted third-party services may be used to support functionality.',
+            'These are selected with attention to privacy and reliability.',
           ],
         },
         userControlUpdates: {
           title: 'User Control and Updates',
           content: [
-            'You have control over your data and account.',
-            'We will notify users of significant policy changes.',
+            'As the system evolves, users may have more control over their data.',
+            'Significant updates to this policy will be communicated.',
           ],
         },
       },
@@ -368,7 +377,6 @@ const dictionaries: Record<Language, TranslationDictionary> = {
           title: 'Introduction',
           content: [
             'By using VIREKA Space, you agree to these terms.',
-            'Please read them carefully before using the service.',
           ],
         },
         useOfService: {
@@ -381,36 +389,36 @@ const dictionaries: Record<Language, TranslationDictionary> = {
         natureOfService: {
           title: 'Nature of Service',
           content: [
-            'VIREKA Space provides structure for understanding.',
-            'It does not provide professional advice or diagnoses.',
+            'VIREKA Space provides structure for understanding how situations are being interpreted.',
+            'It does not provide professional advice, diagnoses, or definitive answers.',
           ],
         },
         userResponsibility: {
           title: 'User Responsibility',
           content: [
-            'You are responsible for how you use the insights gained.',
-            'The service is a tool for clarity, not a substitute for judgment.',
+            'You are responsible for how you interpret and apply any output.',
+            'The system supports clarity, but it does not replace judgment or decision-making.',
           ],
         },
         availabilityChanges: {
           title: 'Availability and Changes',
           content: [
-            'Service availability may vary.',
-            'We reserve the right to modify or discontinue the service.',
+            'Availability may vary.',
+            'We may modify, suspend, or discontinue the service at any time.',
           ],
         },
         limitationOfLiability: {
           title: 'Limitation of Liability',
           content: [
-            'VIREKA Space is provided "as is" without warranties.',
-            'We are not liable for decisions made based on service use.',
+            'VIREKA Space is provided as is without warranties.',
+            'We are not responsible for decisions, actions, or outcomes resulting from use of the service.',
           ],
         },
         updatesToTerms: {
           title: 'Updates to Terms',
           content: [
-            'Terms may be updated periodically.',
-            'Continued use constitutes acceptance of updated terms.',
+            'These terms may be updated over time.',
+            'Continued use of the service constitutes acceptance of any updates.',
           ],
         },
       },
@@ -670,6 +678,15 @@ const dictionaries: Record<Language, TranslationDictionary> = {
             'Ayuda a hacer más visible la estructura de la interpretación para que resulte más claro si puede tomarse una decisión o cómo podría formularse un prompt.',
           ],
         },
+        inputPrivacy: {
+          question: '¿Mis entradas son privadas?',
+          answer: [
+            'Los datos que introduces se procesan para generar respuestas dentro del sistema.',
+            'No se almacenan como historiales personales ni se asocian con identidades individuales.',
+            'No se supervisan ni revisan activamente como datos individuales de usuario.',
+            'Puedes encontrar más detalles en la Política de Privacidad.',
+          ],
+        },
         isAITool: {
           question: '¿Es esto una herramienta de IA?',
           answer: [
@@ -721,50 +738,50 @@ const dictionaries: Record<Language, TranslationDictionary> = {
         introduction: {
           title: 'Introducción',
           content: [
-            'Esta política explica cómo recopilamos, usamos y protegemos tu información.',
-            'Estamos comprometidos con la transparencia y la privacidad del usuario.',
+            'Esta política explica cómo se maneja la información dentro de VIREKA Space.',
+            'El sistema está diseñado para apoyar la claridad y la comprensión estructurada, minimizando la recolección innecesaria de datos.',
           ],
         },
         informationProvided: {
           title: 'Información que Proporcionas',
           content: [
-            'Recopilamos información que ingresas para fines de aclaración.',
-            'Estos datos se usan para proporcionar el servicio y mejorar la funcionalidad.',
+            'Los datos que introduces se procesan para generar respuestas dentro del sistema.',
+            'No se almacenan como historiales de usuario ni se asocian con identidades personales.',
           ],
         },
         technicalInformation: {
           title: 'Información Técnica',
           content: [
-            'Podemos recopilar datos técnicos para la mejora del servicio.',
-            'Esto incluye patrones de uso y datos de rendimiento del sistema.',
+            'Se pueden recopilar datos técnicos limitados para entender cómo se utiliza el servicio y mejorar su funcionamiento.',
+            'Esto puede incluir interacciones, patrones de uso y datos del sistema.',
           ],
         },
         dataUsage: {
           title: 'Cómo Usamos los Datos',
           content: [
-            'Los datos se usan para proporcionar y mejorar el servicio.',
+            'Los datos se utilizan únicamente para proporcionar y mejorar el servicio.',
             'No vendemos información personal a terceros.',
           ],
         },
         aiProcessing: {
           title: 'Procesamiento de IA',
           content: [
-            'Tus entradas pueden ser procesadas por sistemas de IA.',
-            'Tomamos medidas para proteger la privacidad durante el procesamiento de IA.',
+            'Los datos pueden ser procesados por sistemas externos de IA para generar respuestas.',
+            'Estos sistemas no reciben información que identifique a los usuarios.',
           ],
         },
         thirdPartyServices: {
           title: 'Servicios de Terceros',
           content: [
-            'Podemos usar servicios de terceros confiables para la funcionalidad.',
-            'Estos servicios son seleccionados teniendo en cuenta la privacidad.',
+            'Podemos utilizar servicios de terceros confiables para el funcionamiento del sistema.',
+            'Estos se seleccionan considerando la privacidad y la fiabilidad.',
           ],
         },
         userControlUpdates: {
           title: 'Control de Usuario y Actualizaciones',
           content: [
-            'Tienes control sobre tus datos y cuenta.',
-            'Notificaremos a los usuarios cambios significativos en la política.',
+            'A medida que el sistema evolucione, los usuarios podrán tener mayor control sobre sus datos.',
+            'Se informará sobre cambios relevantes en esta política.',
           ],
         },
       },
@@ -780,7 +797,6 @@ const dictionaries: Record<Language, TranslationDictionary> = {
           title: 'Introducción',
           content: [
             'Al usar VIREKA Space, aceptas estos términos.',
-            'Por favor léelos cuidadosamente antes de usar el servicio.',
           ],
         },
         useOfService: {
@@ -793,36 +809,36 @@ const dictionaries: Record<Language, TranslationDictionary> = {
         natureOfService: {
           title: 'Naturaleza del Servicio',
           content: [
-            'VIREKA Space proporciona estructura para la comprensión.',
-            'No proporciona consejos profesionales o diagnósticos.',
+            'VIREKA Space ofrece estructura para entender cómo se interpretan las situaciones.',
+            'No ofrece asesoramiento profesional, diagnósticos ni respuestas definitivas.',
           ],
         },
         userResponsibility: {
           title: 'Responsabilidad del Usuario',
           content: [
-            'Eres responsable de cómo usas las ideas obtenidas.',
-            'El servicio es una herramienta para la claridad, no un sustituto del juicio.',
+            'Eres responsable de cómo interpretas y aplicas cualquier resultado.',
+            'El sistema apoya la claridad, pero no sustituye el criterio ni la toma de decisiones.',
           ],
         },
         availabilityChanges: {
           title: 'Disponibilidad y Cambios',
           content: [
-            'La disponibilidad del servicio puede variar.',
-            'Nos reservamos el derecho de modificar o discontinuar el servicio.',
+            'La disponibilidad puede variar.',
+            'Podemos modificar, suspender o interrumpir el servicio en cualquier momento.',
           ],
         },
         limitationOfLiability: {
           title: 'Limitación de Responsabilidad',
           content: [
-            'VIREKA Space se proporciona "tal como está" sin garantías.',
-            'No somos responsables de las decisiones tomadas basadas en el uso del servicio.',
+            'VIREKA Space se ofrece tal cual, sin garantías.',
+            'No somos responsables de decisiones, acciones o resultados derivados del uso del servicio.',
           ],
         },
         updatesToTerms: {
           title: 'Actualizaciones de los Términos',
           content: [
-            'Los términos pueden actualizarse periódicamente.',
-            'El uso continuado constituye la aceptación de los términos actualizados.',
+            'Estos términos pueden actualizarse con el tiempo.',
+            'El uso continuado del servicio implica la aceptación de las actualizaciones.',
           ],
         },
       },
@@ -1082,6 +1098,15 @@ const dictionaries: Record<Language, TranslationDictionary> = {
             'Ele ajuda a tornar mais visível a estrutura da interpretação para que fique mais claro se uma decisão pode ser tomada ou como um prompt pode ser formulado.',
           ],
         },
+        inputPrivacy: {
+          question: 'Minhas entradas são privadas?',
+          answer: [
+            'Os dados inseridos são processados para gerar respostas dentro do sistema.',
+            'Eles não são armazenados como históricos pessoais nem associados a identidades individuais.',
+            'Eles não são monitorados ou revisados ativamente como dados individuais de usuário.',
+            'Mais detalhes estão disponíveis na Política de Privacidade.',
+          ],
+        },
         isAITool: {
           question: 'Isso é uma ferramenta de IA?',
           answer: [
@@ -1133,50 +1158,50 @@ const dictionaries: Record<Language, TranslationDictionary> = {
         introduction: {
           title: 'Introdução',
           content: [
-            'Esta política explica como coletamos, usamos e protegemos suas informações.',
-            'Estamos comprometidos com transparência e privacidade do usuário.',
+            'Esta política explica como as informações são tratadas no VIREKA Space.',
+            'O sistema foi projetado para apoiar a clareza e a compreensão estrutural, minimizando a coleta desnecessária de dados.',
           ],
         },
         informationProvided: {
           title: 'Informações que Você Fornece',
           content: [
-            'Coletamos informações que você insere para fins de esclarecimento.',
-            'Estes dados são usados para fornecer o serviço e melhorar funcionalidade.',
+            'Os dados inseridos são processados para gerar respostas dentro do sistema.',
+            'Eles não são armazenados como históricos de usuário nem associados a identidades pessoais.',
           ],
         },
         technicalInformation: {
           title: 'Informações Técnicas',
           content: [
-            'Podemos coletar dados técnicos para melhoria do serviço.',
-            'Isso inclui padrões de uso e dados de desempenho do sistema.',
+            'Dados técnicos limitados podem ser coletados para entender como o serviço é utilizado e melhorar seu funcionamento.',
+            'Isso pode incluir interações, padrões de uso e dados do sistema.',
           ],
         },
         dataUsage: {
           title: 'Como Usamos Dados',
           content: [
-            'Dados são usados para fornecer e melhorar o serviço.',
+            'Os dados são utilizados apenas para fornecer e melhorar o serviço.',
             'Não vendemos informações pessoais a terceiros.',
           ],
         },
         aiProcessing: {
           title: 'Processamento de IA',
           content: [
-            'Suas entradas podem ser processadas por sistemas de IA.',
-            'Tomamos medidas para proteger privacidade durante processamento de IA.',
+            'Os dados podem ser processados por sistemas externos de IA para gerar respostas.',
+            'Esses sistemas não recebem informações que identifiquem os usuários.',
           ],
         },
         thirdPartyServices: {
           title: 'Serviços de Terceiros',
           content: [
-            'Podemos usar serviços de terceiros confiáveis para funcionalidade.',
-            'Estes serviços são selecionados com privacidade em mente.',
+            'Podemos utilizar serviços de terceiros confiáveis para suporte ao funcionamento do sistema.',
+            'Eles são selecionados com foco em privacidade e confiabilidade.',
           ],
         },
         userControlUpdates: {
           title: 'Controle do Usuário e Atualizações',
           content: [
-            'Você tem controle sobre seus dados e conta.',
-            'Notificaremos usuários sobre mudanças significativas na política.',
+            'À medida que o sistema evoluir, os usuários poderão ter maior controle sobre seus dados.',
+            'Mudanças relevantes nesta política serão comunicadas.',
           ],
         },
       },
@@ -1191,50 +1216,49 @@ const dictionaries: Record<Language, TranslationDictionary> = {
         introduction: {
           title: 'Introdução',
           content: [
-            'Ao usar VIREKA Space, você concorda com estes termos.',
-            'Por favor leia-os cuidadosamente antes de usar o serviço.',
+            'Ao usar o VIREKA Space, você concorda com estes termos.',
           ],
         },
         useOfService: {
           title: 'Uso do Serviço',
           content: [
-            'Você pode usar VIREKA Space para fins de esclarecimento pessoal.',
-            'Uso comercial requer permissão explícita.',
+            'Você pode usar o VIREKA Space para fins de esclarecimento pessoal.',
+            'O uso comercial requer permissão explícita.',
           ],
         },
         natureOfService: {
           title: 'Natureza do Serviço',
           content: [
-            'VIREKA Space fornece estrutura para compreensão.',
-            'Não fornece conselhos profissionais ou diagnósticos.',
+            'O VIREKA Space oferece estrutura para entender como as situações estão sendo interpretadas.',
+            'Não oferece aconselhamento profissional, diagnósticos ou respostas definitivas.',
           ],
         },
         userResponsibility: {
           title: 'Responsabilidade do Usuário',
           content: [
-            'Você é responsável por como usa as ideias obtidas.',
-            'O serviço é uma ferramenta para clareza, não substituto de julgamento.',
+            'Você é responsável por como interpreta e aplica qualquer resultado.',
+            'O sistema apoia a clareza, mas não substitui julgamento ou tomada de decisão.',
           ],
         },
         availabilityChanges: {
           title: 'Disponibilidade e Mudanças',
           content: [
-            'Disponibilidade do serviço pode variar.',
-            'Reservamos o direito de modificar ou descontinuar o serviço.',
+            'A disponibilidade pode variar.',
+            'Podemos modificar, suspender ou descontinuar o serviço a qualquer momento.',
           ],
         },
         limitationOfLiability: {
           title: 'Limitação de Responsabilidade',
           content: [
-            'VIREKA Space é fornecido "como está" sem garantias.',
-            'Não somos responsáveis por decisões tomadas baseadas no uso do serviço.',
+            'O VIREKA Space é fornecido no estado em que se encontra, sem garantias.',
+            'Não nos responsabilizamos por decisões, ações ou resultados decorrentes do uso do serviço.',
           ],
         },
         updatesToTerms: {
           title: 'Atualizações dos Termos',
           content: [
-            'Termos podem ser atualizados periodicamente.',
-            'Uso continuado constitui aceitação dos termos atualizados.',
+            'Estes termos podem ser atualizados ao longo do tempo.',
+            'O uso contínuo do serviço constitui aceitação de quaisquer atualizações.',
           ],
         },
       },

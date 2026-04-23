@@ -7,6 +7,7 @@ import type { TranslationDictionary } from '../../lib/i18n/types';
 const FAQ_KEYS = [
   'whatIsVirekaSpace',
   'providesAnswers',
+  'inputPrivacy',
   'isAITool',
   'worksWithAI',
   'clarifyVsAIInteraction',
@@ -78,6 +79,7 @@ export default function FAQPage() {
             color: "#4b4b4b",
             fontWeight: 400,
             marginBottom: 36,
+            
             maxWidth: 620,
           }}
         >

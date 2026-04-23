@@ -246,6 +246,10 @@ export interface TranslationDictionary {
         question: string;
         answer: string[];
       };
+      inputPrivacy: {
+        question: string;
+        answer: string[];
+      };
       isAITool: {
         question: string;
         answer: string[];

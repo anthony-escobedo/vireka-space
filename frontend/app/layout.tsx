@@ -1,3 +1,4 @@
+import { Analytics } from "@vercel/analytics/react";
 import "./globals.css"
 import { LanguageProvider } from "../lib/i18n/LanguageProvider"
 
@@ -59,6 +60,7 @@ export default function RootLayout({
       >
         <LanguageProvider>
           {children}
+          <Analytics />
         </LanguageProvider>
       </body>
     </html>

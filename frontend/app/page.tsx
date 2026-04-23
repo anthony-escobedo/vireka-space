@@ -8,6 +8,10 @@ import { useLanguage } from "../lib/i18n/useLanguage";
 
 export default function HomePage() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [focusedPathway, setFocusedPathway] = useState<"clarify" | "ai" | null>(null);
+  const [isDesktopInteractive, setIsDesktopInteractive] = useState(false);
+  const [cursorNorm, setCursorNorm] = useState({ x: 0, y: 0 });
+  const [cursorPx, setCursorPx] = useState({ x: 50, y: 50 });
   const menuRef = useRef<HTMLDivElement | null>(null);
   const { t} = useLanguage();
 
@@ -36,6 +40,50 @@ export default function HomePage() {
     };
   }, []);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const mediaQuery = window.matchMedia("(hover: hover) and (pointer: fine)");
+    const evaluateInteractive = () => {
+      const hasTouch = navigator.maxTouchPoints > 0;
+      setIsDesktopInteractive(mediaQuery.matches && !hasTouch);
+    };
+
+    evaluateInteractive();
+    mediaQuery.addEventListener("change", evaluateInteractive);
+
+    return () => {
+      mediaQuery.removeEventListener("change", evaluateInteractive);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isDesktopInteractive || typeof window === "undefined") {
+      setCursorNorm({ x: 0, y: 0 });
+      setCursorPx({ x: 50, y: 50 });
+      return;
+    }
+
+    const handleMouseMove = (event: MouseEvent) => {
+      const normalizedX = event.clientX / window.innerWidth - 0.5;
+      const normalizedY = event.clientY / window.innerHeight - 0.5;
+
+      setCursorNorm({
+        x: Math.max(-0.5, Math.min(0.5, normalizedX)),
+        y: Math.max(-0.5, Math.min(0.5, normalizedY)),
+      });
+      setCursorPx({
+        x: (event.clientX / window.innerWidth) * 100,
+        y: (event.clientY / window.innerHeight) * 100,
+      });
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+    };
+  }, [isDesktopInteractive]);
+
   const menuLinkStyle: React.CSSProperties = {
     display: "block",
     padding: "10px 12px",
@@ -45,6 +93,34 @@ export default function HomePage() {
     fontSize: "14px",
     lineHeight: 1.4,
     transition: "background-color 160ms ease, color 160ms ease",
+  };
+  const heroActionStyle: React.CSSProperties = {
+    padding: "7px 2px",
+    fontSize: "18px",
+    fontWeight: 500,
+    color: "#151515",
+    textDecoration: "none",
+    borderBottom: "1px solid rgba(17,17,17,0.2)",
+    lineHeight: 1.35,
+    letterSpacing: "-0.01em",
+    transition: "color 160ms ease, border-color 160ms ease, opacity 120ms ease",
+    minWidth: "210px",
+    textAlign: "center",
+  };
+  const getHeroPathwayStyle = (
+    pathway: "clarify" | "ai"
+  ): React.CSSProperties => {
+    const isFocused = focusedPathway === pathway;
+    const isOtherFocused = focusedPathway !== null && !isFocused;
+
+    return {
+      ...heroActionStyle,
+      color: isFocused ? "#0d0d0d" : "#1a1a1a",
+      borderBottomColor: isFocused ? "rgba(0,0,0,0.46)" : "rgba(17,17,17,0.22)",
+      opacity: isOtherFocused ? 0.7 : isFocused ? 1 : 0.9,
+      transform: isFocused ? "scale(1.025)" : "scale(1)",
+      transition: "transform 0.2s ease, opacity 0.2s ease, color 0.2s ease, border-color 0.2s ease",
+    };
   };
 
   return (
@@ -180,6 +256,42 @@ export default function HomePage() {
                   }}
                 >
                   <Link
+                    href="/about"
+                    style={menuLinkStyle}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = "rgba(0,0,0,0.065)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = "transparent";
+                    }}
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    {t.header.about}
+                  </Link>
+
+                  <Link
+                    href="/faq"
+                    style={menuLinkStyle}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = "rgba(0,0,0,0.065)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = "transparent";
+                    }}
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    {t.header.faq}
+                  </Link>
+
+                  <div
+                    aria-hidden
+                    style={{
+                      margin: "4px 8px",
+                      borderTop: "1px solid rgba(0,0,0,0.08)",
+                    }}
+                  />
+
+                  <Link
                     href="/settings/account"
                     style={menuLinkStyle}
                     onMouseEnter={(e) => {
@@ -273,38 +385,13 @@ export default function HomePage() {
             style={{
               display: "flex",
               alignItems: "center",
-              gap: "18px",
+              gap: "10px",
               flexWrap: "wrap",
               justifyContent: "flex-end",
               marginLeft: "auto",
               minWidth: 0,
             }}
           >
-            <nav
-              style={{
-                display: "flex",
-                gap: "18px",
-                fontSize: "14px",
-                flexWrap: "wrap",
-                justifyContent: "flex-end",
-                alignItems: "center",
-              }}
-            >
-              <Link
-                href="/about"
-                style={{ color: "#333", textDecoration: "none" }}
-              >
-                {t.header.about}
-              </Link>
-
-              <Link
-                href="/faq"
-                style={{ color: "#333", textDecoration: "none" }}
-              >
-                {t.header.faq}
-              </Link>
-            </nav>
-
             <LanguageSelector />
           </div>
         </div>
@@ -361,10 +448,23 @@ export default function HomePage() {
           />
         </div>
         <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 1,
+            pointerEvents: "none",
+            background: `radial-gradient(circle at ${cursorPx.x}% ${cursorPx.y}%, rgba(255,255,255,${
+              isDesktopInteractive ? "0.06" : "0"
+            }), transparent 40%)`,
+            transition: "background 120ms linear",
+          }}
+        />
+        <div
           className="home-hero-inner"
           style={{
             position: "relative",
-            zIndex: 1,
+            zIndex: 2,
             maxWidth: "900px",
             width: "100%",
             textAlign: "center",
@@ -379,43 +479,32 @@ export default function HomePage() {
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              gap: "14px",
+              gap: "16px",
               marginBottom: "72px",
+              transform: isDesktopInteractive
+                ? `translate3d(${(cursorNorm.x * 6).toFixed(2)}px, ${(cursorNorm.y * 6).toFixed(2)}px, 0)`
+                : "translate3d(0px, 0px, 0)",
+              transition: "transform 0.2s ease",
+              willChange: "transform",
             }}
           >
             <Link
               href="/clarify"
-              style={{
-                padding: "16px 26px",
-                fontSize: "16px",
-                fontWeight: 600,
-                borderRadius: "999px",
-                border: "1px solid #111",
-                backgroundColor: "#111",
-                color: "#fff",
-                textDecoration: "none",
-                minWidth: "210px",
-                display: "inline-block",
-                textAlign: "center",
-              }}
+              style={getHeroPathwayStyle("clarify")}
+              onMouseEnter={() => setFocusedPathway("clarify")}
+              onMouseLeave={() => setFocusedPathway(null)}
+              onFocus={() => setFocusedPathway("clarify")}
+              onBlur={() => setFocusedPathway(null)}
             >
               {t.hero.clarifyButton}
             </Link>
             <Link
               href="/ai-interaction"
-              style={{
-                padding: "16px 26px",
-                fontSize: "16px",
-                fontWeight: 600,
-                borderRadius: "999px",
-                border: "1px solid #d7d7cf",
-                backgroundColor: "#fff",
-                color: "#111",
-                textDecoration: "none",
-                minWidth: "210px",
-                display: "inline-block",
-                textAlign: "center",
-              }}
+              style={getHeroPathwayStyle("ai")}
+              onMouseEnter={() => setFocusedPathway("ai")}
+              onMouseLeave={() => setFocusedPathway(null)}
+              onFocus={() => setFocusedPathway("ai")}
+              onBlur={() => setFocusedPathway(null)}
             >
               {t.hero.aiButton}
             </Link>

@@ -2,6 +2,21 @@ import { Language, DEFAULT_LANGUAGE } from "./config";
 
 const STORAGE_KEY = "vireka_language";
 
+const detectBrowserLanguage = (): Language => {
+  if (typeof window === "undefined") {
+    return DEFAULT_LANGUAGE;
+  }
+
+  const browserLanguage = window.navigator.language.toLowerCase();
+  if (browserLanguage.startsWith("es")) {
+    return "es";
+  }
+  if (browserLanguage.startsWith("pt")) {
+    return "pt";
+  }
+  return "en";
+};
+
 export const getStoredLanguage = (): Language => {
   if (typeof window === "undefined") {
     return DEFAULT_LANGUAGE;
@@ -21,7 +36,7 @@ export const getStoredLanguage = (): Language => {
     console.warn("Failed to read language from localStorage:", error);
   }
 
-  return DEFAULT_LANGUAGE;
+  return detectBrowserLanguage();
 };
 
 export const setStoredLanguage = (language: Language): void => {

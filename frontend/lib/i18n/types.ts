@@ -248,7 +248,7 @@ export interface TranslationDictionary {
         question: string;
         answer: string[];
       };
-      worksWithAI: {
+      worksWithAI?: {
         question: string;
         answer: string[];
       };

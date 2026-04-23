@@ -244,13 +244,15 @@ const dictionaries: Record<Language, TranslationDictionary> = {
           question: 'What is VIREKA Space?',
           answer: [
             'VIREKA Space is a structured environment for clarifying how a situation is being understood before a decision is made or an AI prompt is written.',
-            'It helps make visible what appears to be happening, what is being interpreted, and what remains uncertain, so that the structure of a situation can be seen more clearly before action is taken.',
+            'It helps make visible what appears to be happening, what may be assumed, and what remains unclear, so that the structure of a situation can be seen more clearly before action is taken.',
           ],
         },
         providesAnswers: {
-          question: 'Does VIREKA Space provide answers or recommendations?',
+          question: 'Does VIREKA Space provide answers or make decisions?',
           answer: [
+            'No.',
             'VIREKA Space does not provide answers, advice, or recommendations.',
+            'It does not decide what should be done.',
             'It helps make the structure of interpretation more visible so that it becomes clearer whether a decision can be made or how a prompt might be formed.',
           ],
         },
@@ -262,19 +264,13 @@ const dictionaries: Record<Language, TranslationDictionary> = {
             'It can be used alongside AI, but it does not replace it.',
           ],
         },
-        worksWithAI: {
-          question: 'How does it work with AI?',
-          answer: [
-            'VIREKA Space can be used before or alongside interaction with AI systems.',
-            'It helps clarify what is being asked, what may be assumed, and what remains unclear, so that AI interaction can begin from a more structured starting point rather than from an unformed or ambiguous prompt.',
-          ],
-        },
         clarifyVsAIInteraction: {
           question:
             'What is the difference between “Clarify a Situation” and “AI Interaction”?',
           answer: [
-            'Clarify a Situation focuses on the situation itself. It helps make visible what appears to be happening, how it is being interpreted, and what remains uncertain.',
-            'AI Interaction focuses on how a situation is translated into a prompt or interaction with AI. It helps clarify what the prompt is attempting to do, what may be missing, and how the interaction is being structured.',
+            'Clarify a Situation focuses on how the situation is being understood. It helps make visible what appears to be happening, what may be assumed, and what remains unclear.',
+            'AI Interaction focuses on how that understanding is translated into a prompt or interaction with AI.',
+            'This takes place before a decision is made or a prompt is written. When interpretation becomes clearer, the next step, whether making a decision or interacting with AI, tends to become more straightforward.',
           ],
         },
         whyNotUseAIDirectly: {
@@ -295,8 +291,8 @@ const dictionaries: Record<Language, TranslationDictionary> = {
           question: 'What is the benefit of using it?',
           answer: [
             'When the structure of a situation becomes more visible, decisions often feel less forced and interaction with AI becomes more coherent.',
-            'When that structure is unclear, interaction with AI can involve repeated prompting, revision, and adjustment as the intended direction is gradually clarified. Over time, this can lead to unnecessary use of time, attention, and, in some cases, cost.',
-            'VIREKA Space reduces this by helping establish a clearer starting point before interaction begins.',
+            'When that structure is unclear, interaction with AI can involve repeated prompting, revision, and adjustment as the intended direction is gradually clarified.',
+            'VIREKA Space helps reduce this by establishing a clearer starting point before interaction begins.',
           ],
         },
       },
@@ -657,38 +653,34 @@ const dictionaries: Record<Language, TranslationDictionary> = {
         whatIsVirekaSpace: {
           question: '¿Qué es VIREKA Space?',
           answer: [
-            'VIREKA Space es un entorno estructurado para aclarar cómo se está comprendiendo una situación antes de tomar una decisión o escribir un prompt de IA.',
-            'Ayuda a hacer visible lo que parece estar ocurriendo, lo que se está interpretando y lo que permanece incierto, de modo que la estructura de una situación pueda verse con mayor claridad antes de actuar.',
+            'VIREKA Space es un entorno estructurado para aclarar cómo se está entendiendo una situación antes de tomar una decisión o redactar un prompt para IA.',
+            'Ayuda a hacer visible lo que parece estar ocurriendo, lo que puede estar siendo asumido y lo que permanece poco claro, para que la estructura de la situación pueda verse con mayor claridad antes de actuar.',
           ],
         },
         providesAnswers: {
-          question: '¿VIREKA Space proporciona respuestas o recomendaciones?',
+          question: '¿VIREKA Space proporciona respuestas o toma decisiones?',
           answer: [
+            'No.',
             'VIREKA Space no proporciona respuestas, consejos ni recomendaciones.',
+            'Tampoco decide qué se debe hacer.',
             'Ayuda a hacer más visible la estructura de la interpretación para que resulte más claro si puede tomarse una decisión o cómo podría formularse un prompt.',
           ],
         },
         isAITool: {
-          question: '¿Es una herramienta de IA?',
+          question: '¿Es esto una herramienta de IA?',
           answer: [
             'VIREKA Space no funciona como una herramienta de IA típica que genera respuestas o resultados.',
-            'Opera en una etapa anterior, aportando claridad sobre cómo se está comprendiendo una situación antes de traducirla en un prompt o instrucción.',
-            'Puede utilizarse junto con la IA, pero no la sustituye.',
-          ],
-        },
-        worksWithAI: {
-          question: '¿Cómo funciona con la IA?',
-          answer: [
-            'VIREKA Space puede utilizarse antes o junto con la interacción con sistemas de IA.',
-            'Ayuda a aclarar qué se está preguntando, qué puede estar siendo asumido y qué permanece incierto, de modo que la interacción con la IA pueda comenzar desde un punto de partida más estructurado en lugar de un prompt ambiguo o poco formado.',
+            'Opera en una etapa anterior, facilitando claridad sobre cómo se está entendiendo una situación antes de traducirla en un prompt o una instrucción.',
+            'Puede utilizarse junto con la IA, pero no la reemplaza.',
           ],
         },
         clarifyVsAIInteraction: {
           question:
             '¿Cuál es la diferencia entre “Aclarar una situación” e “Interacción con IA”?',
           answer: [
-            'Aclarar una situación se centra en la situación misma. Ayuda a hacer visible lo que parece estar ocurriendo, cómo se está interpretando y qué permanece incierto.',
-            'Interacción con IA se centra en cómo una situación se traduce en un prompt o interacción con la IA. Ayuda a aclarar qué intenta hacer el prompt, qué puede faltar y cómo se está estructurando la interacción.',
+            'Aclarar una situación se centra en cómo se está entendiendo la situación. Ayuda a hacer visible lo que parece estar ocurriendo, lo que puede estar siendo asumido y lo que permanece poco claro.',
+            'La interacción con IA se centra en cómo ese entendimiento se traduce en un prompt o en una interacción con la IA.',
+            'Esto ocurre antes de tomar una decisión o redactar un prompt. Cuando la interpretación se vuelve más clara, el siguiente paso, ya sea tomar una decisión o interactuar con la IA, tiende a resultar más directo.',
           ],
         },
         whyNotUseAIDirectly: {
@@ -709,8 +701,8 @@ const dictionaries: Record<Language, TranslationDictionary> = {
           question: '¿Cuál es el beneficio de usarlo?',
           answer: [
             'Cuando la estructura de una situación se vuelve más visible, las decisiones suelen sentirse menos forzadas y la interacción con la IA se vuelve más coherente.',
-            'Cuando esa estructura no está clara, la interacción con la IA puede implicar repetición de prompts, revisiones y ajustes a medida que la dirección pretendida se va aclarando gradualmente. Con el tiempo, esto puede implicar un uso innecesario de tiempo, atención y, en algunos casos, coste.',
-            'VIREKA Space reduce esto al ayudar a establecer un punto de partida más claro antes de que la interacción comience.',
+            'Cuando esa estructura no está clara, la interacción con la IA puede implicar repeticiones, ajustes y revisiones hasta que la dirección se va definiendo.',
+            'VIREKA Space ayuda a reducir esto al establecer un punto de partida más claro antes de comenzar la interacción.',
           ],
         },
       },
@@ -1071,14 +1063,16 @@ const dictionaries: Record<Language, TranslationDictionary> = {
         whatIsVirekaSpace: {
           question: 'O que é o VIREKA Space?',
           answer: [
-            'O VIREKA Space é um ambiente estruturado para esclarecer como uma situação está sendo compreendida antes que uma decisão seja tomada ou um prompt de IA seja escrito.',
-            'Ele ajuda a tornar visível o que parece estar acontecendo, o que está sendo interpretado e o que permanece incerto, para que a estrutura de uma situação possa ser vista com mais clareza antes da ação.',
+            'VIREKA Space é um ambiente estruturado para esclarecer como uma situação está sendo compreendida antes de tomar uma decisão ou escrever um prompt para IA.',
+            'Ele ajuda a tornar visível o que parece estar acontecendo, o que pode estar sendo assumido e o que permanece pouco claro, para que a estrutura da situação possa ser vista com mais clareza antes da ação.',
           ],
         },
         providesAnswers: {
-          question: 'O VIREKA Space fornece respostas ou recomendações?',
+          question: 'O VIREKA Space fornece respostas ou toma decisões?',
           answer: [
+            'Não.',
             'O VIREKA Space não fornece respostas, conselhos ou recomendações.',
+            'Também não decide o que deve ser feito.',
             'Ele ajuda a tornar mais visível a estrutura da interpretação para que fique mais claro se uma decisão pode ser tomada ou como um prompt pode ser formulado.',
           ],
         },
@@ -1086,23 +1080,17 @@ const dictionaries: Record<Language, TranslationDictionary> = {
           question: 'Isso é uma ferramenta de IA?',
           answer: [
             'O VIREKA Space não funciona como uma ferramenta de IA típica que gera respostas ou resultados.',
-            'Ele atua antes, oferecendo clareza sobre como uma situação está sendo compreendida antes de ser traduzida em um prompt ou instrução.',
+            'Ele opera em uma etapa anterior, trazendo clareza sobre como uma situação está sendo compreendida antes de ser traduzida em um prompt ou instrução.',
             'Pode ser usado junto com IA, mas não a substitui.',
-          ],
-        },
-        worksWithAI: {
-          question: 'Como funciona com IA?',
-          answer: [
-            'O VIREKA Space pode ser usado antes ou junto com a interação com sistemas de IA.',
-            'Ele ajuda a esclarecer o que está sendo perguntado, o que pode estar sendo assumido e o que permanece incerto, para que a interação com a IA comece a partir de um ponto de partida mais estruturado, em vez de um prompt ambíguo ou pouco formado.',
           ],
         },
         clarifyVsAIInteraction: {
           question:
-            'Qual é a diferença entre “Clarificar uma situação” e “Interação com IA”?',
+            'Qual é a diferença entre “Esclarecer uma situação” e “Interação com IA”?',
           answer: [
-            'Clarificar uma situação foca na própria situação. Ajuda a tornar visível o que parece estar acontecendo, como está sendo interpretado e o que permanece incerto.',
-            'Interação com IA foca em como uma situação é traduzida em um prompt ou interação com IA. Ajuda a esclarecer o que o prompt está tentando fazer, o que pode estar faltando e como a interação está sendo estruturada.',
+            'Esclarecer uma situação foca em como a situação está sendo compreendida. Ajuda a tornar visível o que parece estar acontecendo, o que pode estar sendo assumido e o que permanece pouco claro.',
+            'A interação com IA foca em como esse entendimento é traduzido em um prompt ou em uma interação com a IA.',
+            'Isso acontece antes de uma decisão ser tomada ou de um prompt ser escrito. Quando a interpretação se torna mais clara, o próximo passo, seja tomar uma decisão ou interagir com a IA, tende a se tornar mais direto.',
           ],
         },
         whyNotUseAIDirectly: {
@@ -1120,11 +1108,11 @@ const dictionaries: Record<Language, TranslationDictionary> = {
           ],
         },
         benefitOfUsingIt: {
-          question: 'Qual é o benefício de usar isso?',
+          question: 'Qual é o benefício de usá-lo?',
           answer: [
             'Quando a estrutura de uma situação se torna mais visível, as decisões tendem a parecer menos forçadas e a interação com IA se torna mais coerente.',
-            'Quando essa estrutura não está clara, a interação com IA pode envolver repetição de prompts, revisão e ajustes à medida que a direção pretendida vai sendo esclarecida gradualmente. Com o tempo, isso pode resultar em uso desnecessário de tempo, atenção e, em alguns casos, custo.',
-            'O VIREKA Space reduz isso ao ajudar a estabelecer um ponto de partida mais claro antes de a interação começar.',
+            'Quando essa estrutura não está clara, a interação com a IA pode envolver repetição, ajustes e revisões até que a direção seja definida.',
+            'O VIREKA Space ajuda a reduzir isso ao estabelecer um ponto de partida mais claro antes da interação começar.',
           ],
         },
       },

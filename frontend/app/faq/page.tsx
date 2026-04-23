@@ -86,6 +86,8 @@ export default function FAQPage() {
 
         {FAQ_KEYS.map((key, index) => {
           const item = t.faq.questions[key];
+          if (!item) return null;
+          
           return (
             <section
               key={key}

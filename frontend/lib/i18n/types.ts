@@ -113,8 +113,10 @@ export interface TranslationDictionary {
     pageTitle: string;
     heroTitle: string;
     descriptionParagraph: string;
+    handoffSubtitle: string;
     inputLabel: string;
     inputPlaceholder: string;
+    handoffInputPlaceholder: string;
     helperText: string;
     pageLabel: string;
     backLink: string;

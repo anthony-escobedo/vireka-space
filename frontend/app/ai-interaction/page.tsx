@@ -579,6 +579,7 @@ function handleDismissOnboarding(): void {
   const archivedPanels = panels.slice(0, -1);
   const activePanel = panels.length > 0 ? panels[panels.length - 1] : null;
   const hasClarificationHistory = iterations.length > 0;
+  const hasImportedClarification = importedClarification !== null;
   const hasInitialClarifyResponse = iterations.some((it) => it.source === "top");
   const canShowDoneButton =
     hasInitialClarifyResponse &&
@@ -588,7 +589,9 @@ function handleDismissOnboarding(): void {
   const composerValue = hasClarificationHistory ? followupInput : topInput;
   const composerPlaceholder = hasClarificationHistory
     ? t.aiInteraction.followupPlaceholder
-    : t.aiInteraction.inputPlaceholder;
+    : hasImportedClarification
+      ? t.aiInteraction.handoffInputPlaceholder
+      : t.aiInteraction.inputPlaceholder;
   const composerSource: "top" | "followup" = hasClarificationHistory
     ? "followup"
     : "top";
@@ -1062,7 +1065,12 @@ function renderActiveResponse(panel: ClarificationPanel) {
   function renderImportedClarification() {
     if (!importedClarification || hasClarificationHistory) return null;
 
-    const questionText = importedClarification.response.question?.trim() ?? "";
+    const directQuestion = importedClarification.response.question?.trim() ?? "";
+    const suggestedQuestion =
+      importedClarification.response.suggestedQuestions
+        ?.find((item) => item.trim().length > 0)
+        ?.trim() ?? "";
+    const questionText = directQuestion || suggestedQuestion;
 
     return (
       <div
@@ -1224,6 +1232,19 @@ function renderActiveResponse(panel: ClarificationPanel) {
         >
           {t.aiInteraction.heroTitle}
         </h1>
+        <p
+          style={{
+            margin: "0 0 1.15rem 0",
+            color: "#56514b",
+            fontSize: "0.95rem",
+            lineHeight: 1.6,
+            maxWidth: "680px",
+          }}
+        >
+          {hasImportedClarification
+            ? t.aiInteraction.handoffSubtitle
+            : t.aiInteraction.descriptionParagraph}
+        </p>
 
         <div
           style={{

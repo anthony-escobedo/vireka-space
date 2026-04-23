@@ -1095,12 +1095,6 @@ function renderActiveResponse(panel: ClarificationPanel) {
           {t.aiInteraction.heroTitle}
         </h1>
 
-        <div style={{ maxWidth: "680px", minWidth: 0, width: "100%" }}>
-          <p style={{ fontSize: "0.95rem", color: "#444", lineHeight: 1.65, margin: 0 }}>
-            {t.aiInteraction.descriptionParagraph}
-          </p>
-        </div>
-
         <div
           style={{
             borderTop: "1px solid #e7e5e4",

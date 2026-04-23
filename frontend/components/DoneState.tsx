@@ -66,23 +66,34 @@ export default function DoneState({
     };
   }, [isDesktopInteractive]);
 
-  const getButtonStyle = (button: "copy" | "new" | "home"): React.CSSProperties => {
-    const isHovered = hoveredButton === button;
-    const hasHoveredPeer = hoveredButton !== null && !isHovered;
-    const baseColor = button === "home" ? "#7a756f" : "#111";
+  const getActionStyle = (button: "copy" | "new" | "home"): React.CSSProperties => {
+    const isActive = hoveredButton === button;
+    const hasActivePeer = hoveredButton !== null && !isActive;
+    const baseColor = button === "home" ? "#726c66" : "#1a1a1a";
 
     return {
-      padding: "0.78rem 1.15rem",
-      borderRadius: "999px",
-      border: isHovered ? "1px solid #bdb7b3" : "1px solid #d6d3d1",
-      backgroundColor: "#fff",
-      color: isHovered ? "#101010" : baseColor,
+      appearance: "none",
+      WebkitAppearance: "none",
+      margin: 0,
+      padding: "9px 10px",
+      border: "none",
+      borderBottom: isActive
+        ? "1px solid rgba(0,0,0,0.38)"
+        : "1px solid rgba(17,17,17,0.2)",
+      borderRadius: 0,
+      backgroundColor: "transparent",
+      color: isActive ? (button === "home" ? "#141210" : "#0d0d0d") : baseColor,
       fontSize: "0.95rem",
-      fontWeight: 600,
+      fontWeight: 500,
+      letterSpacing: "-0.01em",
+      lineHeight: 1.35,
       cursor: "pointer",
       whiteSpace: "nowrap",
-      opacity: hasHoveredPeer ? 0.94 : 1,
-      transform: isHovered ? "scale(1.015)" : "scale(1)",
+      textAlign: "center",
+      minWidth: "200px",
+      boxSizing: "border-box",
+      opacity: hasActivePeer ? 0.93 : 1,
+      transform: isActive ? "scale(1.01)" : "scale(1)",
       transition: "transform 0.2s ease, opacity 0.2s ease, border-color 0.2s ease, color 0.2s ease",
     };
   };
@@ -212,7 +223,7 @@ export default function DoneState({
           <button
             type="button"
             onClick={onCopy}
-            style={getButtonStyle("copy")}
+            style={getActionStyle("copy")}
             onMouseEnter={() => setHoveredButton("copy")}
             onMouseLeave={() => setHoveredButton(null)}
             onFocus={() => setHoveredButton("copy")}
@@ -224,7 +235,7 @@ export default function DoneState({
           <button
             type="button"
             onClick={onNew}
-            style={getButtonStyle("new")}
+            style={getActionStyle("new")}
             onMouseEnter={() => setHoveredButton("new")}
             onMouseLeave={() => setHoveredButton(null)}
             onFocus={() => setHoveredButton("new")}
@@ -236,7 +247,7 @@ export default function DoneState({
           <button
             type="button"
             onClick={onHome}
-            style={getButtonStyle("home")}
+            style={getActionStyle("home")}
             onMouseEnter={() => setHoveredButton("home")}
             onMouseLeave={() => setHoveredButton(null)}
             onFocus={() => setHoveredButton("home")}

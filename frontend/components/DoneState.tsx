@@ -18,6 +18,7 @@ export default function DoneState({
 }: DoneStateProps) {
   const { t } = useLanguage();
   const [isDesktopInteractive, setIsDesktopInteractive] = React.useState(false);
+  const [isCompactViewport, setIsCompactViewport] = React.useState(false);
   const [hoveredButton, setHoveredButton] = React.useState<"copy" | "new" | "home" | null>(null);
   const [cursorNorm, setCursorNorm] = React.useState({ x: 0, y: 0 });
   const [cursorPx, setCursorPx] = React.useState({ x: 50, y: 50 });
@@ -37,6 +38,25 @@ export default function DoneState({
     return () => {
       mediaQuery.removeEventListener("change", evaluateInteractive);
     };
+  }, []);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const mq = window.matchMedia("(max-width: 640px)");
+    const evaluateCompact = () => setIsCompactViewport(mq.matches);
+
+    evaluateCompact();
+    mq.addEventListener("change", evaluateCompact);
+
+    return () => {
+      mq.removeEventListener("change", evaluateCompact);
+    };
+  }, []);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
   }, []);
 
   React.useEffect(() => {
@@ -104,11 +124,20 @@ export default function DoneState({
         position: "relative",
         width: "100%",
         maxWidth: "100%",
+        minWidth: 0,
+        minHeight: isCompactViewport ? "100dvh" : "100svh",
         display: "flex",
-        justifyContent: "center",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: isCompactViewport ? "flex-start" : "center",
         boxSizing: "border-box",
         overflowX: "hidden",
-        minWidth: 0,
+        paddingLeft: "1.25rem",
+        paddingRight: "1.25rem",
+        paddingTop: isCompactViewport
+          ? "max(1rem, calc(env(safe-area-inset-top, 0px) + 0.75rem))"
+          : "clamp(72px, 12vh, 140px)",
+        paddingBottom: isCompactViewport ? "max(1.5rem, env(safe-area-inset-bottom, 0px))" : "40px",
       }}
     >
       <div

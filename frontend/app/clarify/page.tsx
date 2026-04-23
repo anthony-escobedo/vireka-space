@@ -982,27 +982,12 @@ function handleReturnHome(): void {
       }}
     >
       {isDone ? (
-        <div
-          style={{
-            minHeight: "100svh",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            paddingTop: "clamp(72px, 12vh, 140px)",
-            paddingBottom: "40px",
-            paddingLeft: "1.25rem",
-            paddingRight: "1.25rem",
-            boxSizing: "border-box",
-            overflowX: "hidden",
-          }}
-        >
-                    <DoneState
-            onCopy={handleCopyResult}
-            onNew={handleStartNew}
-            onHome={handleReturnHome}
-            copyLabel={copyLabel}
-          />
-        </div>
+        <DoneState
+          onCopy={handleCopyResult}
+          onNew={handleStartNew}
+          onHome={handleReturnHome}
+          copyLabel={copyLabel}
+        />
       ) : (
         <div
           style={{
@@ -1154,6 +1139,7 @@ function handleReturnHome(): void {
             <InterpretationInput
               textareaRef={topInputRef}
               id="clarify-input-composer"
+              transcribingLabel={t.clarify.transcribing}
               helperText=""
               placeholder={composerPlaceholder}
               value={composerValue}

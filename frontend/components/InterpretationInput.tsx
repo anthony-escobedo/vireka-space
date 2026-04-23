@@ -47,6 +47,8 @@ export type InterpretationInputProps = {
   /** Parent loading (e.g. POST /api/clarify) - disables send control. */
   clarifyLoading?: boolean;
   surfaceVariant?: "card" | "composer";
+  /** Shown while audio is being transcribed (voice UI). */
+  transcribingLabel: string;
 };
 
 function mergeRefs<T>(
@@ -544,6 +546,7 @@ const InterpretationInput = forwardRef<
     transcribeUrl = WHISPER_TRANSCRIBE_URL,
     clarifyLoading = false,
     surfaceVariant = "card",
+    transcribingLabel,
   },
   ref
 ) {
@@ -1133,7 +1136,7 @@ const InterpretationInput = forwardRef<
             }}
           >
             <Spinner />
-            <span>Transcribing...</span>
+            <span>{transcribingLabel}</span>
           </div>
         ) : (
           <div

@@ -94,6 +94,7 @@ export interface TranslationDictionary {
     clarificationPathDescription: string;
     response: string;
     listening: string;
+    transcribing: string;
     mic: string;
     copyResult: string;
     copied: string;
@@ -143,6 +144,7 @@ export interface TranslationDictionary {
     clarificationPathDescription: string;
     response: string;
     listening: string;
+    transcribing: string;
     mic: string;
     copyResult: string;
     copied: string;

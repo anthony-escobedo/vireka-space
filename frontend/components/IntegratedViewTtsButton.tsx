@@ -98,15 +98,28 @@ export default function IntegratedViewTtsButton({
       });
 
       if (!res.ok) {
+        let errPayload = "";
+        try {
+          errPayload = await res.text();
+        } catch {
+          /* ignore */
+        }
+        console.error("TTS error:", res.status, errPayload || "(empty body)");
         cleanup();
         endIntegratedViewTtsSession(cleanup);
-        console.error("[tts] client", res.status);
         alert(errorMessage);
         return;
       }
 
       const ct = res.headers.get("Content-Type") || "";
       if (!ct.includes("audio")) {
+        let errPayload = "";
+        try {
+          errPayload = (await res.text()).slice(0, 800);
+        } catch {
+          /* ignore */
+        }
+        console.error("TTS error: unexpected Content-Type:", ct, errPayload);
         cleanup();
         endIntegratedViewTtsSession(cleanup);
         alert(errorMessage);

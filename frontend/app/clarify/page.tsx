@@ -19,6 +19,11 @@ import { parseStoredAssistantContent } from "../../lib/parseStoredClarifyAssista
 const FREE_USAGE_LIMIT_ERROR_EN =
   "Free usage includes 20 interactions per day. Access resumes tomorrow or with subscription.";
 
+/** Free tier: first N loaded history entries can be opened; older rows are visible but locked. */
+const FREE_HISTORY_VISIBLE_LIMIT = 5;
+
+const RAIL_HISTORY_DISPLAY_LIMIT = 8;
+
 type RequestAction = "clarify";
 
 type ConversationTurn = {
@@ -99,6 +104,7 @@ export default function ClarifyPage() {
     string | null
   >(null);
   const [historyDetailLoading, setHistoryDetailLoading] = useState(false);
+  const [mobileHistoryOpen, setMobileHistoryOpen] = useState(false);
   const { t, language } = useLanguage();
   const [copyLabel, setCopyLabel] = useState(t.clarify.copyResult);
   const topInputRef = useRef<HTMLTextAreaElement | null>(null);
@@ -140,7 +146,9 @@ export default function ClarifyPage() {
       if (!res.ok) return;
       const data = (await res.json()) as { conversations?: HistoryConversation[] };
       setHistoryConversations(
-        Array.isArray(data.conversations) ? data.conversations.slice(0, 8) : []
+        Array.isArray(data.conversations)
+          ? data.conversations.slice(0, RAIL_HISTORY_DISPLAY_LIMIT)
+          : []
       );
       setSelectedHistoryConversationId((prev) => {
         if (!prev) return prev;
@@ -164,6 +172,16 @@ export default function ClarifyPage() {
     mq.addEventListener("change", sync);
     return () => mq.removeEventListener("change", sync);
   }, []);
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    if (!mobileHistoryOpen || showDesktopHistoryPanel) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [mobileHistoryOpen, showDesktopHistoryPanel]);
 
   function normalizeQuestion(text: string): string {
     return text
@@ -364,13 +382,26 @@ export default function ClarifyPage() {
       const res = await fetch(`/api/history/${encodeURIComponent(id)}`, {
         method: "GET",
         headers: { "x-anonymous-id": getOrCreateAnonymousId() },
+        cache: "no-store",
       });
-      if (!res.ok) return;
-      const data = (await res.json()) as {
+      if (!res.ok) {
+        console.warn("[clarify] history detail request failed", res.status);
+        return;
+      }
+      let data: {
         conversation?: { id: string; mode: string; created_at: string };
         messages?: { id: string; role: string; content: unknown; created_at: string }[];
       };
-      if (!data.conversation || !Array.isArray(data.messages)) return;
+      try {
+        data = (await res.json()) as typeof data;
+      } catch {
+        console.warn("[clarify] history detail response was not valid JSON");
+        return;
+      }
+      if (!data.conversation || !Array.isArray(data.messages)) {
+        console.warn("[clarify] history detail payload missing conversation or messages");
+        return;
+      }
 
       const messages: HistoryDetailMessage[] = data.messages.map((m) => ({
         id: String(m.id),
@@ -381,10 +412,13 @@ export default function ClarifyPage() {
 
       applyConversationDetail({ conversation: data.conversation, messages });
       setSelectedHistoryConversationId(id);
+      setMobileHistoryOpen(false);
       setTimeout(() => {
         const target = pathTopRef.current ?? resultRef.current;
         target?.scrollIntoView({ behavior: "smooth", block: "start" });
       }, 80);
+    } catch (e) {
+      console.warn("[clarify] history detail error", e);
     } finally {
       setHistoryDetailLoading(false);
     }
@@ -642,8 +676,8 @@ function handleReturnHome(): void {
   const composerSource: "top" | "followup" = hasClarificationHistory
     ? "followup"
     : "top";
-  const railHistoryRows = historyConversations.slice(0, 8);
-  const mobileHistoryRows = historyConversations.slice(0, 5);
+  const railHistoryRows = historyConversations.slice(0, RAIL_HISTORY_DISPLAY_LIMIT);
+  const hasLockedHistoryRows = railHistoryRows.length > FREE_HISTORY_VISIBLE_LIMIT;
   const hideInitialHero = hasClarificationHistory || history.length > 0;
   const workspaceTitle = homeMode ? "Clarify" : t.clarify.heroTitle;
   const workspaceOrientation = homeMode
@@ -1147,6 +1181,7 @@ function handleReturnHome(): void {
   setOpenPanelIds([]);
   setLatestPanelId(null);
   setSelectedHistoryConversationId(null);
+  setMobileHistoryOpen(false);
   void loadHistory();
 }
   
@@ -1209,6 +1244,8 @@ function handleReturnHome(): void {
                 position: "sticky",
                 top: "1.5rem",
                 alignSelf: "stretch",
+                zIndex: 2,
+                pointerEvents: "auto",
               }}
             >
               {railHistoryRows.length > 0 ? (
@@ -1232,7 +1269,7 @@ function handleReturnHome(): void {
                   >
                     Recent
                   </div>
-                  {railHistoryRows.map((item) => {
+                  {railHistoryRows.map((item, index) => {
                     const dt = new Date(item.created_at);
                     const dateLabel = Number.isNaN(dt.getTime())
                       ? ""
@@ -1244,12 +1281,67 @@ function handleReturnHome(): void {
                       item.preview?.trim() ||
                       (item.mode === "ai-interaction" ? "AI Interaction" : "Session");
                     const active = item.id === selectedHistoryConversationId;
+                    const unlocked = index < FREE_HISTORY_VISIBLE_LIMIT;
+                    const rowInner = (
+                      <>
+                        <div
+                          style={{
+                            fontSize: 14,
+                            lineHeight: "20px",
+                            color: unlocked ? "#3f3b36" : "#3f3b36",
+                            overflowWrap: "anywhere",
+                            wordBreak: "break-word",
+                          }}
+                        >
+                          {preview}
+                        </div>
+                        {dateLabel ? (
+                          <div
+                            style={{
+                              fontSize: 12,
+                              lineHeight: "16px",
+                              color: "#9c9690",
+                              marginTop: "0.2rem",
+                            }}
+                          >
+                            {dateLabel}
+                          </div>
+                        ) : null}
+                      </>
+                    );
+                    if (!unlocked) {
+                      return (
+                        <div
+                          key={item.id}
+                          style={{
+                            display: "block",
+                            width: "100%",
+                            margin: 0,
+                            padding: "0.45rem 0.5rem",
+                            textAlign: "left",
+                            cursor: "default",
+                            border: "1px solid transparent",
+                            borderRadius: "8px",
+                            backgroundColor: "transparent",
+                            boxSizing: "border-box",
+                            opacity: 0.4,
+                          }}
+                          aria-disabled
+                        >
+                          {rowInner}
+                        </div>
+                      );
+                    }
                     return (
                       <button
                         key={item.id}
                         type="button"
                         disabled={historyDetailLoading}
-                        onClick={() => void openHistoryConversation(item.id)}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          void openHistoryConversation(item.id);
+                        }}
                         style={{
                           display: "block",
                           width: "100%",
@@ -1278,32 +1370,23 @@ function handleReturnHome(): void {
                           }
                         }}
                       >
-                        <div
-                          style={{
-                            fontSize: 14,
-                            lineHeight: "20px",
-                            color: "#3f3b36",
-                            overflowWrap: "anywhere",
-                            wordBreak: "break-word",
-                          }}
-                        >
-                          {preview}
-                        </div>
-                        {dateLabel ? (
-                          <div
-                            style={{
-                              fontSize: 12,
-                              lineHeight: "16px",
-                              color: "#9c9690",
-                              marginTop: "0.2rem",
-                            }}
-                          >
-                            {dateLabel}
-                          </div>
-                        ) : null}
+                        {rowInner}
                       </button>
                     );
                   })}
+                  {hasLockedHistoryRows ? (
+                    <p
+                      style={{
+                        fontSize: 11,
+                        lineHeight: 1.45,
+                        color: "#a8a29e",
+                        margin: "0.5rem 0 0 0",
+                        letterSpacing: "0.01em",
+                      }}
+                    >
+                      Full history available with subscription
+                    </p>
+                  ) : null}
                 </div>
               ) : null}
             </aside>
@@ -1355,73 +1438,67 @@ function handleReturnHome(): void {
               </p>
             ) : null}
 
+            {!showDesktopHistoryPanel && railHistoryRows.length > 0 ? (
+              <button
+                type="button"
+                onClick={() => setMobileHistoryOpen(true)}
+                style={{
+                  margin: "0 0 0 0",
+                  padding: 0,
+                  border: "none",
+                  background: "none",
+                  cursor: "pointer",
+                  font: "inherit",
+                  fontSize: "0.9rem",
+                  lineHeight: 1.45,
+                  color: "#6f6962",
+                  textDecoration: "underline",
+                  textDecorationColor: "rgba(111, 105, 98, 0.35)",
+                  textUnderlineOffset: "0.2em",
+                }}
+              >
+                Recent
+              </button>
+            ) : null}
+
             <div
               style={{
                 borderTop: "1px solid #e7e5e4",
-                marginTop: "2.25rem",
+                marginTop:
+                  !showDesktopHistoryPanel && railHistoryRows.length > 0
+                    ? "1.15rem"
+                    : "2.25rem",
                 marginBottom: "2.25rem",
               }}
             />
-            {!showDesktopHistoryPanel && mobileHistoryRows.length > 0 ? (
-              <div
-                style={{
-                  marginTop: "0.15rem",
-                  marginBottom: "1.1rem",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "0.45rem",
-                }}
-              >
-                {mobileHistoryRows.map((item) => {
-                  const dt = new Date(item.created_at);
-                  const dateLabel = Number.isNaN(dt.getTime())
-                    ? ""
-                    : dt.toLocaleDateString(undefined, {
-                        month: "short",
-                        day: "numeric",
-                      });
-                  const preview =
-                    item.preview?.trim() ||
-                    (item.mode === "ai-interaction" ? "AI Interaction" : "Clarify");
-                  return (
-                    <div
-                      key={item.id}
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "0.12rem",
-                      }}
-                    >
-                      <div
-                        style={{
-                          fontSize: "0.88rem",
-                          lineHeight: 1.35,
-                          color: "#4a4640",
-                          overflowWrap: "anywhere",
-                          wordBreak: "break-word",
-                        }}
-                      >
-                        {preview}
-                      </div>
-                      {dateLabel ? (
-                        <div
-                          style={{
-                            fontSize: "0.72rem",
-                            lineHeight: 1.2,
-                            color: "#9c9690",
-                          }}
-                        >
-                          {dateLabel}
-                        </div>
-                      ) : null}
-                    </div>
-                  );
-                })}
-              </div>
-            ) : null}
             <div style={{ minHeight: "clamp(180px, 30vh, 320px)" }} />
           </>
         )}
+
+        {hideInitialHero &&
+        !showDesktopHistoryPanel &&
+        railHistoryRows.length > 0 ? (
+          <button
+            type="button"
+            onClick={() => setMobileHistoryOpen(true)}
+            style={{
+              margin: "0 0 1rem 0",
+              padding: 0,
+              border: "none",
+              background: "none",
+              cursor: "pointer",
+              font: "inherit",
+              fontSize: "0.88rem",
+              lineHeight: 1.45,
+              color: "#6f6962",
+              textDecoration: "underline",
+              textDecorationColor: "rgba(111, 105, 98, 0.35)",
+              textUnderlineOffset: "0.2em",
+            }}
+          >
+            Recent
+          </button>
+        ) : null}
 
         {error && (
   <div style={{ marginTop: "1rem" }}>
@@ -1471,6 +1548,197 @@ function handleReturnHome(): void {
         </div>
         </div>
       )}
+      {!isDone && mobileHistoryOpen && !showDesktopHistoryPanel ? (
+        <>
+          <button
+            type="button"
+            aria-label="Close recent conversations"
+            onClick={() => setMobileHistoryOpen(false)}
+            style={{
+              position: "fixed",
+              inset: 0,
+              margin: 0,
+              padding: 0,
+              border: "none",
+              backgroundColor: "rgba(0,0,0,0.22)",
+              zIndex: 40,
+              cursor: "pointer",
+            }}
+          />
+          <div
+            role="dialog"
+            aria-modal
+            aria-labelledby="mobile-history-title"
+            style={{
+              position: "fixed",
+              top: 0,
+              right: 0,
+              bottom: 0,
+              width: "min(100%, 300px)",
+              maxWidth: "100%",
+              backgroundColor: "#f5f3ef",
+              zIndex: 41,
+              boxShadow: "-4px 0 24px rgba(0,0,0,0.08)",
+              boxSizing: "border-box",
+              padding: "1.1rem 1rem 1.25rem",
+              display: "flex",
+              flexDirection: "column",
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: "0.75rem",
+                marginBottom: "0.85rem",
+                flexShrink: 0,
+              }}
+            >
+              <div
+                id="mobile-history-title"
+                style={{
+                  fontSize: 12,
+                  lineHeight: "16px",
+                  color: "#8b857e",
+                  letterSpacing: "0.02em",
+                }}
+              >
+                Recent
+              </div>
+              <button
+                type="button"
+                onClick={() => setMobileHistoryOpen(false)}
+                style={{
+                  margin: 0,
+                  padding: "0.2rem 0.35rem",
+                  border: "none",
+                  background: "none",
+                  cursor: "pointer",
+                  font: "inherit",
+                  fontSize: "0.82rem",
+                  color: "#8a8580",
+                }}
+              >
+                Close
+              </button>
+            </div>
+            <div
+              style={{
+                flex: 1,
+                overflowY: "auto",
+                display: "flex",
+                flexDirection: "column",
+                gap: "0.35rem",
+                opacity: historyDetailLoading ? 0.55 : 1,
+                transition: "opacity 160ms ease",
+                WebkitOverflowScrolling: "touch",
+              }}
+            >
+              {railHistoryRows.map((item, index) => {
+                const dt = new Date(item.created_at);
+                const dateLabel = Number.isNaN(dt.getTime())
+                  ? ""
+                  : dt.toLocaleDateString(undefined, {
+                      month: "short",
+                      day: "numeric",
+                    });
+                const preview =
+                  item.preview?.trim() ||
+                  (item.mode === "ai-interaction" ? "AI Interaction" : "Session");
+                const active = item.id === selectedHistoryConversationId;
+                const unlocked = index < FREE_HISTORY_VISIBLE_LIMIT;
+                const rowInner = (
+                  <>
+                    <div
+                      style={{
+                        fontSize: 14,
+                        lineHeight: "20px",
+                        color: "#3f3b36",
+                        overflowWrap: "anywhere",
+                        wordBreak: "break-word",
+                      }}
+                    >
+                      {preview}
+                    </div>
+                    {dateLabel ? (
+                      <div
+                        style={{
+                          fontSize: 12,
+                          lineHeight: "16px",
+                          color: "#9c9690",
+                          marginTop: "0.2rem",
+                        }}
+                      >
+                        {dateLabel}
+                      </div>
+                    ) : null}
+                  </>
+                );
+                if (!unlocked) {
+                  return (
+                    <div
+                      key={item.id}
+                      style={{
+                        padding: "0.45rem 0.5rem",
+                        borderRadius: "8px",
+                        border: "1px solid transparent",
+                        opacity: 0.4,
+                        cursor: "default",
+                      }}
+                      aria-disabled
+                    >
+                      {rowInner}
+                    </div>
+                  );
+                }
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    disabled={historyDetailLoading}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      void openHistoryConversation(item.id);
+                    }}
+                    style={{
+                      display: "block",
+                      width: "100%",
+                      margin: 0,
+                      padding: "0.45rem 0.5rem",
+                      textAlign: "left",
+                      cursor: historyDetailLoading ? "wait" : "pointer",
+                      border: active
+                        ? "1px solid rgba(0,0,0,0.1)"
+                        : "1px solid transparent",
+                      borderRadius: "8px",
+                      backgroundColor: active ? "rgba(255,255,255,0.72)" : "transparent",
+                      boxSizing: "border-box",
+                    }}
+                  >
+                    {rowInner}
+                  </button>
+                );
+              })}
+              {hasLockedHistoryRows ? (
+                <p
+                  style={{
+                    fontSize: 11,
+                    lineHeight: 1.45,
+                    color: "#a8a29e",
+                    margin: "0.35rem 0 0 0",
+                    letterSpacing: "0.01em",
+                  }}
+                >
+                  Full history available with subscription
+                </p>
+              ) : null}
+            </div>
+          </div>
+        </>
+      ) : null}
       {!isDone && (
         <div
           style={{

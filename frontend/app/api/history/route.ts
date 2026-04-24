@@ -20,7 +20,9 @@ preview: string;
 };
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
+console.log("HISTORY ROUTE HIT");
 const anonymousId = req.headers.get("x-anonymous-id")?.trim();
+console.log("[history API identity]", { anonymousId });
 
 if (!anonymousId) {
 return NextResponse.json(
@@ -31,8 +33,6 @@ return NextResponse.json(
 
 try {
 const supabase = getSupabaseServerClient();
-
-console.log("[history API identity]", { anonymousId });
 
 const { data, error } = await supabase
   .from("conversations")

@@ -46,7 +46,6 @@ const { data, error } = await supabase
   .from("conversations")
   .select("*")
   .eq("anonymous_id", anonymousId)
-  .order("updated_at", { ascending: false })
   .order("created_at", { ascending: false })
   .limit(20);
 
@@ -73,7 +72,7 @@ if (ids.length > 0) {
     .select("conversation_id, content, created_at")
     .in("conversation_id", ids)
     .eq("role", "user")
-    .order("created_at", { ascending: true });
+    .order("created_at", { ascending: false });
 
   if (!userErr && userRows) {
     console.log("[api/history] messages count:", userRows.length);
@@ -105,6 +104,8 @@ const conversations: HistoryConversation[] = data.map((row) => {
 });
 
 console.log("[api/history] final conversations:", conversations.length);
+console.log("[api/history] first conversation timestamp:", conversations[0]?.created_at ?? null);
+console.log("[api/history] first preview:", conversations[0]?.preview ?? null);
 console.log(
   "[api/history] previews:",
   conversations.map((c) => ({

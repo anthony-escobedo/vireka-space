@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { NextRequest, NextResponse } from "next/server";
 import {
 normalizeMessageContentToPreviewSource,
@@ -6,7 +8,6 @@ truncateHistoryPreview,
 import { getSupabaseServerClient } from "../../../lib/supabase/server";
 
 export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
 
 const NO_STORE_HEADERS = {
 "Cache-Control": "no-store, max-age=0, must-revalidate",
@@ -20,7 +21,7 @@ preview: string;
 };
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
-console.log("HISTORY ROUTE HIT");
+console.log("HISTORY ROUTE HIT v2");
 const anonymousId = req.headers.get("x-anonymous-id")?.trim();
 console.log("[history API identity]", { anonymousId });
 

@@ -34,6 +34,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       .from("conversations")
       .select("*")
       .eq("anonymous_id", anonymousId)
+      .order("updated_at", { ascending: false })
       .order("created_at", { ascending: false })
       .limit(20);
 

@@ -115,11 +115,36 @@ export default function ClarifyPage() {
   const resultRef = useRef<HTMLDivElement | null>(null);
   const copyResetTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const historyRefreshTimeoutsRef = useRef<number[]>([]);
+  const topInputValueRef = useRef("");
+  const followupInputValueRef = useRef("");
+  const historyRef = useRef<ConversationTurn[]>([]);
+  const conversationIdRef = useRef<string | null>(null);
+  const iterationsRef = useRef<ClarificationIteration[]>([]);
 
   const router = useRouter();
   const pathname = usePathname();
   const homeMode = pathname === "/";
   const redirectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    topInputValueRef.current = topInput;
+  }, [topInput]);
+
+  useEffect(() => {
+    followupInputValueRef.current = followupInput;
+  }, [followupInput]);
+
+  useEffect(() => {
+    historyRef.current = history;
+  }, [history]);
+
+  useEffect(() => {
+    conversationIdRef.current = conversationId;
+  }, [conversationId]);
+
+  useEffect(() => {
+    iterationsRef.current = iterations;
+  }, [iterations]);
 
     useEffect(() => {
   const accepted =
@@ -393,6 +418,11 @@ export default function ClarifyPage() {
         ? `panel-${nextIterations[nextIterations.length - 1].id}`
         : null
     );
+    conversationIdRef.current = payload.conversation.id;
+    historyRef.current = nextChat;
+    iterationsRef.current = nextIterations;
+    topInputValueRef.current = "";
+    followupInputValueRef.current = "";
   }
 
   async function openHistoryConversation(id: string): Promise<void> {
@@ -449,7 +479,13 @@ export default function ClarifyPage() {
     source: "top" | "followup",
     overrideInput?: string
   ): Promise<boolean> {
-    const sourceValue = source === "top" ? topInput : followupInput;
+    const submitHasClarificationHistory = iterationsRef.current.length > 0;
+    const effectiveSource: "top" | "followup" =
+      submitHasClarificationHistory ? "followup" : "top";
+    const sourceValue =
+      effectiveSource === "top"
+        ? topInputValueRef.current
+        : followupInputValueRef.current;
     const effectiveInput =
       typeof overrideInput === "string" ? overrideInput : sourceValue;
     const trimmed = effectiveInput.trim();
@@ -466,16 +502,24 @@ export default function ClarifyPage() {
     try {
   
     const anonymousId = getOrCreateAnonymousId();
+    const requestConversationId = conversationIdRef.current;
+    const requestHistory = historyRef.current;
   
     const payload = {
     input: trimmed,
     action,
-    history,
+    history: requestHistory,
     context: "clarify",
     anonymousId,
-    conversationId,
+    conversationId: requestConversationId,
     language,
   };
+
+      console.log("[clarify submit]", {
+        conversationId: requestConversationId,
+        hasClarificationHistory: submitHasClarificationHistory,
+        inputUsed: submitHasClarificationHistory ? "followupInput" : "initialInput",
+      });
 
       const res = await fetch("/api/clarify", {
     method: "POST",
@@ -497,6 +541,7 @@ export default function ClarifyPage() {
 
         const typedData = data as VirekaResponse;
         if (typedData.conversationId) {
+        conversationIdRef.current = typedData.conversationId;
         setConversationId(typedData.conversationId);
       }
 
@@ -507,30 +552,40 @@ export default function ClarifyPage() {
           content: formatResponseForHistory(typedData),
         };
 
-        setHistory((prev) => [...prev, userTurn, assistantTurn]);
+        setHistory((prev) => {
+          const next = [...prev, userTurn, assistantTurn];
+          historyRef.current = next;
+          return next;
+        });
 
-        if (source === "top") {
+        if (effectiveSource === "top") {
           setTopInput("");
+          topInputValueRef.current = "";
         } else {
           setFollowupInput("");
+          followupInputValueRef.current = "";
         }
 
         if (typedData.mode === "clarify") {
           const newIteration: ClarificationIteration = {
             id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-            step: iterations.length + 1,
+            step: iterationsRef.current.length + 1,
             submittedInput: trimmed,
-            source,
+            source: effectiveSource,
             response: typedData,
           };
 
           const panelId = `panel-${newIteration.id}`;
 
-          setIterations((prev) => [...prev, newIteration]);
+          setIterations((prev) => {
+            const next = [...prev, newIteration];
+            iterationsRef.current = next;
+            return next;
+          });
           setLatestPanelId(panelId);
           setOpenPanelIds([]);
 
-          if (source === "top" && !initialSituation) {
+          if (effectiveSource === "top" && !initialSituation) {
             setInitialSituation(trimmed);
           }
         }
@@ -1197,6 +1252,11 @@ function handleReturnHome(): void {
   }
 
   function resetSession(): void {
+  topInputValueRef.current = "";
+  followupInputValueRef.current = "";
+  historyRef.current = [];
+  conversationIdRef.current = null;
+  iterationsRef.current = [];
   setTopInput("");
   setFollowupInput("");
   setResult(null);
@@ -1209,6 +1269,7 @@ function handleReturnHome(): void {
   setOpenPanelIds([]);
   setLatestPanelId(null);
   setSelectedHistoryConversationId(null);
+  setHistoryDetailLoading(false);
   setMobileHistoryOpen(false);
   scheduleHistoryRefresh();
 }
@@ -1854,8 +1915,10 @@ function handleReturnHome(): void {
               value={composerValue}
               onChange={(e) => {
                 if (hasClarificationHistory) {
+                  followupInputValueRef.current = e.target.value;
                   setFollowupInput(e.target.value);
                 } else {
+                  topInputValueRef.current = e.target.value;
                   setTopInput(e.target.value);
                 }
               }}

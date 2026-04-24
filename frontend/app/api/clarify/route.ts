@@ -856,6 +856,10 @@ export async function POST(req: NextRequest) {
       finalConversationId: conversationId,
       createdNew: !incomingConversationId,
     });
+    console.log("[clarify API identity]", {
+      persistenceAnonymousId,
+      conversationId,
+    });
     
     if (action === "clarify" && !input) {
       return NextResponse.json({ error: "Input required" }, { status: 400 });

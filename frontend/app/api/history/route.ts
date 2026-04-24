@@ -32,6 +32,7 @@ return NextResponse.json(
 try {
 const supabase = getSupabaseServerClient();
 
+console.log("[history API identity]", { anonymousId });
 
 const { data, error } = await supabase
   .from("conversations")

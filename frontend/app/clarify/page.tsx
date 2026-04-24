@@ -115,6 +115,7 @@ export default function ClarifyPage() {
   const resultRef = useRef<HTMLDivElement | null>(null);
   const copyResetTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const historyRefreshTimeoutsRef = useRef<number[]>([]);
+  const anonymousIdRef = useRef<string | null>(null);
   const topInputValueRef = useRef("");
   const followupInputValueRef = useRef("");
   const historyRef = useRef<ConversationTurn[]>([]);
@@ -125,6 +126,13 @@ export default function ClarifyPage() {
   const pathname = usePathname();
   const homeMode = pathname === "/";
   const redirectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  function getStableAnonymousId(): string {
+    if (!anonymousIdRef.current) {
+      anonymousIdRef.current = getOrCreateAnonymousId();
+    }
+    return anonymousIdRef.current;
+  }
 
   useEffect(() => {
     topInputValueRef.current = topInput;
@@ -173,7 +181,7 @@ export default function ClarifyPage() {
       const res = await fetch("/api/history", {
         method: "GET",
         headers: {
-          "x-anonymous-id": getOrCreateAnonymousId(),
+          "x-anonymous-id": getStableAnonymousId(),
         },
         cache: "no-store",
       });
@@ -431,7 +439,7 @@ export default function ClarifyPage() {
     try {
       const res = await fetch(`/api/history/${encodeURIComponent(id)}`, {
         method: "GET",
-        headers: { "x-anonymous-id": getOrCreateAnonymousId() },
+        headers: { "x-anonymous-id": getStableAnonymousId() },
         cache: "no-store",
       });
       if (!res.ok) {
@@ -501,7 +509,7 @@ export default function ClarifyPage() {
 
     try {
   
-    const anonymousId = getOrCreateAnonymousId();
+    const anonymousId = getStableAnonymousId();
     const safeConversationId = isFollowup ? conversationIdRef.current : null;
     const requestHistory = isFollowup ? historyRef.current : [];
   

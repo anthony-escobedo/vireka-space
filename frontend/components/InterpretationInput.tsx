@@ -187,39 +187,38 @@ function prewarmWaveformAudioContextForGesture(): void {
 }
 
 /**
- * Calm, center-weighted mic strip. Narrow = fewer, shorter bars; wide = slightly more detail.
- * AnalyserNode + rAF; fallback sine if Web Audio cannot attach.
+ * Calm, baseline + rising rounded bars; AnalyserNode + rAF; fallback matches same look.
  */
-const WAVE_BAR_PX = 1;
-const WAVE_GAIN = 1.5;
-const WAVE_LVL_MIN = 0.07;
-const WAVE_LVL_MAX = 0.38;
-const WAVE_SMOOTH_EXP = 0.84;
-const WAVE_SMOOTH_FRAME = 0.72;
-const WAVE_LINE_OPACITY = 0.3;
+const WAVE_BAR_WIDTH_PX = 1.5;
+const WAVE_GAIN = 1.55;
+const WAVE_SMOOTH_EXP = 0.82;
+const WAVE_SMOOTH_FRAME = 0.74;
+/** Alpha range ~0.65–0.75 on black */
+const WAVE_ALPHA_QUIET = 0.66;
+const WAVE_ALPHA_LOUD = 0.74;
 
 type WaveformLayout = {
   bars: number;
   rowH: number;
-  visMin: number;
-  visMax: number;
+  baselinePx: number;
+  peakMaxPx: number;
   gap: number;
 };
 
 const WAVEFORM_LAYOUT_NARROW: WaveformLayout = {
-  bars: 24,
+  bars: 28,
   rowH: 24,
-  visMin: 1.5,
-  visMax: 5.5,
-  gap: 0.5,
+  baselinePx: 2,
+  peakMaxPx: 20,
+  gap: 0.45,
 };
 
 const WAVEFORM_LAYOUT_WIDE: WaveformLayout = {
-  bars: 40,
+  bars: 44,
   rowH: 30,
-  visMin: 1.75,
-  visMax: 6.25,
-  gap: 0.65,
+  baselinePx: 2,
+  peakMaxPx: 26,
+  gap: 0.5,
 };
 
 function useCompactWaveformLayout(): WaveformLayout {
@@ -238,21 +237,32 @@ function useCompactWaveformLayout(): WaveformLayout {
   return useNarrow ? WAVEFORM_LAYOUT_NARROW : WAVEFORM_LAYOUT_WIDE;
 }
 
-/** 0 at edges, 1 at center — multiplies level for a softer edge silhouette */
+/** Center-weighted wave envelope; edges stay partly visible (clustered middle, not hollow sides). */
 function centerBell(barIndex: number, barCount: number): number {
   if (barCount <= 1) return 1;
   const u = barIndex / (barCount - 1);
-  return 0.24 + 0.76 * Math.sin(u * Math.PI);
+  return 0.38 + 0.62 * Math.sin(u * Math.PI);
 }
 
-/** Each column flexes to fill width; 1px line is centered in the column (full-width strip). */
+function smoothBarNeighbors(values: number[]): number[] {
+  const n = values.length;
+  if (n <= 0) return values;
+  return values.map((v, i) => {
+    const v0 = values[Math.max(0, i - 1)] ?? v;
+    const v2 = values[Math.min(n - 1, i + 1)] ?? v;
+    return 0.22 * v0 + 0.56 * v + 0.22 * v2;
+  });
+}
+
+/** Thin rounded bar rising from bottom; height includes quiet baseline dot/dash. */
 function WaveformBarSlot({
   heightPx,
-  lineOpacity,
+  alpha,
 }: {
   heightPx: number;
-  lineOpacity: number;
+  alpha: number;
 }) {
+  const a = Math.min(0.75, Math.max(0.55, alpha));
   return (
     <div
       style={{
@@ -261,17 +271,18 @@ function WaveformBarSlot({
         display: "flex",
         alignItems: "flex-end",
         justifyContent: "center",
+        height: "100%",
       }}
     >
       <div
         style={{
-          width: WAVE_BAR_PX,
-          minWidth: WAVE_BAR_PX,
-          maxWidth: WAVE_BAR_PX,
+          width: WAVE_BAR_WIDTH_PX,
+          minWidth: WAVE_BAR_WIDTH_PX,
+          maxWidth: WAVE_BAR_WIDTH_PX,
           height: heightPx,
           flexShrink: 0,
-          borderRadius: 0,
-          backgroundColor: `rgba(0, 0, 0, ${lineOpacity * 0.8})`,
+          borderRadius: 999,
+          backgroundColor: `rgba(0, 0, 0, ${a})`,
         }}
       />
     </div>
@@ -279,7 +290,7 @@ function WaveformBarSlot({
 }
 
 function FallbackSineWaveform({ layout }: { layout: WaveformLayout }) {
-  const { bars, rowH, visMin, visMax, gap } = layout;
+  const { bars, rowH, baselinePx, peakMaxPx, gap } = layout;
   const [phase, setPhase] = useState(0);
   useEffect(() => {
     const id = window.setInterval(() => {
@@ -287,6 +298,14 @@ function FallbackSineWaveform({ layout }: { layout: WaveformLayout }) {
     }, 110);
     return () => window.clearInterval(id);
   }, []);
+
+  const raw = Array.from({ length: bars }, (_, i) => {
+    const waveA = Math.sin((phase / 100) * Math.PI * 2 + i * 0.5);
+    const waveB = Math.sin((phase / 100) * Math.PI * 2 * 1.75 + i * 0.22);
+    const motion = (waveA * 0.62 + waveB * 0.38 + 1) / 2;
+    return motion * 0.38 * centerBell(i, bars);
+  });
+  const smoothed = smoothBarNeighbors(raw);
 
   return (
     <div
@@ -296,6 +315,7 @@ function FallbackSineWaveform({ layout }: { layout: WaveformLayout }) {
         gap,
         height: rowH,
         minHeight: rowH,
+        maxHeight: rowH,
         flex: 1,
         minWidth: 0,
         maxWidth: "100%",
@@ -306,20 +326,11 @@ function FallbackSineWaveform({ layout }: { layout: WaveformLayout }) {
       }}
       aria-hidden
     >
-      {Array.from({ length: bars }, (_, i) => {
-        const waveA = Math.sin((phase / 100) * Math.PI * 2 + i * 0.5);
-        const waveB = Math.sin((phase / 100) * Math.PI * 2 * 1.8 + i * 0.23);
-        const motion = (waveA * 0.65 + waveB * 0.35 + 1) / 2;
-        const span = visMax - visMin;
-        const bell = centerBell(i, bars);
-        const h = visMin + motion * span * 0.28 * bell;
-        return (
-          <WaveformBarSlot
-            key={i}
-            heightPx={h}
-            lineOpacity={WAVE_LINE_OPACITY * 0.92 * (0.5 + 0.5 * bell)}
-          />
-        );
+      {smoothed.map((t, i) => {
+        const gain = Math.min(1, Math.pow(t, 0.78));
+        const h = baselinePx + (peakMaxPx - baselinePx) * gain;
+        const alpha = WAVE_ALPHA_QUIET + (WAVE_ALPHA_LOUD - WAVE_ALPHA_QUIET) * gain;
+        return <WaveformBarSlot key={i} heightPx={h} alpha={alpha} />;
       })}
     </div>
   );
@@ -333,27 +344,21 @@ function RecordingLiveWaveform({
   isActive: boolean;
 }) {
   const layout = useCompactWaveformLayout();
-  const { bars, rowH, visMin, visMax, gap } = layout;
-  const [levels, setLevels] = useState(() =>
-    Array.from({ length: bars }, () => WAVE_LVL_MIN)
-  );
+  const { bars, rowH, baselinePx, peakMaxPx, gap } = layout;
+  const [levels, setLevels] = useState(() => Array.from({ length: bars }, () => 0));
   const [useFallback, setUseFallback] = useState(false);
-  const smoothRef = useRef<number[]>(
-    Array.from({ length: bars }, () => WAVE_LVL_MIN)
-  );
+  const smoothRef = useRef<number[]>(Array.from({ length: bars }, () => 0));
 
   useEffect(() => {
-    const ground = WAVE_LVL_MIN;
-    smoothRef.current = Array.from({ length: bars }, () => ground);
-    setLevels(Array.from({ length: bars }, () => ground));
+    smoothRef.current = Array.from({ length: bars }, () => 0);
+    setLevels(Array.from({ length: bars }, () => 0));
   }, [bars]);
 
   useEffect(() => {
     if (useFallback) return;
     if (!isActive) {
-      const ground = WAVE_LVL_MIN;
-      smoothRef.current = Array.from({ length: bars }, () => ground);
-      setLevels(() => Array.from({ length: bars }, () => ground));
+      smoothRef.current = Array.from({ length: bars }, () => 0);
+      setLevels(() => Array.from({ length: bars }, () => 0));
       return;
     }
     if (!stream || !stream.active || !stream.getAudioTracks().length) {
@@ -380,8 +385,7 @@ function RecordingLiveWaveform({
       }
       const nBins = Math.min(freqData.length, 240);
       const w = Math.max(1, Math.floor(nBins / barCount));
-      const next: number[] = [];
-      const spanL = WAVE_LVL_MAX - WAVE_LVL_MIN;
+      const raw: number[] = [];
       for (let b = 0; b < barCount; b += 1) {
         const start = 1 + b * w;
         let m = 0;
@@ -394,9 +398,14 @@ function RecordingLiveWaveform({
           Math.pow(Math.min(1, m * WAVE_GAIN), WAVE_SMOOTH_EXP)
         );
         s[b] = s[b] * WAVE_SMOOTH_FRAME + tIn * (1 - WAVE_SMOOTH_FRAME);
-        const v = Math.min(1, s[b] * 0.9);
+        const v = Math.min(1, s[b] * 0.92);
+        raw.push(v);
+      }
+      const blended = smoothBarNeighbors(raw);
+      const next: number[] = [];
+      for (let b = 0; b < barCount; b += 1) {
         const bell = centerBell(b, barCount);
-        next.push(WAVE_LVL_MIN + spanL * Math.max(0, v) * bell);
+        next.push(Math.min(1, Math.max(0, blended[b] * bell)));
       }
       setLevels([...next]);
       raf = requestAnimationFrame(tick);
@@ -455,8 +464,6 @@ function RecordingLiveWaveform({
     return <FallbackSineWaveform layout={layout} />;
   }
 
-  const spanL = WAVE_LVL_MAX - WAVE_LVL_MIN;
-
   return (
     <div
       style={{
@@ -476,17 +483,11 @@ function RecordingLiveWaveform({
       }}
       aria-hidden
     >
-      {levels.map((lv, i) => {
-        const t = Math.min(1, Math.max(0, (lv - WAVE_LVL_MIN) / (spanL * 0.99 + 0.0001)));
-        const h = visMin + t * (visMax - visMin);
-        const bellO = centerBell(i, levels.length);
-        return (
-          <WaveformBarSlot
-            key={i}
-            heightPx={h}
-            lineOpacity={WAVE_LINE_OPACITY + t * 0.2 * (0.55 + 0.45 * bellO)}
-          />
-        );
+      {levels.map((t, i) => {
+        const gain = Math.min(1, Math.pow(t, 0.74));
+        const h = baselinePx + (peakMaxPx - baselinePx) * gain;
+        const alpha = WAVE_ALPHA_QUIET + (WAVE_ALPHA_LOUD - WAVE_ALPHA_QUIET) * gain;
+        return <WaveformBarSlot key={i} heightPx={h} alpha={alpha} />;
       })}
     </div>
   );

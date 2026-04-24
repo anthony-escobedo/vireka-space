@@ -25,7 +25,8 @@ export async function createConversation(anonymousId: string): Promise<string> {
     .from("conversations")
     .insert({
       anonymous_id: anonymousId,
-      source: "clarify",
+      source: "context",
+      mode: "context",
       title: null,
     })
     .select("id")

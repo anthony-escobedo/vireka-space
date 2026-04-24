@@ -825,7 +825,8 @@ export async function POST(req: NextRequest) {
           .from("conversations")
           .insert({
             anonymous_id: persistenceAnonymousId,
-            source: context,
+            source: "context",
+            mode: "context",
           })
           .select("id")
           .single();

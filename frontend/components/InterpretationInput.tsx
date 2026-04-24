@@ -187,21 +187,63 @@ function prewarmWaveformAudioContextForGesture(): void {
 }
 
 /**
- * Thin “listening” strip tunables (Phase 1 — swap inner render in Phase 2 for canvas if desired).
- * @see WAVE_* constants and AnalyserNode smoothing in RecordingLiveWaveform
+ * Calm, center-weighted mic strip. Narrow = fewer, shorter bars; wide = slightly more detail.
+ * AnalyserNode + rAF; fallback sine if Web Audio cannot attach.
  */
-const WAVE_BARS = 64;
 const WAVE_BAR_PX = 1;
-const WAVE_GAP_PX = 0.5;
-const WAVE_ROW_H_PX = 14;
-const WAVE_GAIN = 1.75;
-const WAVE_LVL_MIN = 0.08;
-const WAVE_LVL_MAX = 0.45;
-const WAVE_VIS_MIN_PX = 1.5;
-const WAVE_VIS_MAX_PX = 6.5;
-const WAVE_SMOOTH_EXP = 0.82;
-const WAVE_SMOOTH_FRAME = 0.64;
-const WAVE_LINE_OPACITY = 0.38;
+const WAVE_GAIN = 1.5;
+const WAVE_LVL_MIN = 0.07;
+const WAVE_LVL_MAX = 0.38;
+const WAVE_SMOOTH_EXP = 0.84;
+const WAVE_SMOOTH_FRAME = 0.72;
+const WAVE_LINE_OPACITY = 0.3;
+
+type WaveformLayout = {
+  bars: number;
+  rowH: number;
+  visMin: number;
+  visMax: number;
+  gap: number;
+};
+
+const WAVEFORM_LAYOUT_NARROW: WaveformLayout = {
+  bars: 24,
+  rowH: 24,
+  visMin: 1.5,
+  visMax: 5.5,
+  gap: 0.5,
+};
+
+const WAVEFORM_LAYOUT_WIDE: WaveformLayout = {
+  bars: 40,
+  rowH: 30,
+  visMin: 1.75,
+  visMax: 6.25,
+  gap: 0.65,
+};
+
+function useCompactWaveformLayout(): WaveformLayout {
+  const [useNarrow, setUseNarrow] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(max-width: 640px)").matches;
+  });
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(max-width: 640px)");
+    const sync = () => setUseNarrow(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+  return useNarrow ? WAVEFORM_LAYOUT_NARROW : WAVEFORM_LAYOUT_WIDE;
+}
+
+/** 0 at edges, 1 at center — multiplies level for a softer edge silhouette */
+function centerBell(barIndex: number, barCount: number): number {
+  if (barCount <= 1) return 1;
+  const u = barIndex / (barCount - 1);
+  return 0.24 + 0.76 * Math.sin(u * Math.PI);
+}
 
 /** Each column flexes to fill width; 1px line is centered in the column (full-width strip). */
 function WaveformBarSlot({
@@ -236,7 +278,8 @@ function WaveformBarSlot({
   );
 }
 
-function FallbackSineWaveform() {
+function FallbackSineWaveform({ layout }: { layout: WaveformLayout }) {
+  const { bars, rowH, visMin, visMax, gap } = layout;
   const [phase, setPhase] = useState(0);
   useEffect(() => {
     const id = window.setInterval(() => {
@@ -250,30 +293,31 @@ function FallbackSineWaveform() {
       style={{
         display: "flex",
         alignItems: "flex-end",
-        gap: WAVE_GAP_PX,
-        height: WAVE_ROW_H_PX,
+        gap,
+        height: rowH,
+        minHeight: rowH,
         flex: 1,
         minWidth: 0,
         maxWidth: "100%",
         width: "100%",
         alignSelf: "stretch",
         justifyContent: "flex-start",
-        padding: "0 0 0",
+        padding: 0,
       }}
       aria-hidden
     >
-      {Array.from({ length: WAVE_BARS }, (_, i) => {
+      {Array.from({ length: bars }, (_, i) => {
         const waveA = Math.sin((phase / 100) * Math.PI * 2 + i * 0.5);
         const waveB = Math.sin((phase / 100) * Math.PI * 2 * 1.8 + i * 0.23);
         const motion = (waveA * 0.65 + waveB * 0.35 + 1) / 2;
-        const h =
-          WAVE_VIS_MIN_PX +
-          motion * (WAVE_VIS_MAX_PX - WAVE_VIS_MIN_PX) * 0.32;
+        const span = visMax - visMin;
+        const bell = centerBell(i, bars);
+        const h = visMin + motion * span * 0.28 * bell;
         return (
           <WaveformBarSlot
             key={i}
             heightPx={h}
-            lineOpacity={WAVE_LINE_OPACITY * 0.9}
+            lineOpacity={WAVE_LINE_OPACITY * 0.92 * (0.5 + 0.5 * bell)}
           />
         );
       })}
@@ -288,26 +332,35 @@ function RecordingLiveWaveform({
   stream: MediaStream | null;
   isActive: boolean;
 }) {
+  const layout = useCompactWaveformLayout();
+  const { bars, rowH, visMin, visMax, gap } = layout;
   const [levels, setLevels] = useState(() =>
-    Array.from({ length: WAVE_BARS }, () => WAVE_LVL_MIN)
+    Array.from({ length: bars }, () => WAVE_LVL_MIN)
   );
   const [useFallback, setUseFallback] = useState(false);
   const smoothRef = useRef<number[]>(
-    Array.from({ length: WAVE_BARS }, () => WAVE_LVL_MIN)
+    Array.from({ length: bars }, () => WAVE_LVL_MIN)
   );
+
+  useEffect(() => {
+    const ground = WAVE_LVL_MIN;
+    smoothRef.current = Array.from({ length: bars }, () => ground);
+    setLevels(Array.from({ length: bars }, () => ground));
+  }, [bars]);
 
   useEffect(() => {
     if (useFallback) return;
     if (!isActive) {
       const ground = WAVE_LVL_MIN;
-      smoothRef.current = Array.from({ length: WAVE_BARS }, () => ground);
-      setLevels(() => Array.from({ length: WAVE_BARS }, () => ground));
+      smoothRef.current = Array.from({ length: bars }, () => ground);
+      setLevels(() => Array.from({ length: bars }, () => ground));
       return;
     }
     if (!stream || !stream.active || !stream.getAudioTracks().length) {
       return;
     }
 
+    const barCount = bars;
     let cancelled = false;
     let raf = 0;
     let source: MediaStreamAudioSourceNode | null = null;
@@ -321,26 +374,29 @@ function RecordingLiveWaveform({
       }
       analyser.getByteFrequencyData(freqData);
       const s = smoothRef.current;
+      if (s.length !== barCount) {
+        raf = requestAnimationFrame(tick);
+        return;
+      }
       const nBins = Math.min(freqData.length, 240);
-      const w = Math.max(1, Math.floor(nBins / WAVE_BARS));
+      const w = Math.max(1, Math.floor(nBins / barCount));
       const next: number[] = [];
-      for (let b = 0; b < WAVE_BARS; b += 1) {
+      const spanL = WAVE_LVL_MAX - WAVE_LVL_MIN;
+      for (let b = 0; b < barCount; b += 1) {
         const start = 1 + b * w;
         let m = 0;
         for (let k = 0; k < w; k += 1) {
           m += (freqData[start + k] ?? 0) / 255;
         }
         m /= w;
-        const t = Math.min(
+        const tIn = Math.min(
           1,
           Math.pow(Math.min(1, m * WAVE_GAIN), WAVE_SMOOTH_EXP)
         );
-        s[b] =
-          s[b] * WAVE_SMOOTH_FRAME + t * (1 - WAVE_SMOOTH_FRAME);
-        const v = Math.min(1, s[b] * 0.92);
-        next.push(
-          WAVE_LVL_MIN + (WAVE_LVL_MAX - WAVE_LVL_MIN) * Math.max(0, v)
-        );
+        s[b] = s[b] * WAVE_SMOOTH_FRAME + tIn * (1 - WAVE_SMOOTH_FRAME);
+        const v = Math.min(1, s[b] * 0.9);
+        const bell = centerBell(b, barCount);
+        next.push(WAVE_LVL_MIN + spanL * Math.max(0, v) * bell);
       }
       setLevels([...next]);
       raf = requestAnimationFrame(tick);
@@ -358,9 +414,9 @@ function RecordingLiveWaveform({
         source = ctx.createMediaStreamSource(stream);
         analyser = ctx.createAnalyser();
         analyser.fftSize = 1024;
-        analyser.smoothingTimeConstant = 0.78;
-        analyser.minDecibels = -88;
-        analyser.maxDecibels = -34;
+        analyser.smoothingTimeConstant = 0.88;
+        analyser.minDecibels = -90;
+        analyser.maxDecibels = -32;
         freqData = new Uint8Array(analyser.frequencyBinCount);
         source.connect(analyser);
         raf = requestAnimationFrame(tick);
@@ -393,38 +449,42 @@ function RecordingLiveWaveform({
         /* ignore */
       }
     };
-  }, [stream, isActive, useFallback]);
+  }, [stream, isActive, useFallback, bars]);
 
   if (useFallback) {
-    return <FallbackSineWaveform />;
+    return <FallbackSineWaveform layout={layout} />;
   }
+
+  const spanL = WAVE_LVL_MAX - WAVE_LVL_MIN;
 
   return (
     <div
       style={{
         display: "flex",
         alignItems: "flex-end",
-        gap: WAVE_GAP_PX,
-        height: WAVE_ROW_H_PX,
+        gap,
+        height: rowH,
+        minHeight: rowH,
+        maxHeight: rowH,
         flex: 1,
         minWidth: 0,
         maxWidth: "100%",
         width: "100%",
         alignSelf: "stretch",
         justifyContent: "flex-start",
-        padding: "0 0 0",
+        padding: 0,
       }}
       aria-hidden
     >
       {levels.map((lv, i) => {
-        const span = WAVE_LVL_MAX - WAVE_LVL_MIN || 1;
-        const t = (lv - WAVE_LVL_MIN) / span;
-        const h = WAVE_VIS_MIN_PX + t * (WAVE_VIS_MAX_PX - WAVE_VIS_MIN_PX);
+        const t = Math.min(1, Math.max(0, (lv - WAVE_LVL_MIN) / (spanL * 0.99 + 0.0001)));
+        const h = visMin + t * (visMax - visMin);
+        const bellO = centerBell(i, levels.length);
         return (
           <WaveformBarSlot
             key={i}
             heightPx={h}
-            lineOpacity={WAVE_LINE_OPACITY + t * 0.18}
+            lineOpacity={WAVE_LINE_OPACITY + t * 0.2 * (0.55 + 0.45 * bellO)}
           />
         );
       })}
@@ -1069,7 +1129,7 @@ const InterpretationInput = forwardRef<
           alignItems: "center",
           gap: "0.5rem",
           width: "100%",
-          minHeight: 30,
+          minHeight: 32,
           minWidth: 0,
         }}
       >

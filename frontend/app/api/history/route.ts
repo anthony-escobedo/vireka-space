@@ -22,8 +22,15 @@ preview: string;
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
 console.log("HISTORY ROUTE HIT v2");
-const anonymousId = req.headers.get("x-anonymous-id")?.trim();
+const headerAnonymousId = req.headers.get("x-anonymous-id")?.trim();
+const queryAnonymousId = req.nextUrl.searchParams.get("anonymousId")?.trim();
+const anonymousId = headerAnonymousId || queryAnonymousId;
 console.log("[history API identity]", { anonymousId });
+console.log("[history anonymous id]", {
+  anonymousId,
+  headerAnonymousId,
+  queryAnonymousId,
+});
 
 if (!anonymousId) {
 return NextResponse.json(
@@ -50,9 +57,8 @@ if (error || !data) {
   );
 }
 
-// 🔍 DEBUG: raw conversations
 console.log("[api/history] anonymousId:", anonymousId);
-console.log("[api/history] raw conversation rows:", data.length);
+console.log("[api/history] conversations count:", data.length);
 console.log(
   "[api/history] conversation ids:",
   data.map((row) => row.id)
@@ -70,8 +76,7 @@ if (ids.length > 0) {
     .order("created_at", { ascending: true });
 
   if (!userErr && userRows) {
-    // 🔍 DEBUG: message rows
-    console.log("[api/history] user message rows:", userRows.length);
+    console.log("[api/history] messages count:", userRows.length);
 
     for (const row of userRows) {
       const cid = String(
@@ -99,7 +104,6 @@ const conversations: HistoryConversation[] = data.map((row) => {
   };
 });
 
-// 🔍 DEBUG: final output
 console.log("[api/history] final conversations:", conversations.length);
 console.log(
   "[api/history] previews:",

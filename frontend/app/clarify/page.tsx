@@ -186,13 +186,17 @@ export default function ClarifyPage() {
 
   const loadHistory = useCallback(async () => {
     try {
-      const res = await fetch("/api/history", {
+      const anonymousId = getStableAnonymousId();
+      const res = await fetch(
+        `/api/history?anonymousId=${encodeURIComponent(anonymousId)}`,
+        {
         method: "GET",
         headers: {
-          "x-anonymous-id": getStableAnonymousId(),
+          "x-anonymous-id": anonymousId,
         },
         cache: "no-store",
-      });
+        }
+      );
       if (!res.ok) return;
       const data = (await res.json()) as { conversations?: HistoryConversation[] };
       setHistoryConversations(

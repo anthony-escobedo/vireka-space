@@ -20,7 +20,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     const supabase = getSupabaseServerClient();
     const { data, error } = await supabase
       .from("conversations")
-      .select("id, source, created_at")
+      .select("*")
       .eq("anonymous_id", anonymousId)
       .order("created_at", { ascending: false })
       .limit(20);
@@ -31,7 +31,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
 
     const conversations: HistoryConversation[] = data.map((row) => ({
       id: String(row.id),
-      mode: String(row.source ?? "unknown"),
+      mode: String(row.source ?? row.mode ?? "unknown"),
       created_at: String(row.created_at),
     }));
 

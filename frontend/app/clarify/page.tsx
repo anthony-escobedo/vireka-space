@@ -1096,8 +1096,8 @@ function handleReturnHome(): void {
             {compactHistoryRows.length > 0 ? (
               <div
                 style={{
-                  marginTop: "-1.35rem",
-                  marginBottom: "1.35rem",
+                  marginTop: "0.15rem",
+                  marginBottom: "1.1rem",
                   display: "flex",
                   flexDirection: "column",
                   gap: "0.24rem",

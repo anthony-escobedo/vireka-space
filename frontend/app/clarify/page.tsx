@@ -130,11 +130,18 @@ export default function ClarifyPage() {
   const redirectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   function getStableAnonymousId(): string {
-    if (!anonymousIdRef.current) {
-      try {
-        anonymousIdRef.current =
-          window.localStorage.getItem(ANONYMOUS_ID_KEY) ?? getOrCreateAnonymousId();
-      } catch {
+    try {
+      const storedAnonymousId = window.localStorage.getItem(ANONYMOUS_ID_KEY);
+      if (storedAnonymousId && storedAnonymousId !== anonymousIdRef.current) {
+        anonymousIdRef.current = storedAnonymousId;
+        console.log("[clarify anonymous id]", anonymousIdRef.current);
+      }
+      if (!anonymousIdRef.current) {
+        anonymousIdRef.current = getOrCreateAnonymousId();
+        console.log("[clarify anonymous id]", anonymousIdRef.current);
+      }
+    } catch {
+      if (!anonymousIdRef.current) {
         anonymousIdRef.current = getOrCreateAnonymousId();
       }
       console.log("[clarify anonymous id]", anonymousIdRef.current);
@@ -539,6 +546,7 @@ export default function ClarifyPage() {
         isFollowup,
         conversationId: safeConversationId,
       });
+      console.log("[clarify submit anonymous id]", anonymousId);
 
       const res = await fetch("/api/clarify", {
     method: "POST",

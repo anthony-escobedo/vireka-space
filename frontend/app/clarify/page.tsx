@@ -62,6 +62,12 @@ type ClarificationPanel = {
   iteration: ClarificationIteration;
 };
 
+type HistoryConversation = {
+  id: string;
+  mode: string;
+  created_at: string;
+};
+
 export default function ClarifyPage() {
   const [topInput, setTopInput] = useState<string>("");
   const [followupInput, setFollowupInput] = useState<string>("");
@@ -77,6 +83,7 @@ export default function ClarifyPage() {
   const [latestPanelId, setLatestPanelId] = useState<string | null>(null);
   const [showOnboarding, setShowOnboarding] = useState<boolean>(false);
   const [checkedOnboarding, setCheckedOnboarding] = useState(false);
+  const [historyConversations, setHistoryConversations] = useState<HistoryConversation[]>([]);
   const { t, language } = useLanguage();
   const [copyLabel, setCopyLabel] = useState(t.clarify.copyResult);
   const topInputRef = useRef<HTMLTextAreaElement | null>(null);
@@ -102,6 +109,29 @@ export default function ClarifyPage() {
       if (copyResetTimeoutRef.current) {
         clearTimeout(copyResetTimeoutRef.current);
       }
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    void (async () => {
+      try {
+        const res = await fetch("/api/history", {
+          method: "GET",
+          headers: {
+            "x-anonymous-id": getOrCreateAnonymousId(),
+          },
+        });
+        if (!res.ok) return;
+        const data = (await res.json()) as { conversations?: HistoryConversation[] };
+        if (!active) return;
+        setHistoryConversations(Array.isArray(data.conversations) ? data.conversations.slice(0, 8) : []);
+      } catch {
+        // fail silently
+      }
+    })();
+    return () => {
+      active = false;
     };
   }, []);
 
@@ -480,6 +510,7 @@ function handleReturnHome(): void {
   const composerSource: "top" | "followup" = hasClarificationHistory
     ? "followup"
     : "top";
+  const compactHistoryRows = historyConversations.slice(0, 8);
 
   function renderList(items: string[] | undefined, label: string) {
     if (!items || items.length === 0) return null;
@@ -1181,6 +1212,45 @@ function handleReturnHome(): void {
                 borderColor: "#dfdcd6",
               }}
             />
+            {compactHistoryRows.length > 0 ? (
+              <div
+                style={{
+                  marginTop: "0.4rem",
+                  paddingLeft: "0.15rem",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "0.25rem",
+                }}
+              >
+                {compactHistoryRows.map((item) => {
+                  const modeLabel =
+                    item.mode === "ai-interaction" ? "AI Interaction" : "Clarify";
+                  const dt = new Date(item.created_at);
+                  const dateLabel = Number.isNaN(dt.getTime())
+                    ? ""
+                    : dt.toLocaleDateString(undefined, {
+                        month: "short",
+                        day: "numeric",
+                      });
+                  return (
+                    <div
+                      key={item.id}
+                      style={{
+                        fontSize: "0.72rem",
+                        lineHeight: 1.3,
+                        color: "#8a8580",
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      {modeLabel}
+                      {dateLabel ? ` — ${dateLabel}` : ""}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : null}
           </div>
         </div>
       )}

@@ -271,7 +271,7 @@ function WaveformBarSlot({
           height: heightPx,
           flexShrink: 0,
           borderRadius: 0,
-          backgroundColor: `rgba(120, 116, 110, ${lineOpacity})`,
+          backgroundColor: `rgba(0, 0, 0, ${lineOpacity * 0.8})`,
         }}
       />
     </div>

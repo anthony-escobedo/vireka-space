@@ -856,6 +856,9 @@ export async function POST(req: NextRequest) {
         }
       }
     }
+    if (!persistedConversationId && conversationId) {
+      persistedConversationId = conversationId;
+    }
     
     if (action === "clarify" && !input) {
       return NextResponse.json({ error: "Input required" }, { status: 400 });
@@ -867,6 +870,9 @@ export async function POST(req: NextRequest) {
       } catch {
         // fail silently
       }
+    }
+    if (!conversationId && persistedConversationId) {
+      conversationId = persistedConversationId;
     }
 
     // Usage tracking with Supabase conditional
@@ -942,25 +948,6 @@ export async function POST(req: NextRequest) {
         message: "Acknowledged. A new situation can be started whenever needed.",
       };
 
-      if (supabase && conversationId) {
-        const { error: assistantMessageInsertError } = await supabase
-          .from("messages")
-          .insert({
-            conversation_id: conversationId,
-            role: "assistant",
-            content: closeResponse.message,
-          });
-
-        if (assistantMessageInsertError) {
-          return NextResponse.json(
-            {
-              error: `Failed to save assistant message: ${assistantMessageInsertError.message}`,
-            },
-            { status: 500 }
-          );
-        }
-      }
-
       if (persistedConversationId) {
         try {
           await saveMessage({
@@ -991,26 +978,6 @@ export async function POST(req: NextRequest) {
         ...closeResponse,
         conversationId,
       });
-    }
-
-    // User message insertion with Supabase conditional
-    if (supabase && action === "clarify" && input && conversationId) {
-      const { error: userMessageInsertError } = await supabase
-        .from("messages")
-        .insert({
-          conversation_id: conversationId,
-          role: "user",
-          content: input,
-        });
-
-      if (userMessageInsertError) {
-        return NextResponse.json(
-          {
-            error: `Failed to save user message: ${userMessageInsertError.message}`,
-          },
-          { status: 500 }
-        );
-      }
     }
 
     if (action === "clarify" && input && persistedConversationId) {
@@ -1087,31 +1054,6 @@ export async function POST(req: NextRequest) {
 
     const validated = validateResponse(parsed);
     const neutralized = enforceNeutralResponse(validated);
-
-    // Assistant message insertion with Supabase conditional
-    if (supabase && conversationId) {
-      const assistantContent =
-        neutralized.mode === "clarify"
-          ? formatResponseForStorage(neutralized)
-          : neutralized.message;
-
-      const { error: assistantMessageInsertError } = await supabase
-        .from("messages")
-        .insert({
-          conversation_id: conversationId,
-          role: "assistant",
-          content: assistantContent,
-        });
-
-      if (assistantMessageInsertError) {
-        return NextResponse.json(
-          {
-            error: `Failed to save assistant message: ${assistantMessageInsertError.message}`,
-          },
-          { status: 500 }
-        );
-      }
-    }
 
     if (persistedConversationId) {
       const assistantContent =

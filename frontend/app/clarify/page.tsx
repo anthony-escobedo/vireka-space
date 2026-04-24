@@ -8,6 +8,7 @@ import OnboardingModal from "../../components/OnboardingModal";
 import { useRouter } from "next/navigation";
 import DoneState from "../../components/DoneState";
 import InterpretationInput from "../../components/InterpretationInput";
+import IntegratedViewTtsButton from "../../components/IntegratedViewTtsButton";
 
 import { getOrCreateAnonymousId } from "../../lib/anonymousSession";
 import { useLanguage } from "../../lib/i18n/useLanguage";
@@ -634,18 +635,36 @@ function handleReturnHome(): void {
         maxWidth: "41rem",
       }}
     >
-      <h3
+      <div
         style={{
-          fontSize: "0.72rem",
-          fontWeight: 700,
-          letterSpacing: "0.1em",
-          textTransform: "uppercase",
-          color: "#8e8a84",
-          margin: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "0.5rem",
         }}
       >
-        {t.clarify.integratedView}
-      </h3>
+        <h3
+          style={{
+            fontSize: "0.72rem",
+            fontWeight: 700,
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+            color: "#8e8a84",
+            margin: 0,
+            flex: 1,
+            minWidth: 0,
+          }}
+        >
+          {t.clarify.integratedView}
+        </h3>
+        <IntegratedViewTtsButton
+          key={`${panel.id}-integrated-tts`}
+          text={response.orientation.trim()}
+          listenLabel={t.clarify.integratedViewListen}
+          stopLabel={t.clarify.integratedViewStopAudio}
+          errorMessage={t.clarify.ttsCouldNotPlay}
+        />
+      </div>
 
       <p
         style={{

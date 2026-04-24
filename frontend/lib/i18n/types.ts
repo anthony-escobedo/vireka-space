@@ -87,6 +87,9 @@ export interface TranslationDictionary {
     whatMayBeInfluencingTheSituation: string;
     integratedView: string;
     howTheSituationReadsAsAWhole: string;
+    integratedViewListen: string;
+    integratedViewStopAudio: string;
+    ttsCouldNotPlay: string;
     clarifyingQuestion: string;
     optional: string;
     suggestedQuestions: string;
@@ -137,6 +140,9 @@ export interface TranslationDictionary {
     whatMayBeInfluencingTheAIInteraction: string;
     integratedView: string;
     howTheSituationReadsAsAWhole: string;
+    integratedViewListen: string;
+    integratedViewStopAudio: string;
+    ttsCouldNotPlay: string;
     clarifyingQuestion: string;
     optional: string;
     suggestedQuestions: string;

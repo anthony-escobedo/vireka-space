@@ -5,7 +5,7 @@ import Link from "next/link";
 import CollapsibleLayer from "../../components/CollapsibleLayer";
 
 import OnboardingModal from "../../components/OnboardingModal";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import DoneState from "../../components/DoneState";
 import InterpretationInput from "../../components/InterpretationInput";
 import IntegratedViewTtsButton from "../../components/IntegratedViewTtsButton";
@@ -93,6 +93,8 @@ export default function ClarifyPage() {
   const copyResetTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const router = useRouter();
+  const pathname = usePathname();
+  const homeMode = pathname === "/";
   const redirectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
@@ -521,6 +523,10 @@ function handleReturnHome(): void {
     ? "followup"
     : "top";
   const compactHistoryRows = historyConversations.slice(0, 5);
+  const workspaceTitle = homeMode ? "Clarify" : t.clarify.heroTitle;
+  const workspaceOrientation = homeMode
+    ? "Describe a situation or interaction. Vireka separates what is observed, interpreted, and unclear."
+    : "";
 
   function renderList(items: string[] | undefined, label: string) {
     if (!items || items.length === 0) return null;
@@ -1136,7 +1142,7 @@ function handleReturnHome(): void {
             }}
           >
           <div style={{ minWidth: 0, width: "100%", maxWidth: "780px" }}>
-        <div style={{ marginBottom: "2rem" }}>
+        {!homeMode ? <div style={{ marginBottom: "2rem" }}>
           <Link
             href="/"
             style={{
@@ -1150,7 +1156,7 @@ function handleReturnHome(): void {
           >
             ← {t.clarify.backLink}
           </Link>
-        </div>
+        </div> : null}
 
         {!hasClarificationHistory && (
           <>
@@ -1164,8 +1170,21 @@ function handleReturnHome(): void {
                 margin: "0 0 1.25rem 0",
               }}
             >
-              {t.clarify.heroTitle}
+              {workspaceTitle}
             </h1>
+            {homeMode ? (
+              <p
+                style={{
+                  margin: "0 0 1rem 0",
+                  color: "#5f5951",
+                  fontSize: "0.98rem",
+                  lineHeight: 1.6,
+                  maxWidth: "44rem",
+                }}
+              >
+                {workspaceOrientation}
+              </p>
+            ) : null}
 
             <div
               style={{

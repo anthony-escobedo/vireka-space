@@ -4,7 +4,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const TTS_MODEL = process.env.OPENAI_TTS_MODEL || "gpt-4o-mini-tts";
-const TTS_VOICE = process.env.OPENAI_TTS_VOICE || "verse";
+const TTS_VOICE = process.env.OPENAI_TTS_VOICE || "aria";
 const MAX_TTS_CHARS = 4096;
 const OPENAI_SPEECH_URL = "https://api.openai.com/v1/audio/speech";
 

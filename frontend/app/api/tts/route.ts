@@ -7,6 +7,36 @@ const TTS_MODEL = process.env.OPENAI_TTS_MODEL || "gpt-4o-mini-tts";
 const TTS_VOICE = process.env.OPENAI_TTS_VOICE || "shimmer";
 const MAX_TTS_CHARS = 4096;
 const OPENAI_SPEECH_URL = "https://api.openai.com/v1/audio/speech";
+const TTS_RATE_LIMIT_PER_HOUR = 20;
+const RATE_WINDOW_MS = 60 * 60 * 1000;
+const ttsRequestsByIp = new Map<string, number[]>();
+
+function getClientIp(req: NextRequest): string {
+  const forwardedFor = req.headers.get("x-forwarded-for");
+  if (forwardedFor) {
+    const first = forwardedFor.split(",")[0]?.trim();
+    if (first) return first;
+  }
+  const directIp = (req as NextRequest & { ip?: string }).ip?.trim();
+  return directIp || "unknown";
+}
+
+function isIpRateLimited(
+  store: Map<string, number[]>,
+  ip: string,
+  limit: number
+): boolean {
+  const now = Date.now();
+  const cutoff = now - RATE_WINDOW_MS;
+  const recent = (store.get(ip) || []).filter((ts) => ts > cutoff);
+  if (recent.length >= limit) {
+    store.set(ip, recent);
+    return true;
+  }
+  recent.push(now);
+  store.set(ip, recent);
+  return false;
+}
 
 /** Built-in voices for `gpt-4o-mini-tts` per OpenAI docs (no "aria"). */
 const VOICES_GPT4O_MINI_TTS = new Set([
@@ -83,7 +113,18 @@ function resolveOpenAiTtsVoice(
   };
 }
 
-export async function POST(req: NextRequest): Promise<NextResponse> {
+export async function POST(req: NextRequest): Promise<Response> {
+  const ip = getClientIp(req);
+  if (isIpRateLimited(ttsRequestsByIp, ip, TTS_RATE_LIMIT_PER_HOUR)) {
+    return new Response(
+      JSON.stringify({ error: "Rate limit exceeded. Please try again later." }),
+      {
+        status: 429,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  }
+
   let body: unknown;
   try {
     body = await req.json();

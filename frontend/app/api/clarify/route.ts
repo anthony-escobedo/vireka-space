@@ -3,6 +3,36 @@ import { createClient } from "@supabase/supabase-js";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+const CLARIFY_RATE_LIMIT_PER_HOUR = 30;
+const RATE_WINDOW_MS = 60 * 60 * 1000;
+const clarifyRequestsByIp = new Map<string, number[]>();
+
+function getClientIp(req: NextRequest): string {
+  const forwardedFor = req.headers.get("x-forwarded-for");
+  if (forwardedFor) {
+    const first = forwardedFor.split(",")[0]?.trim();
+    if (first) return first;
+  }
+  const directIp = (req as NextRequest & { ip?: string }).ip?.trim();
+  return directIp || "unknown";
+}
+
+function isIpRateLimited(
+  store: Map<string, number[]>,
+  ip: string,
+  limit: number
+): boolean {
+  const now = Date.now();
+  const cutoff = now - RATE_WINDOW_MS;
+  const recent = (store.get(ip) || []).filter((ts) => ts > cutoff);
+  if (recent.length >= limit) {
+    store.set(ip, recent);
+    return true;
+  }
+  recent.push(now);
+  store.set(ip, recent);
+  return false;
+}
 
 type ResponseMode = "clarify" | "integrated_view" | "close";
 type RequestAction = "clarify" | "integrated_view";
@@ -730,6 +760,17 @@ function enforceNeutralResponse(response: VirekaResponse): VirekaResponse {
 }
 
 export async function POST(req: NextRequest) {
+  const ip = getClientIp(req);
+  if (isIpRateLimited(clarifyRequestsByIp, ip, CLARIFY_RATE_LIMIT_PER_HOUR)) {
+    return new Response(
+      JSON.stringify({ error: "Rate limit exceeded. Please try again later." }),
+      {
+        status: 429,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  }
+
   try {
     const body = (await req.json()) as VirekaRequest;
 

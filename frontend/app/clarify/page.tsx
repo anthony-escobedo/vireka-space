@@ -84,6 +84,7 @@ export default function ClarifyPage() {
   const [showOnboarding, setShowOnboarding] = useState<boolean>(false);
   const [checkedOnboarding, setCheckedOnboarding] = useState(false);
   const [historyConversations, setHistoryConversations] = useState<HistoryConversation[]>([]);
+  const [showDesktopHistoryPanel, setShowDesktopHistoryPanel] = useState(false);
   const { t, language } = useLanguage();
   const [copyLabel, setCopyLabel] = useState(t.clarify.copyResult);
   const topInputRef = useRef<HTMLTextAreaElement | null>(null);
@@ -133,6 +134,15 @@ export default function ClarifyPage() {
   useEffect(() => {
     void loadHistory();
   }, [loadHistory]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const sync = () => setShowDesktopHistoryPanel(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
 
   function normalizeQuestion(text: string): string {
     return text
@@ -1045,7 +1055,7 @@ function handleReturnHome(): void {
       ) : (
         <div
           style={{
-            maxWidth: "780px",
+            maxWidth: showDesktopHistoryPanel ? "1100px" : "780px",
             width: "100%",
             boxSizing: "border-box",
             margin: "0 auto",
@@ -1054,7 +1064,62 @@ function handleReturnHome(): void {
             minWidth: 0,
           }}
         >
-          
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            gap: showDesktopHistoryPanel ? "1.6rem" : 0,
+          }}
+        >
+          {showDesktopHistoryPanel ? (
+            <aside
+              style={{
+                width: "260px",
+                flexShrink: 0,
+                backgroundColor: "rgba(255,255,255,0.42)",
+                borderRight: "1px solid rgba(0,0,0,0.04)",
+                borderRadius: "10px",
+                padding: "0.85rem 0.9rem",
+                minHeight: "180px",
+                position: "sticky",
+                top: "1.5rem",
+              }}
+            >
+              {compactHistoryRows.length > 0 ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.42rem" }}>
+                  {compactHistoryRows.slice(0, 8).map((item) => {
+                    const modeLabel =
+                      item.mode === "ai-interaction" ? "AI Interaction" : "Clarify";
+                    const dt = new Date(item.created_at);
+                    const dateLabel = Number.isNaN(dt.getTime())
+                      ? ""
+                      : dt.toLocaleDateString(undefined, {
+                          month: "short",
+                          day: "numeric",
+                        });
+                    return (
+                      <div
+                        key={item.id}
+                        style={{
+                          fontSize: "0.72rem",
+                          lineHeight: 1.34,
+                          color: "#7f7a73",
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        {modeLabel}
+                        {dateLabel ? ` — ${dateLabel}` : ""}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : null}
+            </aside>
+          ) : null}
+
+          <div style={{ flex: 1, minWidth: 0, maxWidth: "780px" }}>
         <div style={{ marginBottom: "2rem" }}>
           <Link
             href="/"
@@ -1093,7 +1158,7 @@ function handleReturnHome(): void {
                 marginBottom: "2.25rem",
               }}
             />
-            {compactHistoryRows.length > 0 ? (
+            {!showDesktopHistoryPanel && compactHistoryRows.length > 0 ? (
               <div
                 style={{
                   marginTop: "0.15rem",
@@ -1179,6 +1244,8 @@ function handleReturnHome(): void {
           
         {!isDone && renderClarificationPath()}
         {!isDone && result && renderSupplementaryResult(result)}
+        </div>
+          </div>
         </div>
       )}
       {!isDone && (

@@ -19,6 +19,8 @@ import { parseStoredAssistantContent } from "../../lib/parseStoredClarifyAssista
 const FREE_USAGE_LIMIT_ERROR_EN =
   "Free usage includes 20 interactions per day. Access resumes tomorrow or with subscription.";
 
+const ANONYMOUS_ID_KEY = "vireka_anonymous_id";
+
 /** Free tier: first N loaded history entries can be opened; older rows are visible but locked. */
 const FREE_HISTORY_VISIBLE_LIMIT = 5;
 
@@ -129,7 +131,13 @@ export default function ClarifyPage() {
 
   function getStableAnonymousId(): string {
     if (!anonymousIdRef.current) {
-      anonymousIdRef.current = getOrCreateAnonymousId();
+      try {
+        anonymousIdRef.current =
+          window.localStorage.getItem(ANONYMOUS_ID_KEY) ?? getOrCreateAnonymousId();
+      } catch {
+        anonymousIdRef.current = getOrCreateAnonymousId();
+      }
+      console.log("[clarify anonymous id]", anonymousIdRef.current);
     }
     return anonymousIdRef.current;
   }

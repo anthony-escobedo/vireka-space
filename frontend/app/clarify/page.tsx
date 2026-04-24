@@ -691,6 +691,12 @@ function handleReturnHome(): void {
     result !== null &&
     result.mode === "clarify" &&
     !loading;
+  const canShowNewSituationAction =
+    hasClarificationHistory ||
+    history.length > 0 ||
+    result !== null ||
+    conversationId !== null ||
+    selectedHistoryConversationId !== null;
   const composerValue = hasClarificationHistory ? followupInput : topInput;
   const composerPlaceholder = hasClarificationHistory
     ? t.clarify.followupPlaceholder
@@ -1778,14 +1784,39 @@ function handleReturnHome(): void {
           }}
         >
           <div style={{ pointerEvents: "auto" }}>
-            {canShowDoneButton ? (
+            {canShowNewSituationAction || canShowDoneButton ? (
               <div
                 style={{
                   display: "flex",
+                  gap: "0.8rem",
                   justifyContent: "flex-end",
                   marginBottom: "0.4rem",
                 }}
               >
+                {canShowNewSituationAction ? (
+                  <button
+                    type="button"
+                    onClick={resetSession}
+                    disabled={loading}
+                    style={{
+                      fontSize: "0.72rem",
+                      fontWeight: 500,
+                      letterSpacing: "0.02em",
+                      color: "#8a8580",
+                      background: "transparent",
+                      border: "none",
+                      padding: "0.15rem 0.1rem",
+                      cursor: loading ? "not-allowed" : "pointer",
+                      textDecoration: "underline",
+                      textDecorationColor: "rgba(138, 133, 128, 0.4)",
+                      textUnderlineOffset: "0.2em",
+                      opacity: loading ? 0.45 : 1,
+                    }}
+                  >
+                    New situation
+                  </button>
+                ) : null}
+                {canShowDoneButton ? (
                 <button
                   type="button"
                   onClick={() => {
@@ -1811,6 +1842,7 @@ function handleReturnHome(): void {
                 >
                   {t.clarify.doneButton}
                 </button>
+                ) : null}
               </div>
             ) : null}
             <InterpretationInput

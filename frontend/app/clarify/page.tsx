@@ -1055,10 +1055,8 @@ function handleReturnHome(): void {
       ) : (
         <div
           style={{
-            maxWidth: showDesktopHistoryPanel ? "1100px" : "780px",
             width: "100%",
             boxSizing: "border-box",
-            margin: "0 auto",
             padding: "1.5rem 1.25rem 240px",
             overflowX: "hidden",
             minWidth: 0,
@@ -1076,17 +1074,27 @@ function handleReturnHome(): void {
               style={{
                 width: "260px",
                 flexShrink: 0,
-                backgroundColor: "rgba(255,255,255,0.42)",
-                borderRight: "1px solid rgba(0,0,0,0.04)",
-                borderRadius: "10px",
-                padding: "0.85rem 0.9rem",
-                minHeight: "180px",
+                borderRight: "1px solid rgba(0,0,0,0.045)",
+                padding: "0.55rem 1rem 0.55rem 0",
+                minHeight: "220px",
                 position: "sticky",
                 top: "1.5rem",
+                alignSelf: "stretch",
               }}
             >
               {compactHistoryRows.length > 0 ? (
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.42rem" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      lineHeight: "16px",
+                      color: "#8b857e",
+                      letterSpacing: "0.02em",
+                      marginBottom: "0.1rem",
+                    }}
+                  >
+                    Recent
+                  </div>
                   {compactHistoryRows.slice(0, 8).map((item) => {
                     const modeLabel =
                       item.mode === "ai-interaction" ? "AI Interaction" : "Clarify";
@@ -1101,9 +1109,9 @@ function handleReturnHome(): void {
                       <div
                         key={item.id}
                         style={{
-                          fontSize: "0.72rem",
-                          lineHeight: 1.34,
-                          color: "#7f7a73",
+                          fontSize: 14,
+                          lineHeight: "20px",
+                          color: "#6f6962",
                           whiteSpace: "nowrap",
                           overflow: "hidden",
                           textOverflow: "ellipsis",
@@ -1119,7 +1127,15 @@ function handleReturnHome(): void {
             </aside>
           ) : null}
 
-          <div style={{ flex: 1, minWidth: 0, maxWidth: "780px" }}>
+          <div
+            style={{
+              flex: 1,
+              minWidth: 0,
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
+          <div style={{ minWidth: 0, width: "100%", maxWidth: "780px" }}>
         <div style={{ marginBottom: "2rem" }}>
           <Link
             href="/"
@@ -1246,6 +1262,7 @@ function handleReturnHome(): void {
         {!isDone && result && renderSupplementaryResult(result)}
         </div>
           </div>
+        </div>
         </div>
       )}
       {!isDone && (

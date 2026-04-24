@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { recordUsageEvent } from "../../../lib/usage";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -760,6 +761,7 @@ function enforceNeutralResponse(response: VirekaResponse): VirekaResponse {
 }
 
 export async function POST(req: NextRequest) {
+  const trackingAnonymousId = req.headers.get("x-anonymous-id")?.trim() || "unknown";
   const ip = getClientIp(req);
   if (isIpRateLimited(clarifyRequestsByIp, ip, CLARIFY_RATE_LIMIT_PER_HOUR)) {
     return new Response(
@@ -949,6 +951,20 @@ export async function POST(req: NextRequest) {
         }
       }
 
+      try {
+        await recordUsageEvent({
+          type: "clarify",
+          anonymousId: trackingAnonymousId,
+          metadata: {
+            action,
+            context,
+            mode: "close",
+          },
+        });
+      } catch {
+        // fail silently
+      }
+
       return NextResponse.json({
         ...closeResponse,
         conversationId,
@@ -1063,6 +1079,20 @@ export async function POST(req: NextRequest) {
       }
     }
     
+    try {
+      await recordUsageEvent({
+        type: "clarify",
+        anonymousId: trackingAnonymousId,
+        metadata: {
+          action,
+          context,
+          mode: neutralized.mode,
+        },
+      });
+    } catch {
+      // fail silently
+    }
+
     return NextResponse.json({
       ...neutralized,
       conversationId,

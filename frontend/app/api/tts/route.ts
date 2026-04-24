@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { recordUsageEvent } from "../../../lib/usage";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -114,6 +115,7 @@ function resolveOpenAiTtsVoice(
 }
 
 export async function POST(req: NextRequest): Promise<Response> {
+  const anonymousId = req.headers.get("x-anonymous-id")?.trim() || "unknown";
   const ip = getClientIp(req);
   if (isIpRateLimited(ttsRequestsByIp, ip, TTS_RATE_LIMIT_PER_HOUR)) {
     return new Response(
@@ -231,6 +233,20 @@ export async function POST(req: NextRequest): Promise<Response> {
         if (retry.ok) {
           console.info("[tts] Fallback voice succeeded:", TTS_FALLBACK_VOICE);
           const buffer = Buffer.from(await retry.arrayBuffer());
+          try {
+            await recordUsageEvent({
+              type: "tts",
+              anonymousId,
+              metadata: {
+                model: TTS_MODEL,
+                voiceRequested: TTS_VOICE,
+                voiceUsed: TTS_FALLBACK_VOICE,
+                viaFallback: true,
+              },
+            });
+          } catch {
+            // fail silently
+          }
           return new NextResponse(buffer, {
             status: 200,
             headers: {
@@ -259,6 +275,20 @@ export async function POST(req: NextRequest): Promise<Response> {
     }
 
     const buffer = Buffer.from(await upstream.arrayBuffer());
+    try {
+      await recordUsageEvent({
+        type: "tts",
+        anonymousId,
+        metadata: {
+          model: TTS_MODEL,
+          voiceRequested: TTS_VOICE,
+          voiceUsed,
+          viaFallback: false,
+        },
+      });
+    } catch {
+      // fail silently
+    }
     return new NextResponse(buffer, {
       status: 200,
       headers: {

@@ -479,9 +479,9 @@ export default function ClarifyPage() {
     source: "top" | "followup",
     overrideInput?: string
   ): Promise<boolean> {
-    const submitHasClarificationHistory = iterationsRef.current.length > 0;
+    const isFollowup = iterationsRef.current.length > 0;
     const effectiveSource: "top" | "followup" =
-      submitHasClarificationHistory ? "followup" : "top";
+      isFollowup ? "followup" : "top";
     const sourceValue =
       effectiveSource === "top"
         ? topInputValueRef.current
@@ -502,8 +502,8 @@ export default function ClarifyPage() {
     try {
   
     const anonymousId = getOrCreateAnonymousId();
-    const requestConversationId = conversationIdRef.current;
-    const requestHistory = historyRef.current;
+    const safeConversationId = isFollowup ? conversationIdRef.current : null;
+    const requestHistory = isFollowup ? historyRef.current : [];
   
     const payload = {
     input: trimmed,
@@ -511,14 +511,13 @@ export default function ClarifyPage() {
     history: requestHistory,
     context: "clarify",
     anonymousId,
-    conversationId: requestConversationId,
+    conversationId: safeConversationId,
     language,
   };
 
-      console.log("[clarify submit]", {
-        conversationId: requestConversationId,
-        hasClarificationHistory: submitHasClarificationHistory,
-        inputUsed: submitHasClarificationHistory ? "followupInput" : "initialInput",
+      console.log("[clarify submit FINAL]", {
+        isFollowup,
+        conversationId: safeConversationId,
       });
 
       const res = await fetch("/api/clarify", {

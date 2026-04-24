@@ -815,35 +815,24 @@ export async function POST(req: NextRequest) {
     const persistenceAnonymousId =
       trackingAnonymousId !== "unknown" ? trackingAnonymousId : anonymousId;
 
-    let conversationId = incomingConversationId;
-    let persistedConversationId = incomingConversationId;
+    let conversationId: string;
 
-    // Conversation management with Supabase conditional
-    if (supabase) {
-      if (!conversationId) {
-        const { data: conversationData, error: conversationInsertError } = await supabase
-          .from("conversations")
-          .insert({
-            anonymous_id: persistenceAnonymousId,
-            source: context,
-            mode: context,
-          })
-          .select("id")
-          .single();
-
-        if (conversationInsertError || !conversationData) {
-          return NextResponse.json(
-            {
-              error: `Failed to create conversation: ${
-                conversationInsertError?.message || "Unknown error"
-              }`,
-            },
-            { status: 500 }
-          );
-        }
-
-        conversationId = conversationData.id;
-      } else {
+    if (!incomingConversationId) {
+      try {
+        conversationId = await createConversation(persistenceAnonymousId, context);
+      } catch (error) {
+        return NextResponse.json(
+          {
+            error: `Failed to create conversation: ${
+              error instanceof Error ? error.message : "Unknown error"
+            }`,
+          },
+          { status: 500 }
+        );
+      }
+    } else {
+      conversationId = incomingConversationId;
+      if (supabase) {
         const { error: conversationUpdateError } = await supabase
           .from("conversations")
           .update({
@@ -861,23 +850,15 @@ export async function POST(req: NextRequest) {
         }
       }
     }
-    if (!persistedConversationId && conversationId) {
-      persistedConversationId = conversationId;
-    }
+
+    console.log("[clarify API]", {
+      incomingConversationId,
+      finalConversationId: conversationId,
+      createdNew: !incomingConversationId,
+    });
     
     if (action === "clarify" && !input) {
       return NextResponse.json({ error: "Input required" }, { status: 400 });
-    }
-
-    if (!persistedConversationId) {
-      try {
-        persistedConversationId = await createConversation(persistenceAnonymousId, context);
-      } catch {
-        // fail silently
-      }
-    }
-    if (!conversationId && persistedConversationId) {
-      conversationId = persistedConversationId;
     }
 
     // Usage tracking with Supabase conditional
@@ -953,16 +934,14 @@ export async function POST(req: NextRequest) {
         message: "Acknowledged. A new situation can be started whenever needed.",
       };
 
-      if (persistedConversationId) {
-        try {
-          await saveMessage({
-            conversationId: persistedConversationId,
-            role: "assistant",
-            content: closeResponse.message,
-          });
-        } catch {
-          // fail silently
-        }
+      try {
+        await saveMessage({
+          conversationId,
+          role: "assistant",
+          content: closeResponse.message,
+        });
+      } catch {
+        // fail silently
       }
 
       try {
@@ -985,10 +964,10 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    if (action === "clarify" && input && persistedConversationId) {
+    if (action === "clarify" && input) {
       try {
         await saveMessage({
-          conversationId: persistedConversationId,
+          conversationId,
           role: "user",
           content: input,
         });
@@ -1060,20 +1039,18 @@ export async function POST(req: NextRequest) {
     const validated = validateResponse(parsed);
     const neutralized = enforceNeutralResponse(validated);
 
-    if (persistedConversationId) {
-      const assistantContent =
-        neutralized.mode === "clarify"
-          ? formatResponseForStorage(neutralized)
-          : neutralized.message;
-      try {
-        await saveMessage({
-          conversationId: persistedConversationId,
-          role: "assistant",
-          content: assistantContent,
-        });
-      } catch {
-        // fail silently
-      }
+    const assistantContent =
+      neutralized.mode === "clarify"
+        ? formatResponseForStorage(neutralized)
+        : neutralized.message;
+    try {
+      await saveMessage({
+        conversationId,
+        role: "assistant",
+        content: assistantContent,
+      });
+    } catch {
+      // fail silently
     }
     
     try {

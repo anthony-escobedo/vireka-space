@@ -123,6 +123,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     TTS_MODEL,
     TTS_VOICE
   );
+  console.log("TTS voice in use:", voiceUsed);
   if (usedFallback) {
     console.info(
       "[tts] Voice resolution:",

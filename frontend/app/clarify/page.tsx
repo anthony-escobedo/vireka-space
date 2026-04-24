@@ -1133,15 +1133,8 @@ function handleReturnHome(): void {
             </aside>
           ) : null}
 
-          <div
-            style={{
-              flex: 1,
-              minWidth: 0,
-              display: "flex",
-              justifyContent: "center",
-            }}
-          >
-          <div style={{ minWidth: 0, width: "100%", maxWidth: "780px" }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ minWidth: 0, width: "100%", maxWidth: "780px" }}>
         {!homeMode ? <div style={{ marginBottom: "2rem" }}>
           <Link
             href="/"

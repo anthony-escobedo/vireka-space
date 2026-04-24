@@ -24,6 +24,9 @@ const FREE_HISTORY_VISIBLE_LIMIT = 5;
 
 const RAIL_HISTORY_DISPLAY_LIMIT = 8;
 
+/** Second history fetch after persistence may lag behind the clarify response. */
+const HISTORY_REFRESH_RETRY_MS = 650;
+
 type RequestAction = "clarify";
 
 type ConversationTurn = {
@@ -111,6 +114,7 @@ export default function ClarifyPage() {
   const pathTopRef = useRef<HTMLDivElement | null>(null);
   const resultRef = useRef<HTMLDivElement | null>(null);
   const copyResetTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const historyRefreshRetryRef = useRef<number | null>(null);
 
   const router = useRouter();
   const pathname = usePathname();
@@ -132,6 +136,9 @@ export default function ClarifyPage() {
       if (copyResetTimeoutRef.current) {
         clearTimeout(copyResetTimeoutRef.current);
       }
+      if (historyRefreshRetryRef.current) {
+        clearTimeout(historyRefreshRetryRef.current);
+      }
     };
   }, []);
 
@@ -142,6 +149,7 @@ export default function ClarifyPage() {
         headers: {
           "x-anonymous-id": getOrCreateAnonymousId(),
         },
+        cache: "no-store",
       });
       if (!res.ok) return;
       const data = (await res.json()) as { conversations?: HistoryConversation[] };
@@ -159,6 +167,18 @@ export default function ClarifyPage() {
       // fail silently
     }
   }, []);
+
+  const scheduleHistoryRefresh = useCallback(() => {
+    void loadHistory();
+    if (typeof window === "undefined") return;
+    if (historyRefreshRetryRef.current) {
+      clearTimeout(historyRefreshRetryRef.current);
+    }
+    historyRefreshRetryRef.current = window.setTimeout(() => {
+      historyRefreshRetryRef.current = null;
+      void loadHistory();
+    }, HISTORY_REFRESH_RETRY_MS);
+  }, [loadHistory]);
 
   useEffect(() => {
     void loadHistory();
@@ -515,7 +535,7 @@ export default function ClarifyPage() {
         if (typedData.conversationId) {
           setSelectedHistoryConversationId(typedData.conversationId);
         }
-        void loadHistory();
+        scheduleHistoryRefresh();
       }
 
       setResult(typedData);
@@ -1182,7 +1202,7 @@ function handleReturnHome(): void {
   setLatestPanelId(null);
   setSelectedHistoryConversationId(null);
   setMobileHistoryOpen(false);
-  void loadHistory();
+  scheduleHistoryRefresh();
 }
   
   return (
@@ -1766,7 +1786,11 @@ function handleReturnHome(): void {
               >
                 <button
                   type="button"
-                  onClick={() => setIsDone(true)}
+                  onClick={() => {
+                    setSelectedHistoryConversationId(null);
+                    setIsDone(true);
+                    scheduleHistoryRefresh();
+                  }}
                   disabled={loading}
                   style={{
                     fontSize: "0.72rem",

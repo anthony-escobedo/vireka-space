@@ -6,6 +6,7 @@ import {
   endIntegratedViewTtsSession,
   replaceIntegratedViewTtsSession,
 } from "../lib/integratedViewTtsCoordinator";
+import { getOrCreateAnonymousId } from "../lib/anonymous";
 
 type IntegratedViewTtsButtonProps = {
   text: string;
@@ -92,7 +93,10 @@ export default function IntegratedViewTtsButton({
     try {
       const res = await fetch("/api/tts", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-anonymous-id": getOrCreateAnonymousId(),
+        },
         body: JSON.stringify({ text }),
         signal: ac.signal,
       });

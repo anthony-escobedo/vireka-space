@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import CollapsibleLayer from "../../components/CollapsibleLayer";
 
@@ -112,28 +112,27 @@ export default function ClarifyPage() {
     };
   }, []);
 
-  useEffect(() => {
-    let active = true;
-    void (async () => {
-      try {
-        const res = await fetch("/api/history", {
-          method: "GET",
-          headers: {
-            "x-anonymous-id": getOrCreateAnonymousId(),
-          },
-        });
-        if (!res.ok) return;
-        const data = (await res.json()) as { conversations?: HistoryConversation[] };
-        if (!active) return;
-        setHistoryConversations(Array.isArray(data.conversations) ? data.conversations.slice(0, 8) : []);
-      } catch {
-        // fail silently
-      }
-    })();
-    return () => {
-      active = false;
-    };
+  const loadHistory = useCallback(async () => {
+    try {
+      const res = await fetch("/api/history", {
+        method: "GET",
+        headers: {
+          "x-anonymous-id": getOrCreateAnonymousId(),
+        },
+      });
+      if (!res.ok) return;
+      const data = (await res.json()) as { conversations?: HistoryConversation[] };
+      setHistoryConversations(
+        Array.isArray(data.conversations) ? data.conversations.slice(0, 8) : []
+      );
+    } catch {
+      // fail silently
+    }
   }, []);
+
+  useEffect(() => {
+    void loadHistory();
+  }, [loadHistory]);
 
   function normalizeQuestion(text: string): string {
     return text
@@ -350,6 +349,7 @@ export default function ClarifyPage() {
             setInitialSituation(trimmed);
           }
         }
+        void loadHistory();
       }
 
       setResult(typedData);
@@ -1008,6 +1008,7 @@ function handleReturnHome(): void {
   setIterations([]);
   setOpenPanelIds([]);
   setLatestPanelId(null);
+  void loadHistory();
 }
   
   return (

@@ -510,7 +510,7 @@ function handleReturnHome(): void {
   const composerSource: "top" | "followup" = hasClarificationHistory
     ? "followup"
     : "top";
-  const compactHistoryRows = historyConversations.slice(0, 8);
+  const compactHistoryRows = historyConversations.slice(0, 5);
 
   function renderList(items: string[] | undefined, label: string) {
     if (!items || items.length === 0) return null;
@@ -1092,6 +1092,45 @@ function handleReturnHome(): void {
                 marginBottom: "2.25rem",
               }}
             />
+            {compactHistoryRows.length > 0 ? (
+              <div
+                style={{
+                  marginTop: "-1.35rem",
+                  marginBottom: "1.35rem",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "0.24rem",
+                }}
+              >
+                {compactHistoryRows.map((item) => {
+                  const modeLabel =
+                    item.mode === "ai-interaction" ? "AI Interaction" : "Clarify";
+                  const dt = new Date(item.created_at);
+                  const dateLabel = Number.isNaN(dt.getTime())
+                    ? ""
+                    : dt.toLocaleDateString(undefined, {
+                        month: "short",
+                        day: "numeric",
+                      });
+                  return (
+                    <div
+                      key={item.id}
+                      style={{
+                        fontSize: "0.72rem",
+                        lineHeight: 1.28,
+                        color: "#8a8580",
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      {modeLabel}
+                      {dateLabel ? ` — ${dateLabel}` : ""}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : null}
             <div style={{ minHeight: "clamp(180px, 30vh, 320px)" }} />
           </>
         )}
@@ -1212,45 +1251,6 @@ function handleReturnHome(): void {
                 borderColor: "#dfdcd6",
               }}
             />
-            {compactHistoryRows.length > 0 ? (
-              <div
-                style={{
-                  marginTop: "0.4rem",
-                  paddingLeft: "0.15rem",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "0.25rem",
-                }}
-              >
-                {compactHistoryRows.map((item) => {
-                  const modeLabel =
-                    item.mode === "ai-interaction" ? "AI Interaction" : "Clarify";
-                  const dt = new Date(item.created_at);
-                  const dateLabel = Number.isNaN(dt.getTime())
-                    ? ""
-                    : dt.toLocaleDateString(undefined, {
-                        month: "short",
-                        day: "numeric",
-                      });
-                  return (
-                    <div
-                      key={item.id}
-                      style={{
-                        fontSize: "0.72rem",
-                        lineHeight: 1.3,
-                        color: "#8a8580",
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                      }}
-                    >
-                      {modeLabel}
-                      {dateLabel ? ` — ${dateLabel}` : ""}
-                    </div>
-                  );
-                })}
-              </div>
-            ) : null}
           </div>
         </div>
       )}

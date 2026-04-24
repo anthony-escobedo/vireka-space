@@ -11,7 +11,9 @@ import InterpretationInput from "../../components/InterpretationInput";
 import IntegratedViewTtsButton from "../../components/IntegratedViewTtsButton";
 
 import { getOrCreateAnonymousId } from "../../lib/anonymous";
+import { normalizeMessageContentToPreviewSource } from "../../lib/historyReadHelpers";
 import { useLanguage } from "../../lib/i18n/useLanguage";
+import { parseStoredAssistantContent } from "../../lib/parseStoredClarifyAssistant";
 
 /** Matches API body when daily free limit is exceeded (see app/api/clarify/route.ts). */
 const FREE_USAGE_LIMIT_ERROR_EN =
@@ -66,6 +68,14 @@ type HistoryConversation = {
   id: string;
   mode: string;
   created_at: string;
+  preview: string;
+};
+
+type HistoryDetailMessage = {
+  id: string;
+  role: "user" | "assistant";
+  content: unknown;
+  created_at: string;
 };
 
 export default function ClarifyPage() {
@@ -85,6 +95,10 @@ export default function ClarifyPage() {
   const [checkedOnboarding, setCheckedOnboarding] = useState(false);
   const [historyConversations, setHistoryConversations] = useState<HistoryConversation[]>([]);
   const [showDesktopHistoryPanel, setShowDesktopHistoryPanel] = useState(false);
+  const [selectedHistoryConversationId, setSelectedHistoryConversationId] = useState<
+    string | null
+  >(null);
+  const [historyDetailLoading, setHistoryDetailLoading] = useState(false);
   const { t, language } = useLanguage();
   const [copyLabel, setCopyLabel] = useState(t.clarify.copyResult);
   const topInputRef = useRef<HTMLTextAreaElement | null>(null);
@@ -128,6 +142,11 @@ export default function ClarifyPage() {
       setHistoryConversations(
         Array.isArray(data.conversations) ? data.conversations.slice(0, 8) : []
       );
+      setSelectedHistoryConversationId((prev) => {
+        if (!prev) return prev;
+        const list = Array.isArray(data.conversations) ? data.conversations : [];
+        return list.some((c) => c.id === prev) ? prev : null;
+      });
     } catch {
       // fail silently
     }
@@ -273,6 +292,104 @@ export default function ClarifyPage() {
     return sections.join("\n\n");
   }
 
+  function userMessageContentToString(content: unknown): string {
+    if (typeof content === "string") return content;
+    return normalizeMessageContentToPreviewSource(content);
+  }
+
+  function applyConversationDetail(payload: {
+    conversation: { id: string; mode: string; created_at: string };
+    messages: HistoryDetailMessage[];
+  }): void {
+    const msgs = [...payload.messages].sort(
+      (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    );
+
+    const nextIterations: ClarificationIteration[] = [];
+    const nextChat: ConversationTurn[] = [];
+    let firstUser: string | null = null;
+    let lastResult: VirekaResponse | null = null;
+
+    for (let i = 0; i < msgs.length; i++) {
+      const u = msgs[i];
+      if (u.role !== "user") continue;
+      const a = msgs[i + 1];
+      if (!a || a.role !== "assistant") break;
+
+      const userText = userMessageContentToString(u.content);
+      if (firstUser === null) firstUser = userText;
+
+      const parsed = parseStoredAssistantContent(a.content);
+      lastResult = parsed;
+
+      nextChat.push(
+        { role: "user", content: userText },
+        { role: "assistant", content: formatResponseForHistory(parsed) }
+      );
+
+      if (parsed.mode === "clarify") {
+        nextIterations.push({
+          id: `hist-${a.id}`,
+          step: nextIterations.length + 1,
+          submittedInput: userText,
+          source: nextIterations.length === 0 ? "top" : "followup",
+          response: parsed,
+        });
+      }
+
+      i++;
+    }
+
+    setConversationId(payload.conversation.id);
+    setHistory(nextChat);
+    setIterations(nextIterations);
+    setInitialSituation(firstUser ?? "");
+    setResult(lastResult);
+    setTopInput("");
+    setFollowupInput("");
+    setError(null);
+    setIsDone(false);
+    setOpenPanelIds([]);
+    setLatestPanelId(
+      nextIterations.length > 0
+        ? `panel-${nextIterations[nextIterations.length - 1].id}`
+        : null
+    );
+  }
+
+  async function openHistoryConversation(id: string): Promise<void> {
+    setHistoryDetailLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/history/${encodeURIComponent(id)}`, {
+        method: "GET",
+        headers: { "x-anonymous-id": getOrCreateAnonymousId() },
+      });
+      if (!res.ok) return;
+      const data = (await res.json()) as {
+        conversation?: { id: string; mode: string; created_at: string };
+        messages?: { id: string; role: string; content: unknown; created_at: string }[];
+      };
+      if (!data.conversation || !Array.isArray(data.messages)) return;
+
+      const messages: HistoryDetailMessage[] = data.messages.map((m) => ({
+        id: String(m.id),
+        role: m.role === "assistant" ? "assistant" : "user",
+        content: m.content,
+        created_at: String(m.created_at),
+      }));
+
+      applyConversationDetail({ conversation: data.conversation, messages });
+      setSelectedHistoryConversationId(id);
+      setTimeout(() => {
+        const target = pathTopRef.current ?? resultRef.current;
+        target?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 80);
+    } finally {
+      setHistoryDetailLoading(false);
+    }
+  }
+
   async function submitToClarify(
     action: RequestAction,
     source: "top" | "followup",
@@ -360,6 +477,9 @@ export default function ClarifyPage() {
           if (source === "top" && !initialSituation) {
             setInitialSituation(trimmed);
           }
+        }
+        if (typedData.conversationId) {
+          setSelectedHistoryConversationId(typedData.conversationId);
         }
         void loadHistory();
       }
@@ -522,7 +642,9 @@ function handleReturnHome(): void {
   const composerSource: "top" | "followup" = hasClarificationHistory
     ? "followup"
     : "top";
-  const compactHistoryRows = historyConversations.slice(0, 5);
+  const railHistoryRows = historyConversations.slice(0, 8);
+  const mobileHistoryRows = historyConversations.slice(0, 5);
+  const hideInitialHero = hasClarificationHistory || history.length > 0;
   const workspaceTitle = homeMode ? "Clarify" : t.clarify.heroTitle;
   const workspaceOrientation = homeMode
     ? "Describe a situation or interaction. Vireka separates what is observed, interpreted, and unclear."
@@ -1024,6 +1146,7 @@ function handleReturnHome(): void {
   setIterations([]);
   setOpenPanelIds([]);
   setLatestPanelId(null);
+  setSelectedHistoryConversationId(null);
   void loadHistory();
 }
   
@@ -1088,8 +1211,16 @@ function handleReturnHome(): void {
                 alignSelf: "stretch",
               }}
             >
-              {compactHistoryRows.length > 0 ? (
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+              {railHistoryRows.length > 0 ? (
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "0.35rem",
+                    opacity: historyDetailLoading ? 0.55 : 1,
+                    transition: "opacity 160ms ease",
+                  }}
+                >
                   <div
                     style={{
                       fontSize: 12,
@@ -1101,9 +1232,7 @@ function handleReturnHome(): void {
                   >
                     Recent
                   </div>
-                  {compactHistoryRows.slice(0, 8).map((item) => {
-                    const modeLabel =
-                      item.mode === "ai-interaction" ? "AI Interaction" : "Clarify";
+                  {railHistoryRows.map((item) => {
                     const dt = new Date(item.created_at);
                     const dateLabel = Number.isNaN(dt.getTime())
                       ? ""
@@ -1111,21 +1240,68 @@ function handleReturnHome(): void {
                           month: "short",
                           day: "numeric",
                         });
+                    const preview =
+                      item.preview?.trim() ||
+                      (item.mode === "ai-interaction" ? "AI Interaction" : "Session");
+                    const active = item.id === selectedHistoryConversationId;
                     return (
-                      <div
+                      <button
                         key={item.id}
+                        type="button"
+                        disabled={historyDetailLoading}
+                        onClick={() => void openHistoryConversation(item.id)}
                         style={{
-                          fontSize: 14,
-                          lineHeight: "20px",
-                          color: "#6f6962",
-                          whiteSpace: "nowrap",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
+                          display: "block",
+                          width: "100%",
+                          margin: 0,
+                          padding: "0.45rem 0.5rem",
+                          textAlign: "left",
+                          cursor: historyDetailLoading ? "wait" : "pointer",
+                          border: active
+                            ? "1px solid rgba(0,0,0,0.1)"
+                            : "1px solid transparent",
+                          borderRadius: "8px",
+                          backgroundColor: active ? "rgba(255,255,255,0.72)" : "transparent",
+                          boxSizing: "border-box",
+                          transition:
+                            "background-color 140ms ease, border-color 140ms ease, opacity 140ms ease",
+                        }}
+                        onMouseEnter={(e) => {
+                          if (historyDetailLoading || active) return;
+                          e.currentTarget.style.backgroundColor = "rgba(0,0,0,0.03)";
+                        }}
+                        onMouseLeave={(e) => {
+                          if (active) {
+                            e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.72)";
+                          } else {
+                            e.currentTarget.style.backgroundColor = "transparent";
+                          }
                         }}
                       >
-                        {modeLabel}
-                        {dateLabel ? ` — ${dateLabel}` : ""}
-                      </div>
+                        <div
+                          style={{
+                            fontSize: 14,
+                            lineHeight: "20px",
+                            color: "#3f3b36",
+                            overflowWrap: "anywhere",
+                            wordBreak: "break-word",
+                          }}
+                        >
+                          {preview}
+                        </div>
+                        {dateLabel ? (
+                          <div
+                            style={{
+                              fontSize: 12,
+                              lineHeight: "16px",
+                              color: "#9c9690",
+                              marginTop: "0.2rem",
+                            }}
+                          >
+                            {dateLabel}
+                          </div>
+                        ) : null}
+                      </button>
                     );
                   })}
                 </div>
@@ -1151,7 +1327,7 @@ function handleReturnHome(): void {
           </Link>
         </div> : null}
 
-        {!hasClarificationHistory && (
+        {!hideInitialHero && (
           <>
             <h1
               style={{
@@ -1186,19 +1362,17 @@ function handleReturnHome(): void {
                 marginBottom: "2.25rem",
               }}
             />
-            {!showDesktopHistoryPanel && compactHistoryRows.length > 0 ? (
+            {!showDesktopHistoryPanel && mobileHistoryRows.length > 0 ? (
               <div
                 style={{
                   marginTop: "0.15rem",
                   marginBottom: "1.1rem",
                   display: "flex",
                   flexDirection: "column",
-                  gap: "0.24rem",
+                  gap: "0.45rem",
                 }}
               >
-                {compactHistoryRows.map((item) => {
-                  const modeLabel =
-                    item.mode === "ai-interaction" ? "AI Interaction" : "Clarify";
+                {mobileHistoryRows.map((item) => {
                   const dt = new Date(item.created_at);
                   const dateLabel = Number.isNaN(dt.getTime())
                     ? ""
@@ -1206,20 +1380,40 @@ function handleReturnHome(): void {
                         month: "short",
                         day: "numeric",
                       });
+                  const preview =
+                    item.preview?.trim() ||
+                    (item.mode === "ai-interaction" ? "AI Interaction" : "Clarify");
                   return (
                     <div
                       key={item.id}
                       style={{
-                        fontSize: "0.72rem",
-                        lineHeight: 1.28,
-                        color: "#8a8580",
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "0.12rem",
                       }}
                     >
-                      {modeLabel}
-                      {dateLabel ? ` — ${dateLabel}` : ""}
+                      <div
+                        style={{
+                          fontSize: "0.88rem",
+                          lineHeight: 1.35,
+                          color: "#4a4640",
+                          overflowWrap: "anywhere",
+                          wordBreak: "break-word",
+                        }}
+                      >
+                        {preview}
+                      </div>
+                      {dateLabel ? (
+                        <div
+                          style={{
+                            fontSize: "0.72rem",
+                            lineHeight: 1.2,
+                            color: "#9c9690",
+                          }}
+                        >
+                          {dateLabel}
+                        </div>
+                      ) : null}
                     </div>
                   );
                 })}

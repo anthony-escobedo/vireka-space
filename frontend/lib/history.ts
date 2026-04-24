@@ -32,7 +32,6 @@ export async function createConversation(
       anonymous_id: anonymousId,
       source: context,
       mode: context,
-      title: null,
     })
     .select("id")
     .single();

@@ -465,12 +465,14 @@ export default function ClarifyPage() {
 
     try {
   
+    const anonymousId = getOrCreateAnonymousId();
+  
     const payload = {
     input: trimmed,
     action,
     history,
     context: "clarify",
-    anonymousId: getOrCreateAnonymousId(),
+    anonymousId,
     conversationId,
     language,
   };
@@ -479,7 +481,7 @@ export default function ClarifyPage() {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "x-anonymous-id": getOrCreateAnonymousId(),
+      "x-anonymous-id": anonymousId,
     },
     body: JSON.stringify(payload),
   });

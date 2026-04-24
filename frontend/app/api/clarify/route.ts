@@ -825,8 +825,8 @@ export async function POST(req: NextRequest) {
           .from("conversations")
           .insert({
             anonymous_id: persistenceAnonymousId,
-            source: "context",
-            mode: "context",
+            source: context,
+            mode: context,
           })
           .select("id")
           .single();
@@ -871,7 +871,7 @@ export async function POST(req: NextRequest) {
 
     if (!persistedConversationId) {
       try {
-        persistedConversationId = await createConversation(persistenceAnonymousId);
+        persistedConversationId = await createConversation(persistenceAnonymousId, context);
       } catch {
         // fail silently
       }

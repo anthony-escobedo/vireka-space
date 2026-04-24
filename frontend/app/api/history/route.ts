@@ -8,6 +8,10 @@ import { getSupabaseServerClient } from "../../../lib/supabase/server";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+const NO_STORE_HEADERS = {
+  "Cache-Control": "no-store, max-age=0, must-revalidate",
+};
+
 type HistoryConversation = {
   id: string;
   mode: string;
@@ -18,7 +22,10 @@ type HistoryConversation = {
 export async function GET(req: NextRequest): Promise<NextResponse> {
   const anonymousId = req.headers.get("x-anonymous-id")?.trim();
   if (!anonymousId) {
-    return NextResponse.json({ conversations: [] as HistoryConversation[] });
+    return NextResponse.json(
+      { conversations: [] as HistoryConversation[] },
+      { headers: NO_STORE_HEADERS }
+    );
   }
 
   try {
@@ -31,7 +38,10 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       .limit(20);
 
     if (error || !data) {
-      return NextResponse.json({ conversations: [] as HistoryConversation[] });
+      return NextResponse.json(
+        { conversations: [] as HistoryConversation[] },
+        { headers: NO_STORE_HEADERS }
+      );
     }
 
     const ids = data.map((row) => String(row.id));
@@ -66,8 +76,11 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       };
     });
 
-    return NextResponse.json({ conversations });
+    return NextResponse.json({ conversations }, { headers: NO_STORE_HEADERS });
   } catch {
-    return NextResponse.json({ conversations: [] as HistoryConversation[] });
+    return NextResponse.json(
+      { conversations: [] as HistoryConversation[] },
+      { headers: NO_STORE_HEADERS }
+    );
   }
 }

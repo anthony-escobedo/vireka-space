@@ -811,6 +811,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing anonymousId" }, { status: 400 });
     }
 
+    /** Must match GET /api/history, which filters by `x-anonymous-id` (not body). */
+    const persistenceAnonymousId =
+      trackingAnonymousId !== "unknown" ? trackingAnonymousId : anonymousId;
+
     let conversationId = incomingConversationId;
     let persistedConversationId = incomingConversationId;
 
@@ -820,8 +824,8 @@ export async function POST(req: NextRequest) {
         const { data: conversationData, error: conversationInsertError } = await supabase
           .from("conversations")
           .insert({
-            anonymous_id: anonymousId,
-            mode: context,
+            anonymous_id: persistenceAnonymousId,
+            source: context,
           })
           .select("id")
           .single();
@@ -866,7 +870,7 @@ export async function POST(req: NextRequest) {
 
     if (!persistedConversationId) {
       try {
-        persistedConversationId = await createConversation(trackingAnonymousId);
+        persistedConversationId = await createConversation(persistenceAnonymousId);
       } catch {
         // fail silently
       }
@@ -880,7 +884,7 @@ export async function POST(req: NextRequest) {
       const { data: existingUsage, error: usageReadError } = await supabase
         .from("usage_tracking")
         .select("id, interaction_count")
-        .eq("anonymous_id", anonymousId)
+        .eq("anonymous_id", persistenceAnonymousId)
         .eq("usage_date", today)
         .maybeSingle();
 
@@ -920,7 +924,7 @@ export async function POST(req: NextRequest) {
         const { error: usageInsertError } = await supabase
           .from("usage_tracking")
           .insert({
-            anonymous_id: anonymousId,
+            anonymous_id: persistenceAnonymousId,
             usage_date: today,
             interaction_count: 1,
           });
@@ -963,7 +967,7 @@ export async function POST(req: NextRequest) {
       try {
         await recordUsageEvent({
           type: "clarify",
-          anonymousId: trackingAnonymousId,
+          anonymousId: persistenceAnonymousId,
           metadata: {
             action,
             context,
@@ -1074,7 +1078,7 @@ export async function POST(req: NextRequest) {
     try {
       await recordUsageEvent({
         type: "clarify",
-        anonymousId: trackingAnonymousId,
+        anonymousId: persistenceAnonymousId,
         metadata: {
           action,
           context,

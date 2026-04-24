@@ -24,8 +24,8 @@ const FREE_HISTORY_VISIBLE_LIMIT = 5;
 
 const RAIL_HISTORY_DISPLAY_LIMIT = 8;
 
-/** Second history fetch after persistence may lag behind the clarify response. */
-const HISTORY_REFRESH_RETRY_MS = 650;
+/** Extra history fetches — persistence/read may lag slightly after clarify returns. */
+const HISTORY_REFRESH_RETRY_DELAYS_MS = [750, 1500] as const;
 
 type RequestAction = "clarify";
 
@@ -114,7 +114,7 @@ export default function ClarifyPage() {
   const pathTopRef = useRef<HTMLDivElement | null>(null);
   const resultRef = useRef<HTMLDivElement | null>(null);
   const copyResetTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const historyRefreshRetryRef = useRef<number | null>(null);
+  const historyRefreshTimeoutsRef = useRef<number[]>([]);
 
   const router = useRouter();
   const pathname = usePathname();
@@ -136,9 +136,10 @@ export default function ClarifyPage() {
       if (copyResetTimeoutRef.current) {
         clearTimeout(copyResetTimeoutRef.current);
       }
-      if (historyRefreshRetryRef.current) {
-        clearTimeout(historyRefreshRetryRef.current);
+      for (const id of historyRefreshTimeoutsRef.current) {
+        clearTimeout(id);
       }
+      historyRefreshTimeoutsRef.current = [];
     };
   }, []);
 
@@ -171,13 +172,12 @@ export default function ClarifyPage() {
   const scheduleHistoryRefresh = useCallback(() => {
     void loadHistory();
     if (typeof window === "undefined") return;
-    if (historyRefreshRetryRef.current) {
-      clearTimeout(historyRefreshRetryRef.current);
+    for (const id of historyRefreshTimeoutsRef.current) {
+      window.clearTimeout(id);
     }
-    historyRefreshRetryRef.current = window.setTimeout(() => {
-      historyRefreshRetryRef.current = null;
-      void loadHistory();
-    }, HISTORY_REFRESH_RETRY_MS);
+    historyRefreshTimeoutsRef.current = HISTORY_REFRESH_RETRY_DELAYS_MS.map((delay) =>
+      window.setTimeout(() => void loadHistory(), delay)
+    );
   }, [loadHistory]);
 
   useEffect(() => {

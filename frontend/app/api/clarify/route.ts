@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { recordUsageEvent } from "../../../lib/usage";
+import { createConversation, saveMessage } from "../../../lib/history";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -811,6 +812,7 @@ export async function POST(req: NextRequest) {
     }
 
     let conversationId = incomingConversationId;
+    let persistedConversationId = incomingConversationId;
 
     // Conversation management with Supabase conditional
     if (supabase) {
@@ -857,6 +859,14 @@ export async function POST(req: NextRequest) {
     
     if (action === "clarify" && !input) {
       return NextResponse.json({ error: "Input required" }, { status: 400 });
+    }
+
+    if (!persistedConversationId) {
+      try {
+        persistedConversationId = await createConversation(trackingAnonymousId);
+      } catch {
+        // fail silently
+      }
     }
 
     // Usage tracking with Supabase conditional
@@ -951,6 +961,18 @@ export async function POST(req: NextRequest) {
         }
       }
 
+      if (persistedConversationId) {
+        try {
+          await saveMessage({
+            conversationId: persistedConversationId,
+            role: "assistant",
+            content: closeResponse.message,
+          });
+        } catch {
+          // fail silently
+        }
+      }
+
       try {
         await recordUsageEvent({
           type: "clarify",
@@ -988,6 +1010,18 @@ export async function POST(req: NextRequest) {
           },
           { status: 500 }
         );
+      }
+    }
+
+    if (action === "clarify" && input && persistedConversationId) {
+      try {
+        await saveMessage({
+          conversationId: persistedConversationId,
+          role: "user",
+          content: input,
+        });
+      } catch {
+        // fail silently
       }
     }
     
@@ -1076,6 +1110,22 @@ export async function POST(req: NextRequest) {
           },
           { status: 500 }
         );
+      }
+    }
+
+    if (persistedConversationId) {
+      const assistantContent =
+        neutralized.mode === "clarify"
+          ? formatResponseForStorage(neutralized)
+          : neutralized.message;
+      try {
+        await saveMessage({
+          conversationId: persistedConversationId,
+          role: "assistant",
+          content: assistantContent,
+        });
+      } catch {
+        // fail silently
       }
     }
     

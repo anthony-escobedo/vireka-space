@@ -33,7 +33,8 @@ create table if not exists public.usage_events (
 
 create table if not exists public.conversations (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users(id) on delete cascade,
+  user_id uuid references auth.users(id) on delete cascade,
+  anonymous_id text,
   title text,
   source text not null,
   created_at timestamptz not null default now(),

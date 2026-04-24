@@ -4,7 +4,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const TTS_MODEL = process.env.OPENAI_TTS_MODEL || "gpt-4o-mini-tts";
-const TTS_VOICE_RAW = process.env.OPENAI_TTS_VOICE || "sage";
+const TTS_VOICE = process.env.OPENAI_TTS_VOICE || "cedar";
 const MAX_TTS_CHARS = 4096;
 const OPENAI_SPEECH_URL = "https://api.openai.com/v1/audio/speech";
 
@@ -121,13 +121,13 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   const { voice: voiceUsed, usedFallback, requestedNormalized } = resolveOpenAiTtsVoice(
     TTS_MODEL,
-    TTS_VOICE_RAW
+    TTS_VOICE
   );
   if (usedFallback) {
     console.info(
       "[tts] Voice resolution:",
       "requested=",
-      JSON.stringify(TTS_VOICE_RAW),
+      JSON.stringify(TTS_VOICE),
       "normalized=",
       JSON.stringify(requestedNormalized),
       "→ using",
@@ -164,7 +164,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       console.error("[tts] OpenAI speech API error:", {
         status: upstream.status,
         model: TTS_MODEL,
-        voiceRequestedEnv: TTS_VOICE_RAW,
+        voiceRequestedEnv: TTS_VOICE,
         voiceSent: voiceUsed,
         contentType,
         detail: detail.slice(0, 2000),

@@ -42,6 +42,21 @@ return NextResponse.json(
 try {
 const supabase = getSupabaseServerClient();
 
+const { data: latestRawConversations } = await supabase
+  .from("conversations")
+  .select("id, anonymous_id, mode, source, created_at")
+  .order("created_at", { ascending: false })
+  .limit(5);
+console.log("[api/history] latest raw conversations", latestRawConversations);
+console.log(
+  "[api/history] comparing anonymous ids",
+  latestRawConversations?.map((row) => ({
+    requestedAnonymousId: anonymousId,
+    rowAnonymousId: row.anonymous_id,
+    matches: row.anonymous_id === anonymousId,
+  }))
+);
+
 const { data, error } = await supabase
   .from("conversations")
   .select("*")

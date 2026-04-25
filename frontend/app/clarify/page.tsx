@@ -12,6 +12,7 @@ import IntegratedViewTtsButton from "../../components/IntegratedViewTtsButton";
 
 import { getOrCreateAnonymousId } from "../../lib/anonymous";
 import { normalizeMessageContentToPreviewSource } from "../../lib/historyReadHelpers";
+import type { Language } from "../../lib/i18n/config";
 import { useLanguage } from "../../lib/i18n/useLanguage";
 import { parseStoredAssistantContent } from "../../lib/parseStoredClarifyAssistant";
 
@@ -28,6 +29,21 @@ const RAIL_HISTORY_DISPLAY_LIMIT = 8;
 
 /** Extra history fetches — persistence/read may lag slightly after clarify returns. */
 const HISTORY_REFRESH_RETRY_DELAYS_MS = [750, 1500] as const;
+
+const MENU_LINKS = [
+  { label: "Plan", href: "/settings/plan" },
+  { label: "About", href: "/about" },
+  { label: "FAQ", href: "/faq" },
+  { label: "Contact", href: "/settings/contact" },
+  { label: "Privacy", href: "/privacy" },
+  { label: "Terms", href: "/terms" },
+] as const;
+
+const MENU_LANGUAGES: { code: Language; label: string }[] = [
+  { code: "en", label: "English" },
+  { code: "es", label: "Español" },
+  { code: "pt", label: "Português" },
+];
 
 type RequestAction = "clarify";
 
@@ -111,11 +127,13 @@ export default function ClarifyPage() {
   const [historyDetailLoading, setHistoryDetailLoading] = useState(false);
   const [mobileHistoryOpen, setMobileHistoryOpen] = useState(false);
   const [isReviewingHistorySession, setIsReviewingHistorySession] = useState(false);
-  const { t, language } = useLanguage();
+  const [leftMenuOpen, setLeftMenuOpen] = useState(false);
+  const { t, language, setLanguage } = useLanguage();
   const [copyLabel, setCopyLabel] = useState(t.clarify.copyResult);
   const topInputRef = useRef<HTMLTextAreaElement | null>(null);
   const pathTopRef = useRef<HTMLDivElement | null>(null);
   const resultRef = useRef<HTMLDivElement | null>(null);
+  const leftMenuRef = useRef<HTMLDivElement | null>(null);
   const copyResetTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const historyRefreshTimeoutsRef = useRef<number[]>([]);
   const anonymousIdRef = useRef<string | null>(null);
@@ -255,6 +273,20 @@ export default function ClarifyPage() {
       document.body.style.overflow = prev;
     };
   }, [mobileHistoryOpen, showDesktopHistoryPanel]);
+
+  useEffect(() => {
+    if (typeof document === "undefined" || !leftMenuOpen) return;
+
+    const handlePointerDown = (event: MouseEvent) => {
+      const target = event.target;
+      if (!(target instanceof Node)) return;
+      if (leftMenuRef.current?.contains(target)) return;
+      setLeftMenuOpen(false);
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    return () => document.removeEventListener("mousedown", handlePointerDown);
+  }, [leftMenuOpen]);
 
   function normalizeQuestion(text: string): string {
     return text
@@ -1365,6 +1397,181 @@ function handleStartNew(): void {
                 pointerEvents: "auto",
               }}
             >
+              <div
+                ref={leftMenuRef}
+                style={{
+                  position: "relative",
+                  marginBottom: railHistoryRows.length > 0 ? "1.5rem" : 0,
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: "0.95rem",
+                    lineHeight: 1.25,
+                    fontWeight: 600,
+                    letterSpacing: "-0.01em",
+                    color: "#2f2b27",
+                    marginBottom: "0.55rem",
+                  }}
+                >
+                  VIREKA Space
+                </div>
+                <button
+                  type="button"
+                  aria-expanded={leftMenuOpen}
+                  onClick={() => setLeftMenuOpen((open) => !open)}
+                  style={{
+                    margin: 0,
+                    padding: "0.35rem 0.45rem",
+                    border: "1px solid transparent",
+                    borderRadius: "8px",
+                    background: "transparent",
+                    color: "#6f6962",
+                    cursor: "pointer",
+                    font: "inherit",
+                    fontSize: "0.85rem",
+                    lineHeight: 1.3,
+                    transition: "background-color 150ms ease, border-color 150ms ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "rgba(0,0,0,0.04)";
+                    e.currentTarget.style.borderColor = "rgba(0,0,0,0.05)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                    e.currentTarget.style.borderColor = "transparent";
+                  }}
+                >
+                  Menu
+                </button>
+                {leftMenuOpen ? (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "4.7rem",
+                      left: 0,
+                      width: "230px",
+                      padding: "0.45rem",
+                      borderRadius: "12px",
+                      border: "1px solid rgba(0,0,0,0.05)",
+                      backgroundColor: "rgba(250,248,244,0.9)",
+                      boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
+                      backdropFilter: "blur(8px)",
+                      zIndex: 12,
+                    }}
+                  >
+                    {MENU_LINKS.slice(0, 4).map((item) => (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setLeftMenuOpen(false)}
+                        style={{
+                          display: "block",
+                          padding: "0.5rem 0.55rem",
+                          borderRadius: "8px",
+                          color: "#3f3b36",
+                          fontSize: "0.88rem",
+                          lineHeight: 1.35,
+                          textDecoration: "none",
+                          transition: "background-color 150ms ease, transform 150ms ease",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = "rgba(0,0,0,0.045)";
+                          e.currentTarget.style.transform = "translateY(-0.5px)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = "transparent";
+                          e.currentTarget.style.transform = "none";
+                        }}
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
+                    <div
+                      style={{
+                        padding: "0.6rem 0.55rem 0.45rem",
+                        margin: "0.15rem 0",
+                        borderTop: "1px solid rgba(0,0,0,0.05)",
+                        borderBottom: "1px solid rgba(0,0,0,0.05)",
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: "0.76rem",
+                          lineHeight: 1.35,
+                          color: "#8b857e",
+                          marginBottom: "0.25rem",
+                        }}
+                      >
+                        Language
+                      </div>
+                      <div
+                        style={{
+                          display: "flex",
+                          flexWrap: "wrap",
+                          alignItems: "center",
+                          gap: "0.25rem",
+                          color: "#aaa39c",
+                          fontSize: "0.82rem",
+                          lineHeight: 1.4,
+                        }}
+                      >
+                        {MENU_LANGUAGES.map((option, index) => (
+                          <span key={option.code}>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setLanguage(option.code);
+                                setLeftMenuOpen(false);
+                              }}
+                              style={{
+                                margin: 0,
+                                padding: 0,
+                                border: "none",
+                                background: "none",
+                                color: language === option.code ? "#2f2b27" : "#6f6962",
+                                cursor: "pointer",
+                                font: "inherit",
+                                fontWeight: language === option.code ? 600 : 400,
+                              }}
+                            >
+                              {option.label}
+                            </button>
+                            {index < MENU_LANGUAGES.length - 1 ? " · " : ""}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    {MENU_LINKS.slice(4).map((item) => (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setLeftMenuOpen(false)}
+                        style={{
+                          display: "block",
+                          padding: "0.5rem 0.55rem",
+                          borderRadius: "8px",
+                          color: "#3f3b36",
+                          fontSize: "0.88rem",
+                          lineHeight: 1.35,
+                          textDecoration: "none",
+                          transition: "background-color 150ms ease, transform 150ms ease",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = "rgba(0,0,0,0.045)";
+                          e.currentTarget.style.transform = "translateY(-0.5px)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = "transparent";
+                          e.currentTarget.style.transform = "none";
+                        }}
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
               {railHistoryRows.length > 0 ? (
                 <div
                   style={{
@@ -1517,8 +1724,28 @@ function handleStartNew(): void {
             </aside>
           ) : null}
 
-          <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ flex: 1, minWidth: 0, position: "relative" }}>
             <div style={{ minWidth: 0, width: "100%", maxWidth: "780px" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            marginBottom: "0.65rem",
+          }}
+        >
+          <Link
+            href="/settings/account"
+            style={{
+              fontSize: "0.82rem",
+              lineHeight: 1.4,
+              color: "#6f6962",
+              textDecoration: "none",
+              padding: "0.2rem 0",
+            }}
+          >
+            Sign in
+          </Link>
+        </div>
         {!homeMode ? <div style={{ marginBottom: "2rem" }}>
           <Link
             href="/"

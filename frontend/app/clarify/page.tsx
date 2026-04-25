@@ -2299,6 +2299,7 @@ function handleStartNew(): void {
               disabled={loading}
               voiceEnabled
               clarifyLoading={loading}
+              clarifyLoadingLabel={t.clarify.loadingText}
               onSend={() => submitToClarify("clarify", composerSource)}
               surfaceVariant="composer"
               cardStyle={{

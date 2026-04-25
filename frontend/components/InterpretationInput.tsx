@@ -46,6 +46,8 @@ export type InterpretationInputProps = {
   transcribeUrl?: string;
   /** Parent loading (e.g. POST /api/clarify) - disables send control. */
   clarifyLoading?: boolean;
+  /** Shown while the text submit request is running. */
+  clarifyLoadingLabel?: string;
   surfaceVariant?: "card" | "composer";
   /** Shown while audio is being transcribed (voice UI). */
   transcribingLabel: string;
@@ -606,6 +608,7 @@ const InterpretationInput = forwardRef<
     onSend,
     transcribeUrl = WHISPER_TRANSCRIBE_URL,
     clarifyLoading = false,
+    clarifyLoadingLabel,
     surfaceVariant = "card",
     transcribingLabel,
   },
@@ -1208,6 +1211,17 @@ const InterpretationInput = forwardRef<
               flex: "0 0 auto",
             }}
           >
+            {clarifyLoading && clarifyLoadingLabel ? (
+              <span
+                style={{
+                  color: "#7a756f",
+                  fontSize: "0.8rem",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {clarifyLoadingLabel}
+              </span>
+            ) : null}
             {micState === "ready" && audioUrl ? (
               <button
                 type="button"

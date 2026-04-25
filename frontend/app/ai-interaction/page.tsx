@@ -1220,6 +1220,7 @@ function renderActiveResponse(panel: ClarificationPanel) {
               disabled={loading}
               voiceEnabled
               clarifyLoading={loading}
+              clarifyLoadingLabel={t.aiInteraction.loadingText}
               onSend={() => submitToClarify("clarify", composerSource)}
               surfaceVariant="composer"
               cardStyle={{

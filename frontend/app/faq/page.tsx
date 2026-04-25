@@ -9,6 +9,7 @@ const FAQ_KEYS = [
   'whatDoesItDo',
   'providesAnswers',
   'isAITool',
+  'worksWithAI',
   'whyNotUseAIDirectly',
   'whatShouldIEnter',
   'whenShouldIUseIt',

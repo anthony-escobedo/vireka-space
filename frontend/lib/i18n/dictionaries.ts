@@ -112,6 +112,10 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       badge: 'CLARIFY',
       simpleAction: 'Clarify',
     },
+    history: {
+      useThisClarification: 'Use this clarification',
+      startNewSituation: 'Start a new situation',
+    },
     aiInteraction: {
       pageTitle: 'AI interaction',
       heroTitle: 'See clearly before deciding what to ask AI to do',
@@ -319,6 +323,14 @@ const dictionaries: Record<Language, TranslationDictionary> = {
           question: 'What’s the difference between using this and using AI directly?',
           answer: [
             'AI systems respond based on how a situation is described. If that description is unclear or incomplete, the response will reflect that, even if the system is functioning correctly. VIREKA Space makes the structure of the situation visible first, so interaction with AI can begin from a clearer and more stable starting point.',
+          ],
+        },
+        prepareForAI: {
+          question: 'What is “Prepare for AI”?',
+          answer: [
+            'It is a way to use the clarity developed in VIREKA Space within another AI system.',
+            'From a clarified situation, a structured context is generated that can be copied and used as the basis for an AI interaction. This context preserves the distinction between what appears to be happening, what may be assumed, and what remains unclear.',
+            'It does not add external instructions or alter the content. It allows the interaction with AI to begin from a clearer understanding of the situation.',
           ],
         },
         whatShouldIEnter: {
@@ -574,6 +586,10 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       simpleAction: 'Aclarar',
       badge: 'ACLARAR',
     },
+    history: {
+      useThisClarification: 'Usar esta aclaración',
+      startNewSituation: 'Iniciar nueva situación',
+    },
     aiInteraction: {
       pageTitle: 'Interacción con IA',
       heroTitle: 'Ver claramente antes de decidir qué pedirle a la IA que haga',
@@ -782,6 +798,14 @@ const dictionaries: Record<Language, TranslationDictionary> = {
           question: '¿Cuál es la diferencia entre usar esto y usar IA directamente?',
           answer: [
             'Los sistemas de IA responden en función de cómo se describe una situación. Si esa descripción no está clara o está incompleta, la respuesta reflejará eso, incluso si el sistema funciona correctamente. VIREKA Space hace visible primero la estructura de la situación, para que la interacción con la IA comience desde un punto más claro y estable.',
+          ],
+        },
+        prepareForAI: {
+          question: '¿Qué es “Preparar para IA”?',
+          answer: [
+            'Es una forma de utilizar la claridad obtenida en VIREKA Space dentro de otro sistema de IA.',
+            'A partir de una situación ya clarificada, se genera un contexto estructurado que puede copiarse y usarse como base para una interacción con IA. Este contexto mantiene la distinción entre lo que aparece, lo que puede estar siendo asumido y lo que permanece incierto.',
+            'No añade instrucciones externas ni cambia el contenido. Simplemente permite que la interacción con IA comience desde una comprensión más clara de la situación.',
           ],
         },
         whatShouldIEnter: {
@@ -1037,6 +1061,10 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       badge: 'CLARIFICAR',
       simpleAction: 'Clarificar',
     },
+    history: {
+      useThisClarification: 'Usar esta clareza',
+      startNewSituation: 'Começar nova situação',
+    },
     aiInteraction: {
       pageTitle: 'Interação com IA',
       heroTitle: 'Ver claramente antes de decidir o que pedir à IA para fazer',
@@ -1245,6 +1273,14 @@ const dictionaries: Record<Language, TranslationDictionary> = {
           question: 'Qual é a diferença entre usar isso e usar IA diretamente?',
           answer: [
             'Os sistemas de IA respondem com base em como uma situação é descrita. Se essa descrição não estiver clara ou estiver incompleta, a resposta refletirá isso, mesmo que o sistema esteja funcionando corretamente. O VIREKA Space torna visível primeiro a estrutura da situação, para que a interação com a IA comece a partir de um ponto mais claro e estável.',
+          ],
+        },
+        prepareForAI: {
+          question: 'O que é “Preparar para IA”?',
+          answer: [
+            'É uma forma de utilizar a clareza desenvolvida no VIREKA Space em outro sistema de IA.',
+            'A partir de uma situação já clarificada, é gerado um contexto estruturado que pode ser copiado e utilizado como base para uma interação com IA. Esse contexto mantém a distinção entre o que aparece, o que pode estar sendo assumido e o que permanece incerto.',
+            'Não adiciona instruções externas nem altera o conteúdo. Apenas permite que a interação com IA comece a partir de uma compreensão mais clara da situação.',
           ],
         },
         whatShouldIEnter: {

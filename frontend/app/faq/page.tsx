@@ -11,6 +11,7 @@ const FAQ_KEYS = [
   'isAITool',
   'worksWithAI',
   'whyNotUseAIDirectly',
+  'prepareForAI',
   'whatShouldIEnter',
   'whenShouldIUseIt',
   'benefitOfUsingIt',

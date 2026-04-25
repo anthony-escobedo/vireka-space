@@ -111,6 +111,12 @@ export interface TranslationDictionary {
     genericNoticeTitle: string;
     anUnexpectedErrorOccurred: string;
   };
+
+  // History (sidebar / review actions)
+  history: {
+    useThisClarification: string;
+    startNewSituation: string;
+  };
   
   // AI Interaction Page
   aiInteraction: {
@@ -292,6 +298,10 @@ export interface TranslationDictionary {
         answer: string[];
       };
       whyNotUseAIDirectly: {
+        question: string;
+        answer: string[];
+      };
+      prepareForAI: {
         question: string;
         answer: string[];
       };

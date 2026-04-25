@@ -892,12 +892,6 @@ function handleStartNew(): void {
   const hideInitialHero = hasClarificationHistory || history.length > 0;
   const workspaceTitle = t.clarify.heroTitle;
   const workspaceOrientation = homeMode ? t.clarify.descriptionParagraph : "";
-  const useThisClarificationLabel =
-    language === "es"
-      ? "Usa esta aclaración"
-      : language === "pt"
-        ? "Use esta clarificação"
-        : "Use this clarification";
 
   function renderList(items: string[] | undefined, label: string) {
     if (!items || items.length === 0) return null;
@@ -1253,7 +1247,7 @@ function handleStartNew(): void {
               onFocus={() => setHoveredHistoryEndAction("use")}
               onBlur={() => setHoveredHistoryEndAction(null)}
             >
-              {useThisClarificationLabel}
+              {t.history.useThisClarification}
             </button>
             <button
               type="button"
@@ -1265,7 +1259,7 @@ function handleStartNew(): void {
               onFocus={() => setHoveredHistoryEndAction("new")}
               onBlur={() => setHoveredHistoryEndAction(null)}
             >
-              {t.doneState.startNewSituation}
+              {t.history.startNewSituation}
             </button>
           </div>
         ) : null}

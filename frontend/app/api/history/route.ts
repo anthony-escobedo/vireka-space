@@ -58,34 +58,36 @@ console.log(
   }))
 );
 
-const { data: userRows, error } = await supabase
+const { data: recentUserMessages, error: messagesError } = await supabase
   .from("messages")
   .select("conversation_id, content, created_at")
   .eq("role", "user")
   .order("created_at", { ascending: false })
   .limit(1000);
 
-if (error || !userRows) {
+if (messagesError || !recentUserMessages) {
   return NextResponse.json(
     { conversations: [] as HistoryConversation[] },
     { headers: NO_STORE_HEADERS }
   );
 }
 
-console.log("[api/history] messages count:", userRows.length);
+console.log("[api/history] recent user messages count:", recentUserMessages.length);
 
-const latestUserMessageByConversationId = new Map<string, { content: unknown; created_at: string }>();
-for (const row of userRows) {
+const latestMessageByConversationId = new Map<string, { content: unknown; created_at: string }>();
+for (const row of recentUserMessages) {
   const conversationId = String((row as { conversation_id: string }).conversation_id);
-  if (latestUserMessageByConversationId.has(conversationId)) continue;
-  latestUserMessageByConversationId.set(conversationId, {
+  if (latestMessageByConversationId.has(conversationId)) continue;
+  latestMessageByConversationId.set(conversationId, {
     content: (row as { content: unknown }).content,
     created_at: String((row as { created_at: string }).created_at),
   });
 }
 
-const ids = Array.from(latestUserMessageByConversationId.keys());
-let data: Array<{
+const conversationIds = Array.from(latestMessageByConversationId.keys());
+console.log("[api/history] conversation ids count:", conversationIds.length);
+
+let matchedConversations: Array<{
   id: string;
   anonymous_id?: string | null;
   mode?: string | null;
@@ -93,47 +95,51 @@ let data: Array<{
   created_at: string;
 }> = [];
 
-if (ids.length > 0) {
-  const { data: conversationRows, error: conversationErr } = await supabase
+if (conversationIds.length > 0) {
+  const { data: conversationRows, error: conversationsError } = await supabase
     .from("conversations")
     .select("id, anonymous_id, mode, source, created_at")
-    .in("id", ids);
+    .in("id", conversationIds);
 
-  if (conversationErr || !conversationRows) {
+  if (conversationsError || !conversationRows) {
     return NextResponse.json(
       { conversations: [] as HistoryConversation[] },
       { headers: NO_STORE_HEADERS }
     );
   }
 
-  data = conversationRows.filter((row) => String(row.anonymous_id) === anonymousId);
+  matchedConversations = conversationRows.filter(
+    (row) => String(row.anonymous_id) === anonymousId
+  );
 }
 
 console.log("[api/history] anonymousId:", anonymousId);
-console.log("[api/history] conversations count:", data.length);
+console.log("[api/history] matched conversations count:", matchedConversations.length);
 console.log(
   "[api/history] conversation ids:",
-  data.map((row) => row.id)
+  matchedConversations.map((row) => row.id)
 );
 
-const conversationById = new Map(data.map((row) => [String(row.id), row]));
+const allowedConversationsById = new Map(
+  matchedConversations.map((row) => [String(row.id), row])
+);
 
-const conversations: HistoryConversation[] = ids.flatMap((conversationId) => {
-  const row = conversationById.get(conversationId);
-  const latestUserMessage = latestUserMessageByConversationId.get(conversationId);
-  if (!row || !latestUserMessage) return [];
-  const id = String(row.id);
+const conversations: HistoryConversation[] = Array.from(latestMessageByConversationId.entries())
+  .flatMap(([conversationId, latestMessage]) => {
+    const row = allowedConversationsById.get(conversationId);
+    if (!row) return [];
 
-  return [{
-    id,
-    mode: String(row.source ?? row.mode ?? "unknown"),
-    created_at: latestUserMessage.created_at,
-    preview: truncateHistoryPreview(
-      normalizeMessageContentToPreviewSource(latestUserMessage.content),
-      60
-    ),
-  }];
-}).slice(0, 20);
+    return [{
+      id: conversationId,
+      mode: String(row.source ?? row.mode ?? "unknown"),
+      created_at: latestMessage.created_at,
+      preview: truncateHistoryPreview(
+        normalizeMessageContentToPreviewSource(latestMessage.content),
+        60
+      ),
+    }];
+  })
+  .slice(0, 20);
 
 console.log("[api/history] final conversations:", conversations.length);
 console.log("[api/history] first conversation timestamp:", conversations[0]?.created_at ?? null);

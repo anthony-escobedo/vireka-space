@@ -207,9 +207,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
         function: {
           title: 'Function',
           content: [
-            'VIREKA Space was developed for a point that often goes unnoticed. Before a decision is made or a prompt is written, a situation is already being interpreted. This interpretation quietly shapes what seems reasonable, what feels necessary, and what appears worth asking.',
-            'Most systems move toward answers. VIREKA Space separates what the answer is based on.',
-            'It operates before any decision or response, making visible how the situation is being understood.',
+            'VIREKA Space was developed for a point that often goes unnoticed. Before a decision is made or a prompt is written, a situation is already being interpreted. This interpretation quietly shapes what seems reasonable, what feels necessary, and what appears worth asking. While most systems move toward answers, VIREKA Space separates what the answer is based on by operating before any decision or response, making visible how the situation is being understood.',
             'Sometimes a situation feels difficult not because it is complex, but because more than one interpretation seems possible at the same time. Some parts appear clear, others uncertain, and certain assumptions may already be forming without being fully noticed. When this structure is not visible, decisions can feel forced and prompts harder to formulate.',
             'VIREKA Space offers a simple way to make this visible. It does not suggest what should be done. It makes visible how the situation is being understood. As this becomes clear, it becomes easier to see whether a decision can be made or how a prompt may begin to form.',
           ],
@@ -272,7 +270,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
         isAITool: {
           question: 'Is this an AI tool?',
           answer: [
-            'Not in the sense of producing responses or results. VIREKA Space does not generate solutions. It operates before that, making visible how a situation is being understood before any response or prompt is formed.',
+            'Not in the sense of producing responses or results. VIREKA Space does not generate solutions. It operates before any response or prompt is formed, making visible how a situation is being understood.',
           ],
         },
         worksWithAI: {
@@ -636,9 +634,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
         function: {
           title: 'Función',
           content: [
-            'VIREKA Space fue desarrollado para un punto que suele pasar desapercibido. Antes de que se tome una decisión o se escriba un prompt, una situación ya está siendo interpretada. Esta interpretación influye silenciosamente en lo que parece razonable, lo que se siente necesario y lo que parece tener sentido preguntar.',
-            'La mayoría de los sistemas avanzan hacia respuestas. VIREKA Space separa aquello en lo que se basa la respuesta.',
-            'Opera antes de cualquier decisión o respuesta, haciendo visible cómo se está comprendiendo la situación.',
+            'VIREKA Space fue desarrollado para un punto que suele pasar desapercibido. Antes de que se tome una decisión o se escriba un prompt, una situación ya está siendo interpretada. Esta interpretación influye silenciosamente en lo que parece razonable, lo que se siente necesario y lo que parece tener sentido preguntar. Mientras la mayoría de los sistemas avanzan hacia respuestas, VIREKA Space separa aquello en lo que se basa la respuesta al actuar antes de cualquier decisión o respuesta, haciendo visible cómo se está comprendiendo la situación.',
             'A veces una situación parece difícil no porque sea compleja, sino porque más de una interpretación parece posible al mismo tiempo. Algunas partes se ven claras, otras inciertas, y ciertas suposiciones pueden estar formándose sin ser completamente percibidas. Cuando esta estructura no es visible, las decisiones pueden sentirse forzadas y los prompts más difíciles de formular.',
             'VIREKA Space ofrece una forma simple de hacer esto visible. No sugiere qué se debe hacer. Hace visible cómo se está comprendiendo la situación. A medida que esto se aclara, resulta más fácil ver si una decisión puede surgir o cómo un prompt puede comenzar a formarse.',
           ],
@@ -701,7 +697,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
         isAITool: {
           question: '¿Es una herramienta de IA?',
           answer: [
-            'No en el sentido de producir respuestas o resultados. VIREKA Space no genera soluciones. Actúa antes de eso, haciendo visible cómo se está comprendiendo una situación antes de que se forme cualquier respuesta o prompt.',
+            'No en el sentido de producir respuestas o resultados. VIREKA Space no genera soluciones. Actúa antes de que se forme cualquier respuesta o prompt, haciendo visible cómo se está comprendiendo una situación.',
           ],
         },
         worksWithAI: {
@@ -1065,9 +1061,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
         function: {
           title: 'Função',
           content: [
-            'O VIREKA Space foi desenvolvido para um ponto que geralmente passa despercebido. Antes de uma decisão ser tomada ou de um prompt ser escrito, uma situação já está sendo interpretada. Essa interpretação influencia silenciosamente o que parece razoável, o que se sente necessário e o que faz sentido perguntar.',
-            'A maioria dos sistemas avança em direção a respostas. O VIREKA Space separa aquilo em que a resposta se baseia.',
-            'Ele atua antes de qualquer decisão ou resposta, tornando visível como a situação está sendo compreendida.',
+            'O VIREKA Space foi desenvolvido para um ponto que geralmente passa despercebido. Antes de uma decisão ser tomada ou de um prompt ser escrito, uma situação já está sendo interpretada. Essa interpretação influencia silenciosamente o que parece razoável, o que se sente necessário e o que faz sentido perguntar. Enquanto a maioria dos sistemas avança em direção a respostas, o VIREKA Space separa aquilo em que a resposta se baseia ao atuar antes de qualquer decisão ou resposta, tornando visível como a situação está sendo compreendida.',
             'Às vezes, uma situação parece difícil não porque seja complexa, mas porque mais de uma interpretação parece possível ao mesmo tempo. Algumas partes parecem claras, outras incertas, e certas suposições podem já estar se formando sem serem totalmente percebidas. Quando essa estrutura não está clara, decisões podem parecer forçadas e prompts mais difíceis de formular.',
             'O VIREKA Space oferece uma forma simples de tornar isso visível. Ele não sugere o que deve ser feito. Ele torna visível como a situação está sendo compreendida. À medida que isso se torna claro, fica mais fácil perceber quando uma decisão pode surgir ou como um prompt pode começar a se formar.',
           ],
@@ -1130,7 +1124,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
         isAITool: {
           question: 'Isso é uma ferramenta de IA?',
           answer: [
-            'Não no sentido de produzir respostas ou resultados. O VIREKA Space não gera soluções. Ele atua antes disso, tornando visível como uma situação está sendo compreendida antes de qualquer resposta ou prompt.',
+            'Não no sentido de produzir respostas ou resultados. O VIREKA Space não gera soluções. Ele atua antes que qualquer resposta ou prompt seja formado, tornando visível como uma situação está sendo compreendida.',
           ],
         },
         worksWithAI: {

@@ -30,11 +30,12 @@ const RAIL_HISTORY_DISPLAY_LIMIT = 8;
 const HISTORY_REFRESH_RETRY_DELAYS_MS = [750, 1500] as const;
 
 const MENU_LINKS = [
-  { label: "About", href: "/about" },
-  { label: "FAQ", href: "/faq" },
-  { label: "Privacy", href: "/privacy" },
-  { label: "Terms", href: "/terms" },
-  { label: "Contact", href: "/settings/contact" },
+  { labelKey: "about", href: "/about" },
+  { labelKey: "faq", href: "/faq" },
+  { labelKey: "plan", href: "/plan" },
+  { labelKey: "privacy", href: "/privacy" },
+  { labelKey: "terms", href: "/terms" },
+  { labelKey: "contact", href: "/settings/contact" },
 ] as const;
 
 const MENU_LANGUAGES: { code: Language; label: string }[] = [
@@ -1318,7 +1319,7 @@ function handleStartNew(): void {
           e.currentTarget.style.transform = "none";
         }}
       >
-        {item.label}
+        {t.header[item.labelKey]}
       </Link>
     );
   }
@@ -1441,7 +1442,7 @@ function handleStartNew(): void {
           zIndex: 40,
         }}
       >
-        {MENU_LINKS.slice(0, 2).map((item) => renderMenuLink(item))}
+        {MENU_LINKS.slice(0, 3).map((item) => renderMenuLink(item))}
         <div
           style={{ position: "relative" }}
           onMouseEnter={() => setLanguageMenuOpen(true)}
@@ -1499,7 +1500,7 @@ function handleStartNew(): void {
             </div>
           ) : null}
         </div>
-        {MENU_LINKS.slice(2).map((item) => renderMenuLink(item))}
+        {MENU_LINKS.slice(3).map((item) => renderMenuLink(item))}
       </div>
     );
   }
@@ -1744,17 +1745,20 @@ function handleStartNew(): void {
                     );
                   })}
                   {hasLockedHistoryRows ? (
-                    <p
+                    <Link
+                      href="/plan"
                       style={{
+                        display: "inline-block",
                         fontSize: 11,
                         lineHeight: 1.45,
                         color: "#a8a29e",
                         margin: "0.5rem 0 0 0",
                         letterSpacing: "0.01em",
+                        textDecoration: "none",
                       }}
                     >
-                      Full history available with subscription
-                    </p>
+                      {t.plan.fullHistoryAvailableWithSubscription}
+                    </Link>
                   ) : null}
                 </div>
               ) : null}
@@ -1797,22 +1801,6 @@ function handleStartNew(): void {
           ) : (
             <div />
           )}
-          <Link
-            href="/settings/account"
-            style={{
-              position: showDesktopHistoryPanel ? "fixed" : "static",
-              top: showDesktopHistoryPanel ? "1.7rem" : undefined,
-              right: showDesktopHistoryPanel ? "1.5rem" : undefined,
-              fontSize: "0.82rem",
-              lineHeight: 1.4,
-              color: "#6f6962",
-              textDecoration: "none",
-              padding: "0.2rem 0",
-              zIndex: 3,
-            }}
-          >
-            Sign in
-          </Link>
         </div>
         {!homeMode ? <div style={{ marginBottom: "2rem" }}>
           <Link
@@ -2181,17 +2169,20 @@ function handleStartNew(): void {
                 );
               })}
               {hasLockedHistoryRows ? (
-                <p
+                <Link
+                  href="/plan"
                   style={{
+                    display: "inline-block",
                     fontSize: 11,
                     lineHeight: 1.45,
                     color: "#a8a29e",
                     margin: "0.35rem 0 0 0",
                     letterSpacing: "0.01em",
+                    textDecoration: "none",
                   }}
                 >
-                  Full history available with subscription
-                </p>
+                  {t.plan.fullHistoryAvailableWithSubscription}
+                </Link>
               ) : null}
             </div>
           </div>

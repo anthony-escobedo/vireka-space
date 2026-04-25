@@ -7,7 +7,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       about: 'About',
       faq: 'FAQ',
       account: 'Account',
-      plan: 'Plan',
+      plan: 'Plans',
       privacy: 'Privacy',
       terms: 'Terms',
       contact: 'Contact',
@@ -174,13 +174,44 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       functionalityMayExpand: '',
     },
     plan: {
-      pageTitle: 'Usage structure',
-      pageIntro: 'VIREKA Space is designed to remain accessible while allowing expanded usage when needed.',
+      pageTitle: 'Plans',
+      pageIntro: 'Choose the level of access that fits how you use VIREKA Space.',
       freeAccessIncludes: 'Free access includes up to 10 interactions per day.',
       dailyLimitReached: 'When the daily limit is reached, usage becomes available again the following day.',
       extendedAccessSubscription: 'Users who require extended access may choose to subscribe.',
       subscriptionEnablesAdditional: 'Subscription enables additional usage beyond the daily free limit.',
       planStructureMayEvolve: 'Plan structure may evolve as the service develops.',
+      fullHistoryAvailableWithSubscription: 'Full history available with subscription',
+      tiers: {
+        free: {
+          name: 'Free',
+          features: [
+            '10 interactions per day',
+            'Access to 5 recent history items',
+            'No sign-in required',
+          ],
+          action: 'Current access',
+        },
+        pro: {
+          name: 'Pro',
+          features: [
+            '50 interactions per day',
+            'Full history access',
+            'Copy past results from history',
+          ],
+          action: 'Upgrade to Pro',
+        },
+        proPlus: {
+          name: 'Pro+',
+          features: [
+            '100 interactions per day',
+            'Full history access',
+            'Copy past results from history',
+            'Similar patterns across past situations',
+          ],
+          action: 'Upgrade to Pro+',
+        },
+      },
     },
     contact: {
       pageTitle: 'Contact and feedback',
@@ -433,7 +464,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       about: 'Acerca de',
       faq: 'Preguntas',
       account: 'Cuenta',
-      plan: 'Plan',
+      plan: 'Planes',
       privacy: 'Privacidad',
       terms: 'Términos',
       contact: 'Contacto',
@@ -600,13 +631,44 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       functionalityMayExpand: '',
     },
     plan: {
-      pageTitle: 'Estructura de uso',
-      pageIntro: 'VIREKA Space está diseñado para permanecer accesible mientras permite un uso expandido cuando sea necesario.',
+      pageTitle: 'Planes',
+      pageIntro: 'Elige el nivel de acceso que se ajuste a cómo usas VIREKA Space.',
       freeAccessIncludes: 'El acceso gratuito incluye hasta 10 interacciones por día.',
       dailyLimitReached: 'Cuando se alcanza el límite diario, el uso vuelve a estar disponible el día siguiente.',
       extendedAccessSubscription: 'Los usuarios que requieran acceso extendido pueden elegir suscribirse.',
       subscriptionEnablesAdditional: 'La suscripción habilita uso adicional más allá del límite gratuito diario.',
       planStructureMayEvolve: 'La estructura del plan puede evolucionar a medida que el servicio se desarrolla.',
+      fullHistoryAvailableWithSubscription: 'Historial completo disponible con suscripción',
+      tiers: {
+        free: {
+          name: 'Free',
+          features: [
+            '10 interacciones por día',
+            'Acceso a los 5 elementos recientes del historial',
+            'No se requiere iniciar sesión',
+          ],
+          action: 'Acceso actual',
+        },
+        pro: {
+          name: 'Pro',
+          features: [
+            '50 interacciones por día',
+            'Acceso completo al historial',
+            'Copiar resultados anteriores desde el historial',
+          ],
+          action: 'Actualizar a Pro',
+        },
+        proPlus: {
+          name: 'Pro+',
+          features: [
+            '100 interacciones por día',
+            'Acceso completo al historial',
+            'Copiar resultados anteriores desde el historial',
+            'Patrones similares en situaciones anteriores',
+          ],
+          action: 'Actualizar a Pro+',
+        },
+      },
     },
     contact: {
       pageTitle: 'Contacto y retroalimentación',
@@ -860,7 +922,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       about: 'Sobre',
       faq: 'Perguntas',
       account: 'Conta',
-      plan: 'Plano',
+      plan: 'Planos',
       privacy: 'Privacidade',
       terms: 'Termos',
       contact: 'Contato',
@@ -1027,13 +1089,44 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       functionalityMayExpand: '',
     },
     plan: {
-      pageTitle: 'Estrutura de uso',
-      pageIntro: 'VIREKA Space é projetado para permanecer acessível enquanto permite uso expandido quando necessário.',
+      pageTitle: 'Planos',
+      pageIntro: 'Escolha o nível de acesso que se ajusta à forma como você usa o VIREKA Space.',
       freeAccessIncludes: 'O acesso gratuito inclui até 10 interações por dia.',
       dailyLimitReached: 'Quando o limite diário é alcançado, o uso fica disponível novamente no dia seguinte.',
       extendedAccessSubscription: 'Usuários que requerem acesso estendido podem escolher assinar.',
       subscriptionEnablesAdditional: 'A assinatura habilita uso adicional além do limite gratuito diário.',
       planStructureMayEvolve: 'A estrutura do plano pode evoluir conforme o serviço se desenvolve.',
+      fullHistoryAvailableWithSubscription: 'Histórico completo disponível com assinatura',
+      tiers: {
+        free: {
+          name: 'Free',
+          features: [
+            '10 interações por dia',
+            'Acesso aos 5 itens recentes do histórico',
+            'Não é necessário entrar',
+          ],
+          action: 'Acesso atual',
+        },
+        pro: {
+          name: 'Pro',
+          features: [
+            '50 interações por dia',
+            'Acesso completo ao histórico',
+            'Copiar resultados anteriores do histórico',
+          ],
+          action: 'Atualizar para Pro',
+        },
+        proPlus: {
+          name: 'Pro+',
+          features: [
+            '100 interações por dia',
+            'Acesso completo ao histórico',
+            'Copiar resultados anteriores do histórico',
+            'Padrões semelhantes em situações anteriores',
+          ],
+          action: 'Atualizar para Pro+',
+        },
+      },
     },
     contact: {
       pageTitle: 'Contato e feedback',

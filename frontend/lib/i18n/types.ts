@@ -185,6 +185,24 @@ export interface TranslationDictionary {
     extendedAccessSubscription: string;
     subscriptionEnablesAdditional: string;
     planStructureMayEvolve: string;
+    fullHistoryAvailableWithSubscription: string;
+    tiers: {
+      free: {
+        name: string;
+        features: string[];
+        action: string;
+      };
+      pro: {
+        name: string;
+        features: string[];
+        action: string;
+      };
+      proPlus: {
+        name: string;
+        features: string[];
+        action: string;
+      };
+    };
   };
   
   // Contact Page

@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { CSSProperties } from "react";
 
@@ -18,9 +17,9 @@ const pageStyle: CSSProperties = {
 const navStyle: CSSProperties = {
   display: "flex",
   alignItems: "center",
-  justifyContent: "space-between",
+  justifyContent: "flex-start",
   padding: "1rem 1.5rem",
-  maxWidth: "900px",
+  maxWidth: "980px",
   width: "100%",
   margin: "0 auto",
   boxSizing: "border-box",
@@ -33,67 +32,45 @@ const brandStyle: CSSProperties = {
   color: "#2f2b27",
 };
 
-const navLinksStyle: CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: "1.25rem",
-  flexWrap: "wrap",
-  justifyContent: "flex-end",
-};
-
-const navLinkStyle: CSSProperties = {
-  fontSize: "0.88rem",
-  color: "#5c5650",
-  textDecoration: "none",
-  padding: "0.2rem 0",
-  borderBottom: "1px solid transparent",
-};
-
 const mainStyle: CSSProperties = {
   flex: 1,
   display: "flex",
+  flexDirection: "column",
   alignItems: "center",
-  justifyContent: "center",
-  padding: "clamp(80px, 12vh, 120px) 1.25rem 3rem",
+  justifyContent: "flex-start",
   width: "100%",
   boxSizing: "border-box",
+  paddingLeft: "1.25rem",
+  paddingRight: "1.25rem",
+  paddingBottom: "2.5rem",
+  paddingTop: "clamp(72px, 12vh, 132px)",
 };
 
 const innerStyle: CSSProperties = {
-  maxWidth: "720px",
+  maxWidth: "980px",
   width: "100%",
   textAlign: "center",
   margin: "0 auto",
 };
 
-const labelPillStyle: CSSProperties = {
-  display: "inline-block",
-  fontSize: "0.65rem",
-  fontWeight: 600,
-  letterSpacing: "0.12em",
-  textTransform: "uppercase",
-  color: "#6f6962",
-  border: "1px solid rgba(0,0,0,0.1)",
-  borderRadius: "999px",
-  padding: "6px 14px",
-  marginBottom: "1.5rem",
-};
-
 const headlineStyle: CSSProperties = {
-  fontSize: "clamp(32px, 6vw, 64px)",
+  fontSize: "clamp(42px, 5.6vw, 76px)",
   fontWeight: 700,
-  lineHeight: 1.1,
-  letterSpacing: "-0.02em",
+  lineHeight: 0.98,
+  letterSpacing: "-0.045em",
   textTransform: "uppercase",
   color: "#1a1a1a",
   margin: 0,
+  maxWidth: "980px",
+  marginLeft: "auto",
+  marginRight: "auto",
 };
 
 const sublineStyle: CSSProperties = {
   fontSize: "clamp(16px, 2.2vw, 18px)",
   lineHeight: 1.5,
   color: "rgba(0,0,0,0.6)",
-  margin: "16px 0 0 0",
+  margin: "1.1rem 0 0 0",
   maxWidth: "32rem",
   marginLeft: "auto",
   marginRight: "auto",
@@ -103,32 +80,46 @@ const buttonsWrapStyle: CSSProperties = {
   display: "flex",
   flexDirection: "column",
   alignItems: "center",
-  gap: "12px",
-  marginTop: "40px",
+  gap: "14px",
+  marginTop: "2.25rem",
+  width: "100%",
 };
 
-const primaryBtnStyle: CSSProperties = {
+const ctaBase: CSSProperties = {
   appearance: "none",
   WebkitAppearance: "none",
   margin: 0,
-  border: "none",
-  borderRadius: "999px",
-  backgroundColor: "#111",
-  color: "#fff",
+  width: "100%",
+  maxWidth: "min(100%, 360px)",
+  borderRadius: "14px",
+  border: "1px solid rgba(0,0,0,0.1)",
+  backgroundColor: "rgba(255,255,255,0.88)",
+  color: "#1f1c18",
   fontSize: "0.95rem",
   fontWeight: 600,
   letterSpacing: "0.01em",
-  padding: "0.85rem 1.75rem",
+  padding: "1rem 1.5rem",
   cursor: "pointer",
-  minWidth: "min(100%, 280px)",
   boxSizing: "border-box",
+  boxShadow: "0 2px 10px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)",
+  transition: "box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease",
 };
 
-const secondaryBtnStyle: CSSProperties = {
-  ...primaryBtnStyle,
-  backgroundColor: "transparent",
-  color: "#111",
-  border: "1px solid rgba(0,0,0,0.2)",
+const primaryCtaStyle: CSSProperties = {
+  ...ctaBase,
+  backgroundColor: "rgba(255,255,255,0.95)",
+  border: "1px solid rgba(0,0,0,0.12)",
+  boxShadow: "0 4px 18px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.05)",
+  fontWeight: 650,
+};
+
+const secondaryCtaStyle: CSSProperties = {
+  ...ctaBase,
+  backgroundColor: "rgba(252,250,248,0.9)",
+  border: "1px solid rgba(0,0,0,0.08)",
+  boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+  fontWeight: 580,
+  color: "#2f2b27",
 };
 
 export default function HomePage() {
@@ -172,22 +163,10 @@ export default function HomePage() {
         <div style={pageStyle}>
           <header style={navStyle}>
             <span style={brandStyle}>VIREKA Space</span>
-            <nav style={navLinksStyle} aria-label="Site">
-              <Link href="/about" style={navLinkStyle}>
-                About
-              </Link>
-              <Link href="/faq" style={navLinkStyle}>
-                FAQ
-              </Link>
-              <Link href="/sign-in" style={navLinkStyle}>
-                Sign in
-              </Link>
-            </nav>
           </header>
 
           <main style={mainStyle}>
             <div style={innerStyle}>
-              <div style={labelPillStyle}>VIREKA SPACE</div>
               <h1 style={headlineStyle}>
                 CLARITY BEFORE DECISION
                 <br />
@@ -197,14 +176,14 @@ export default function HomePage() {
               <div style={buttonsWrapStyle}>
                 <button
                   type="button"
-                  style={primaryBtnStyle}
+                  style={primaryCtaStyle}
                   onClick={() => router.push("/clarify")}
                 >
                   Try VIREKA Space
                 </button>
                 <button
                   type="button"
-                  style={secondaryBtnStyle}
+                  style={secondaryCtaStyle}
                   onClick={() => router.push("/sign-in")}
                 >
                   Sign in

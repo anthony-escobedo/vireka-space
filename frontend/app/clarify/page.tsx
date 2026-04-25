@@ -801,9 +801,7 @@ function handleStartNew(): void {
   const hasLockedHistoryRows = railHistoryRows.length > FREE_HISTORY_VISIBLE_LIMIT;
   const hideInitialHero = hasClarificationHistory || history.length > 0;
   const workspaceTitle = t.clarify.heroTitle;
-  const workspaceOrientation = homeMode
-    ? "Describe a situation or interaction. Vireka separates what is observed, interpreted, and unclear."
-    : "";
+  const workspaceOrientation = homeMode ? t.clarify.descriptionParagraph : "";
 
   function renderList(items: string[] | undefined, label: string) {
     if (!items || items.length === 0) return null;

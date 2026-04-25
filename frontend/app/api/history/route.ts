@@ -22,6 +22,7 @@ preview: string;
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
 console.log("HISTORY ROUTE HIT v2");
+console.log("NEW HISTORY CODE ACTIVE 06714ac");
 const headerAnonymousId = req.headers.get("x-anonymous-id")?.trim();
 const queryAnonymousId = req.nextUrl.searchParams.get("anonymousId")?.trim();
 const anonymousId = headerAnonymousId || queryAnonymousId;

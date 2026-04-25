@@ -879,11 +879,11 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      if (existingUsage && existingUsage.interaction_count >= 20) {
+      if (existingUsage && existingUsage.interaction_count >= 10) {
         return NextResponse.json(
           {
             error:
-              "Free usage includes 20 interactions per day. Access resumes tomorrow or with subscription.",
+              "You’ve reached your limit for today. You may continue tomorrow or upgrade for extended access.",
             limitReached: true,
           },
           { status: 429 }

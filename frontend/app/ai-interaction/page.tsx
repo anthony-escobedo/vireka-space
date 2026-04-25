@@ -15,7 +15,7 @@ import { useLanguage } from "../../lib/i18n/useLanguage";
 
 /** Matches API body when daily free limit is exceeded (see app/api/clarify/route.ts). */
 const FREE_USAGE_LIMIT_ERROR_EN =
-  "Free usage includes 20 interactions per day. Access resumes tomorrow or with subscription.";
+  "You’ve reached your limit for today. You may continue tomorrow or upgrade for extended access.";
 
 type RequestAction = "clarify" | "integrated_view";
 

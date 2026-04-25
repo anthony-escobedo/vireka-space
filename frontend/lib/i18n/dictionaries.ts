@@ -101,7 +101,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       microphoneUnavailableTitle: 'Microphone unavailable',
       usageLimitNoticeTitle: 'Usage limit reached',
       usageLimitBody:
-        'Free usage includes 20 interactions per day. Access resumes tomorrow or with subscription.',
+        'You’ve reached your limit for today. You may continue tomorrow or upgrade for extended access.',
       genericNoticeTitle: 'Notice',
       anUnexpectedErrorOccurred: 'An unexpected error occurred.',
       loadingText: 'Clarifying...',
@@ -160,7 +160,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       microphoneUnavailableTitle: 'Microphone unavailable',
       usageLimitNoticeTitle: 'Usage limit reached',
       usageLimitBody:
-        'Free usage includes 20 interactions per day. Access resumes tomorrow or with subscription.',
+        'You’ve reached your limit for today. You may continue tomorrow or upgrade for extended access.',
       genericNoticeTitle: 'Notice',
       anUnexpectedErrorOccurred: 'An unexpected error occurred.',
     },
@@ -176,7 +176,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
     plan: {
       pageTitle: 'Usage structure',
       pageIntro: 'VIREKA Space is designed to remain accessible while allowing expanded usage when needed.',
-      freeAccessIncludes: 'Free access includes up to 20 interactions per day.',
+      freeAccessIncludes: 'Free access includes up to 10 interactions per day.',
       dailyLimitReached: 'When the daily limit is reached, usage becomes available again the following day.',
       extendedAccessSubscription: 'Users who require extended access may choose to subscribe.',
       subscriptionEnablesAdditional: 'Subscription enables additional usage beyond the daily free limit.',
@@ -530,7 +530,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       microphoneUnavailableTitle: 'Micrófono no disponible',
       usageLimitNoticeTitle: 'Límite de uso alcanzado',
       usageLimitBody:
-        'El uso gratuito incluye 20 interacciones por día. El acceso se reanuda mañana o con una suscripción.',
+        'Has alcanzado tu límite por hoy. Puedes continuar mañana o actualizar para mayor acceso.',
       genericNoticeTitle: 'Aviso',
       anUnexpectedErrorOccurred: 'Ocurrió un error inesperado.',
       loadingText: 'Aclarando...',
@@ -589,7 +589,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       microphoneUnavailableTitle: 'Micrófono no disponible',
       usageLimitNoticeTitle: 'Límite de uso alcanzado',
       usageLimitBody:
-        'El uso gratuito incluye 20 interacciones por día. El acceso se reanuda mañana o con una suscripción.',
+        'Has alcanzado tu límite por hoy. Puedes continuar mañana o actualizar para mayor acceso.',
       genericNoticeTitle: 'Aviso',
       anUnexpectedErrorOccurred: 'Ocurrió un error inesperado.',
     },
@@ -605,7 +605,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
     plan: {
       pageTitle: 'Estructura de uso',
       pageIntro: 'VIREKA Space está diseñado para permanecer accesible mientras permite un uso expandido cuando sea necesario.',
-      freeAccessIncludes: 'El acceso gratuito incluye hasta 20 interacciones por día.',
+      freeAccessIncludes: 'El acceso gratuito incluye hasta 10 interacciones por día.',
       dailyLimitReached: 'Cuando se alcanza el límite diario, el uso vuelve a estar disponible el día siguiente.',
       extendedAccessSubscription: 'Los usuarios que requieran acceso extendido pueden elegir suscribirse.',
       subscriptionEnablesAdditional: 'La suscripción habilita uso adicional más allá del límite gratuito diario.',
@@ -956,7 +956,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       microphoneUnavailableTitle: 'Microfone indisponível',
       usageLimitNoticeTitle: 'Limite de uso atingido',
       usageLimitBody:
-        'O uso gratuito inclui 20 interações por dia. O acesso é retomado amanhã ou com uma assinatura.',
+        'Você atingiu seu limite de hoje. Você pode continuar amanhã ou atualizar para acesso estendido.',
       genericNoticeTitle: 'Aviso',
       anUnexpectedErrorOccurred: 'Ocorreu um erro inesperado.',
       loadingText: 'Esclarecendo...',
@@ -1015,7 +1015,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       microphoneUnavailableTitle: 'Microfone indisponível',
       usageLimitNoticeTitle: 'Limite de uso atingido',
       usageLimitBody:
-        'O uso gratuito inclui 20 interações por dia. O acesso é retomado amanhã ou com uma assinatura.',
+        'Você atingiu seu limite de hoje. Você pode continuar amanhã ou atualizar para acesso estendido.',
       genericNoticeTitle: 'Aviso',
       anUnexpectedErrorOccurred: 'Ocorreu um erro inesperado.',
     },
@@ -1031,7 +1031,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
     plan: {
       pageTitle: 'Estrutura de uso',
       pageIntro: 'VIREKA Space é projetado para permanecer acessível enquanto permite uso expandido quando necessário.',
-      freeAccessIncludes: 'O acesso gratuito inclui até 20 interações por dia.',
+      freeAccessIncludes: 'O acesso gratuito inclui até 10 interações por dia.',
       dailyLimitReached: 'Quando o limite diário é alcançado, o uso fica disponível novamente no dia seguinte.',
       extendedAccessSubscription: 'Usuários que requerem acesso estendido podem escolher assinar.',
       subscriptionEnablesAdditional: 'A assinatura habilita uso adicional além do limite gratuito diário.',

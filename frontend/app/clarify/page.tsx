@@ -1372,7 +1372,7 @@ function handleStartNew(): void {
                       marginBottom: "0.1rem",
                     }}
                   >
-                    Recent
+                    Situations
                   </div>
                   {railHistoryRows.map((item, index) => {
                     const dt = new Date(item.created_at);
@@ -1392,11 +1392,15 @@ function handleStartNew(): void {
                         <div
                           style={{
                             fontSize: 14,
-                            lineHeight: "20px",
+                            lineHeight: 1.35,
                             color: unlocked ? "#3f3b36" : "#3f3b36",
                             fontWeight: active ? 550 : 400,
+                            display: "-webkit-box",
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: "vertical",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
                             overflowWrap: "anywhere",
-                            wordBreak: "break-word",
                           }}
                         >
                           {preview}
@@ -1456,7 +1460,7 @@ function handleStartNew(): void {
                           textAlign: "left",
                           cursor: historyDetailLoading ? "wait" : "pointer",
                           border: active
-                            ? "1px solid rgba(0,0,0,0.09)"
+                            ? "1px solid rgba(0,0,0,0.12)"
                             : "1px solid transparent",
                           borderRadius: "8px",
                           backgroundColor: active ? "rgba(255,255,255,0.58)" : "transparent",
@@ -1466,13 +1470,16 @@ function handleStartNew(): void {
                         }}
                         onMouseEnter={(e) => {
                           if (historyDetailLoading || active) return;
-                          e.currentTarget.style.backgroundColor = "rgba(0,0,0,0.025)";
+                          e.currentTarget.style.backgroundColor = "rgba(0,0,0,0.05)";
+                          e.currentTarget.style.borderColor = "rgba(0,0,0,0.12)";
                         }}
                         onMouseLeave={(e) => {
                           if (active) {
                             e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.58)";
+                            e.currentTarget.style.borderColor = "rgba(0,0,0,0.12)";
                           } else {
                             e.currentTarget.style.backgroundColor = "transparent";
+                            e.currentTarget.style.borderColor = "transparent";
                           }
                         }}
                       >
@@ -1563,7 +1570,7 @@ function handleStartNew(): void {
                   textUnderlineOffset: "0.2em",
                 }}
               >
-                Recent
+                Situations
               </button>
             ) : null}
 
@@ -1602,7 +1609,7 @@ function handleStartNew(): void {
               textUnderlineOffset: "0.2em",
             }}
           >
-            Recent
+            Situations
           </button>
         ) : null}
 
@@ -1711,7 +1718,7 @@ function handleStartNew(): void {
                   letterSpacing: "0.02em",
                 }}
               >
-                Recent
+                Situations
               </div>
               <button
                 type="button"
@@ -1760,11 +1767,15 @@ function handleStartNew(): void {
                     <div
                       style={{
                         fontSize: 14,
-                        lineHeight: "20px",
+                        lineHeight: 1.35,
                         color: "#3f3b36",
                         fontWeight: active ? 550 : 400,
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
                         overflowWrap: "anywhere",
-                        wordBreak: "break-word",
                       }}
                     >
                       {preview}
@@ -1818,7 +1829,7 @@ function handleStartNew(): void {
                       textAlign: "left",
                       cursor: historyDetailLoading ? "wait" : "pointer",
                       border: active
-                        ? "1px solid rgba(0,0,0,0.09)"
+                        ? "1px solid rgba(0,0,0,0.12)"
                         : "1px solid transparent",
                       borderRadius: "8px",
                       backgroundColor: active ? "rgba(255,255,255,0.58)" : "transparent",
@@ -1828,13 +1839,16 @@ function handleStartNew(): void {
                     }}
                     onMouseEnter={(e) => {
                       if (historyDetailLoading || active) return;
-                      e.currentTarget.style.backgroundColor = "rgba(0,0,0,0.025)";
+                      e.currentTarget.style.backgroundColor = "rgba(0,0,0,0.05)";
+                      e.currentTarget.style.borderColor = "rgba(0,0,0,0.12)";
                     }}
                     onMouseLeave={(e) => {
                       if (active) {
                         e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.58)";
+                        e.currentTarget.style.borderColor = "rgba(0,0,0,0.12)";
                       } else {
                         e.currentTarget.style.backgroundColor = "transparent";
+                        e.currentTarget.style.borderColor = "transparent";
                       }
                     }}
                   >

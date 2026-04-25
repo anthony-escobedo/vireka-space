@@ -1287,6 +1287,10 @@ function handleStartNew(): void {
     );
   }
 
+  function formatHistoryPreview(text: string): string {
+    return text.replace(/^What appears to be happening:\s*/i, "").trimStart();
+  }
+
   function renderMenuLink(item: (typeof MENU_LINKS)[number]) {
     return (
       <Link
@@ -1621,7 +1625,7 @@ function handleStartNew(): void {
                       marginBottom: "0.1rem",
                     }}
                   >
-                    Situations
+                    Recents
                   </div>
                   {railHistoryRows.map((item, index) => {
                     const dt = new Date(item.created_at);
@@ -1631,9 +1635,10 @@ function handleStartNew(): void {
                           month: "short",
                           day: "numeric",
                         });
-                    const preview =
+                    const preview = formatHistoryPreview(
                       item.preview?.trim() ||
-                      (item.mode === "ai-interaction" ? "AI Interaction" : "Session");
+                        (item.mode === "ai-interaction" ? "AI Interaction" : "Session")
+                    );
                     const active = item.id === selectedHistoryConversationId;
                     const unlocked = index < FREE_HISTORY_VISIBLE_LIMIT;
                     const rowInner = (
@@ -1840,10 +1845,11 @@ function handleStartNew(): void {
             {homeMode ? (
               <p
                 style={{
-                  margin: "0 0 1rem 0",
-                  color: "#5f5951",
+                  margin: "0 0 18px 0",
+                  color: "rgba(0, 0, 0, 0.72)",
                   fontSize: "0.98rem",
-                  lineHeight: 1.6,
+                  fontWeight: 500,
+                  lineHeight: 1.45,
                   maxWidth: "44rem",
                 }}
               >
@@ -1870,7 +1876,7 @@ function handleStartNew(): void {
                   textUnderlineOffset: "0.2em",
                 }}
               >
-                Situations
+                Recents
               </button>
             ) : null}
 
@@ -1909,7 +1915,7 @@ function handleStartNew(): void {
               textUnderlineOffset: "0.2em",
             }}
           >
-            Situations
+            Recents
           </button>
         ) : null}
 
@@ -2033,7 +2039,7 @@ function handleStartNew(): void {
                   letterSpacing: "0.02em",
                 }}
               >
-                Situations
+                Recents
               </div>
               <button
                 type="button"
@@ -2072,9 +2078,10 @@ function handleStartNew(): void {
                       month: "short",
                       day: "numeric",
                     });
-                const preview =
+                const preview = formatHistoryPreview(
                   item.preview?.trim() ||
-                  (item.mode === "ai-interaction" ? "AI Interaction" : "Session");
+                    (item.mode === "ai-interaction" ? "AI Interaction" : "Session")
+                );
                 const active = item.id === selectedHistoryConversationId;
                 const unlocked = index < FREE_HISTORY_VISIBLE_LIMIT;
                 const rowInner = (

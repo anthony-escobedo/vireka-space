@@ -58,12 +58,15 @@ console.log(
   }))
 );
 
-const { data, error } = await supabase
+const { data: allRecentConversations, error } = await supabase
   .from("conversations")
   .select("*")
-  .filter("anonymous_id", "eq", anonymousId)
   .order("created_at", { ascending: false })
-  .limit(20);
+  .limit(100);
+
+const data = allRecentConversations?.filter(
+  (row) => String(row.anonymous_id) === anonymousId
+).slice(0, 20);
 
 if (error || !data) {
   return NextResponse.json(

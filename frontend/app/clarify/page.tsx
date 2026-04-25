@@ -807,7 +807,11 @@ function buildAIReadyContext(): string | undefined {
     "",
     "Task:",
     "",
-    "Based on this context, respond in a way that moves the situation forward without introducing unsupported assumptions.",
+    "Respond in a way that remains consistent with the clarified context.",
+    "",
+    "Where appropriate, allow a next step to emerge from what is clear.",
+    "",
+    "Do not introduce direction that is not supported by the context.",
     "",
     "If needed, ask clarifying questions before proceeding."
   );

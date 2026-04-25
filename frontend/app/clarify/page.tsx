@@ -1586,12 +1586,12 @@ function handleStartNew(): void {
                 ref={leftMenuRef}
                 style={{
                   position: "relative",
-                  marginBottom: railHistoryRows.length > 0 ? "1.5rem" : 0,
+                  marginBottom: railHistoryRows.length > 0 ? "2.4rem" : 0,
                 }}
               >
                 <div
                   style={{
-                    fontSize: "1rem",
+                    fontSize: "1.1rem",
                     lineHeight: 1.25,
                     fontWeight: 600,
                     letterSpacing: "-0.01em",
@@ -1753,18 +1753,6 @@ function handleStartNew(): void {
                   ) : null}
                 </div>
               ) : null}
-              <div
-                style={{
-                  marginTop: "auto",
-                  paddingTop: "1.5rem",
-                  fontSize: 11,
-                  lineHeight: 1.4,
-                  color: "#aaa39c",
-                  textAlign: "right",
-                }}
-              >
-                © 2026 Vireka Space
-              </div>
             </aside>
           ) : null}
 
@@ -1776,7 +1764,7 @@ function handleStartNew(): void {
             alignItems: "flex-start",
             justifyContent: "space-between",
             gap: "1rem",
-            marginBottom: showDesktopHistoryPanel ? "0.65rem" : "2rem",
+            marginBottom: showDesktopHistoryPanel ? "1.35rem" : "2rem",
           }}
         >
           {!showDesktopHistoryPanel ? (
@@ -1788,7 +1776,7 @@ function handleStartNew(): void {
             >
               <div
                 style={{
-                  fontSize: "1rem",
+                  fontSize: "1.1rem",
                   lineHeight: 1.25,
                   fontWeight: 600,
                   letterSpacing: "-0.01em",
@@ -1807,11 +1795,15 @@ function handleStartNew(): void {
           <Link
             href="/settings/account"
             style={{
+              position: showDesktopHistoryPanel ? "fixed" : "static",
+              top: showDesktopHistoryPanel ? "1.7rem" : undefined,
+              right: showDesktopHistoryPanel ? "1.5rem" : undefined,
               fontSize: "0.82rem",
               lineHeight: 1.4,
               color: "#6f6962",
               textDecoration: "none",
               padding: "0.2rem 0",
+              zIndex: 3,
             }}
           >
             Sign in
@@ -1966,6 +1958,21 @@ function handleStartNew(): void {
           
         {!isDone && renderClarificationPath()}
         {!isDone && result && renderSupplementaryResult(result)}
+        {showDesktopHistoryPanel ? (
+          <div
+            style={{
+              position: "fixed",
+              right: "1.5rem",
+              bottom: "max(24px, env(safe-area-inset-bottom))",
+              fontSize: 11,
+              lineHeight: 1.4,
+              color: "#aaa39c",
+              pointerEvents: "none",
+            }}
+          >
+            © 2026 Vireka Space
+          </div>
+        ) : null}
         </div>
           </div>
         </div>

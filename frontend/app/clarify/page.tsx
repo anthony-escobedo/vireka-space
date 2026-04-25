@@ -1845,7 +1845,7 @@ function handleStartNew(): void {
             {homeMode ? (
               <p
                 style={{
-                  margin: "0 0 18px 0",
+                  margin: "8px 0 18px 0",
                   color: "rgba(0, 0, 0, 0.72)",
                   fontSize: "0.98rem",
                   fontWeight: 500,

@@ -9,6 +9,13 @@ export function getSupabaseServerClient() {
   }
 
   return createClient(url, serviceRoleKey, {
+    global: {
+      fetch: (input, init = {}) =>
+        fetch(input, {
+          ...init,
+          cache: "no-store",
+        }),
+    },
     auth: {
       persistSession: false,
       autoRefreshToken: false,

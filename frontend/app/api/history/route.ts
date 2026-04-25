@@ -64,6 +64,7 @@ const { data: conversationRows, error: conversationsError } = await supabase
   .eq("anonymous_id", anonymousId)
   .order("created_at", { ascending: false })
   .limit(20);
+console.log("[api/history] newest conversation from DB:", conversationRows?.[0] ?? null);
 
 if (conversationsError || !conversationRows) {
   return NextResponse.json(

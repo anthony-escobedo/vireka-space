@@ -86,7 +86,7 @@ const headlineStyle: CSSProperties = {
   lineHeight: 1.04,
   letterSpacing: "-0.025em",
   textTransform: "uppercase",
-  color: "#1a1a1a",
+  color: "#1f1d1a",
   margin: 0,
   maxWidth: "980px",
   marginLeft: "auto",

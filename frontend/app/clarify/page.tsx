@@ -1727,6 +1727,7 @@ function handleStartNew(): void {
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "flex-start",
+                  gap: "14px",
                   marginBottom: railHistoryRows.length > 0 ? "2.4rem" : 0,
                 }}
               >
@@ -1738,7 +1739,6 @@ function handleStartNew(): void {
                     fontWeight: 600,
                     letterSpacing: "-0.01em",
                     color: "#2f2b27",
-                    marginBottom: "0.55rem",
                     textDecoration: "none",
                     display: "inline-block",
                     cursor: "pointer",
@@ -1746,7 +1746,15 @@ function handleStartNew(): void {
                 >
                   VIREKA Space
                 </Link>
-                {renderHamburgerButton()}
+                <div
+                  style={{
+                    flexShrink: 0,
+                    alignSelf: "flex-start",
+                    padding: "2px 10px 10px 2px",
+                  }}
+                >
+                  {renderHamburgerButton()}
+                </div>
                 {leftMenuOpen ? renderFloatingMenu(false) : null}
               </div>
               {railHistoryRows.length > 0 ? (
@@ -1925,6 +1933,7 @@ function handleStartNew(): void {
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "flex-start",
+                gap: "14px",
               }}
             >
               <Link
@@ -1935,7 +1944,6 @@ function handleStartNew(): void {
                   fontWeight: 600,
                   letterSpacing: "-0.01em",
                   color: "#2f2b27",
-                  marginBottom: "0.45rem",
                   textDecoration: "none",
                   display: "inline-block",
                   cursor: "pointer",
@@ -1943,7 +1951,15 @@ function handleStartNew(): void {
               >
                 VIREKA Space
               </Link>
-              {renderHamburgerButton()}
+              <div
+                style={{
+                  flexShrink: 0,
+                  alignSelf: "flex-start",
+                  padding: "2px 10px 10px 2px",
+                }}
+              >
+                {renderHamburgerButton()}
+              </div>
               {leftMenuOpen ? renderFloatingMenu(true) : null}
             </div>
           ) : (
@@ -1959,7 +1975,7 @@ function handleStartNew(): void {
                 lineHeight: 1.15,
                 letterSpacing: "-0.03em",
                 color: "#111",
-                margin: "1rem 0 1.25rem 0",
+                margin: "2.5rem 0 1.25rem 0",
               }}
             >
               {workspaceTitle}
@@ -1988,7 +2004,7 @@ function handleStartNew(): void {
                   maxWidth: "44rem",
                 }}
               >
-                {t.clarify.clarificationPathDescription}
+                {t.clarify.workingPageSubtitle}
               </p>
             )}
 

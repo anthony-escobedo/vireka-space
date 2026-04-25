@@ -65,6 +65,7 @@ export interface TranslationDictionary {
     pageTitle: string;
     heroTitle: string;
     descriptionParagraph: string;
+    workingPageSubtitle: string;
     inputLabel: string;
     inputPlaceholder: string;
     helperText: string;

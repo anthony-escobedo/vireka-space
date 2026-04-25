@@ -1591,7 +1591,7 @@ function handleStartNew(): void {
               >
                 <div
                   style={{
-                    fontSize: "0.95rem",
+                    fontSize: "1rem",
                     lineHeight: 1.25,
                     fontWeight: 600,
                     letterSpacing: "-0.01em",
@@ -1760,6 +1760,7 @@ function handleStartNew(): void {
                   fontSize: 11,
                   lineHeight: 1.4,
                   color: "#aaa39c",
+                  textAlign: "right",
                 }}
               >
                 © 2026 Vireka Space
@@ -1775,7 +1776,7 @@ function handleStartNew(): void {
             alignItems: "flex-start",
             justifyContent: "space-between",
             gap: "1rem",
-            marginBottom: "0.65rem",
+            marginBottom: showDesktopHistoryPanel ? "0.65rem" : "2rem",
           }}
         >
           {!showDesktopHistoryPanel ? (
@@ -1787,7 +1788,7 @@ function handleStartNew(): void {
             >
               <div
                 style={{
-                  fontSize: "0.95rem",
+                  fontSize: "1rem",
                   lineHeight: 1.25,
                   fontWeight: 600,
                   letterSpacing: "-0.01em",

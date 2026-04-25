@@ -62,7 +62,7 @@ const { data: allRecentConversations, error } = await supabase
   .from("conversations")
   .select("*")
   .order("created_at", { ascending: false })
-  .limit(100);
+  .limit(1000);
 
 const data = allRecentConversations?.filter(
   (row) => String(row.anonymous_id) === anonymousId

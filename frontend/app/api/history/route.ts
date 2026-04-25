@@ -64,9 +64,14 @@ const { data: allRecentConversations, error } = await supabase
   .order("created_at", { ascending: false })
   .limit(1000);
 
-const data = allRecentConversations?.filter(
-  (row) => String(row.anonymous_id) === anonymousId
-).slice(0, 20);
+const data = (allRecentConversations ?? [])
+  .filter((row) => String(row.anonymous_id) === anonymousId)
+  .sort(
+    (a, b) =>
+      new Date(String(b.created_at)).getTime() -
+      new Date(String(a.created_at)).getTime()
+  )
+  .slice(0, 20);
 
 if (error || !data) {
   return NextResponse.json(

@@ -62,8 +62,8 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       notNow: 'Not now',
     },
     clarify: {
-      pageTitle: 'Clarify a situation',
-      heroTitle: 'Clarify a situation',
+      pageTitle: 'Clarity',
+      heroTitle: 'Clarity',
       descriptionParagraph: 'Vireka distinguishes what appears to be happening, what may be assumed, and what may remain unclear so response can begin from clearer structure.',
       inputLabel: 'Situation',
       inputPlaceholder: 'Describe what you\'re working through as it currently appears',
@@ -491,8 +491,8 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       notNow: 'Ahora no',
     },
     clarify: {
-      pageTitle: 'Aclarar una situación',
-      heroTitle: 'Aclarar una situación',
+      pageTitle: 'Claridad',
+      heroTitle: 'Claridad',
       descriptionParagraph: 'Vireka distingue lo que parece estar sucediendo, lo que puede suponerse y lo que puede permanecer incierto para que la respuesta pueda comenzar desde una estructura más clara.',
       inputLabel: 'Situación',
       inputPlaceholder: 'Describe lo que estás procesando tal como se presenta actualmente',
@@ -917,8 +917,8 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       notNow: 'Agora não',
     },
     clarify: {
-      pageTitle: 'Clarificar uma situação',
-      heroTitle: 'Clarificar uma situação',
+      pageTitle: 'Clareza',
+      heroTitle: 'Clareza',
       descriptionParagraph: 'Vireka distingue o que parece estar acontecendo, o que pode ser suposto e o que pode permanecer incerto para que a resposta possa começar de uma estrutura mais clara.',
       inputLabel: 'Situação',
       inputPlaceholder: 'Descreva o que você está processando conforme se apresenta atualmente',

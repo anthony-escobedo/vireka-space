@@ -800,7 +800,7 @@ function handleStartNew(): void {
   const railHistoryRows = historyConversations.slice(0, RAIL_HISTORY_DISPLAY_LIMIT);
   const hasLockedHistoryRows = railHistoryRows.length > FREE_HISTORY_VISIBLE_LIMIT;
   const hideInitialHero = hasClarificationHistory || history.length > 0;
-  const workspaceTitle = homeMode ? "Clarify" : t.clarify.heroTitle;
+  const workspaceTitle = t.clarify.heroTitle;
   const workspaceOrientation = homeMode
     ? "Describe a situation or interaction. Vireka separates what is observed, interpreted, and unclear."
     : "";

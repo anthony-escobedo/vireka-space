@@ -8,7 +8,7 @@ const pageStyle: CSSProperties = {
   minHeight: "100vh",
   display: "flex",
   flexDirection: "column",
-  backgroundColor: "#f5f3ef",
+  backgroundColor: "transparent",
   fontFamily:
     "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif",
   color: "#111",
@@ -135,49 +135,85 @@ export default function HomePage() {
   const router = useRouter();
 
   return (
-    <div style={pageStyle}>
-      <header style={navStyle}>
-        <span style={brandStyle}>VIREKA Space</span>
-        <nav style={navLinksStyle} aria-label="Site">
-          <Link href="/about" style={navLinkStyle}>
-            About
-          </Link>
-          <Link href="/faq" style={navLinkStyle}>
-            FAQ
-          </Link>
-          <Link href="/sign-in" style={navLinkStyle}>
-            Sign in
-          </Link>
-        </nav>
-      </header>
+    <div
+      style={{
+        position: "relative",
+        minHeight: "100vh",
+        overflow: "hidden",
+      }}
+    >
+      <video
+        autoPlay
+        muted
+        loop
+        playsInline
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+          opacity: 0.08,
+          pointerEvents: "none",
+        }}
+      >
+        <source src="/vireka-breath-loop.mp4" type="video/mp4" />
+      </video>
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background:
+            "linear-gradient(rgba(245,243,239,0.92), rgba(245,243,239,0.96))",
+        }}
+      />
+      <div style={{ position: "relative", zIndex: 1 }}>
+        <div style={pageStyle}>
+          <header style={navStyle}>
+            <span style={brandStyle}>VIREKA Space</span>
+            <nav style={navLinksStyle} aria-label="Site">
+              <Link href="/about" style={navLinkStyle}>
+                About
+              </Link>
+              <Link href="/faq" style={navLinkStyle}>
+                FAQ
+              </Link>
+              <Link href="/sign-in" style={navLinkStyle}>
+                Sign in
+              </Link>
+            </nav>
+          </header>
 
-      <main style={mainStyle}>
-        <div style={innerStyle}>
-          <div style={labelPillStyle}>VIREKA SPACE</div>
-          <h1 style={headlineStyle}>
-            CLARITY BEFORE DECISION
-            <br />
-            CLARITY BEFORE AI
-          </h1>
-          <p style={sublineStyle}>What is clear carries forward</p>
-          <div style={buttonsWrapStyle}>
-            <button
-              type="button"
-              style={primaryBtnStyle}
-              onClick={() => router.push("/clarify")}
-            >
-              Try VIREKA Space
-            </button>
-            <button
-              type="button"
-              style={secondaryBtnStyle}
-              onClick={() => router.push("/sign-in")}
-            >
-              Sign in
-            </button>
-          </div>
+          <main style={mainStyle}>
+            <div style={innerStyle}>
+              <div style={labelPillStyle}>VIREKA SPACE</div>
+              <h1 style={headlineStyle}>
+                CLARITY BEFORE DECISION
+                <br />
+                CLARITY BEFORE AI
+              </h1>
+              <p style={sublineStyle}>What is clear carries forward</p>
+              <div style={buttonsWrapStyle}>
+                <button
+                  type="button"
+                  style={primaryBtnStyle}
+                  onClick={() => router.push("/clarify")}
+                >
+                  Try VIREKA Space
+                </button>
+                <button
+                  type="button"
+                  style={secondaryBtnStyle}
+                  onClick={() => router.push("/sign-in")}
+                >
+                  Sign in
+                </button>
+              </div>
+            </div>
+          </main>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

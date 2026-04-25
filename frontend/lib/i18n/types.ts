@@ -10,6 +10,7 @@ export interface TranslationDictionary {
     privacy: string;
     terms: string;
     contact: string;
+    signIn: string;
   };
   
   // Homepage Hero
@@ -17,6 +18,8 @@ export interface TranslationDictionary {
     badge: string;
     title: string[];
     subtitle: string;
+    homeTagline: string;
+    tryCta: string;
     clarifyButton: string;
     aiButton: string;
     developedBy: string;
@@ -117,6 +120,7 @@ export interface TranslationDictionary {
   history: {
     useThisClarification: string;
     startNewSituation: string;
+    recents: string;
   };
   
   // AI Interaction Page

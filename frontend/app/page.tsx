@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { CSSProperties } from "react";
 
+import { useLanguage } from "../lib/i18n/useLanguage";
+
 const pageStyle: CSSProperties = {
   minHeight: "100vh",
   display: "flex",
@@ -166,6 +168,7 @@ function HeroFooterLink({
 
 export default function HomePage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [hovered, setHovered] = useState<null | "try" | "signin">(null);
 
   return (
@@ -211,11 +214,11 @@ export default function HomePage() {
           <main style={mainStyle}>
             <div style={innerStyle}>
               <h1 style={headlineStyle}>
-                CLARITY BEFORE DECISION
+                {t.hero.title[0]}
                 <br />
-                CLARITY BEFORE AI
+                {t.hero.title[1]}
               </h1>
-              <p style={sublineStyle}>What is clear carries forward</p>
+              <p style={sublineStyle}>{t.hero.homeTagline}</p>
               <div style={buttonsWrapStyle}>
                 <button
                   type="button"
@@ -226,7 +229,7 @@ export default function HomePage() {
                   onBlur={() => setHovered(null)}
                   onClick={() => router.push("/clarify")}
                 >
-                  Try VIREKA Space
+                  {t.hero.tryCta}
                 </button>
                 <button
                   type="button"
@@ -237,7 +240,7 @@ export default function HomePage() {
                   onBlur={() => setHovered(null)}
                   onClick={() => router.push("/sign-in")}
                 >
-                  Sign in
+                  {t.header.signIn}
                 </button>
               </div>
             </div>
@@ -245,11 +248,11 @@ export default function HomePage() {
 
           <footer style={footerStyle}>
             <div style={footerLinksRowStyle}>
-              <HeroFooterLink href="/privacy">Privacy</HeroFooterLink>
-              <HeroFooterLink href="/terms">Terms</HeroFooterLink>
-              <HeroFooterLink href="/settings/contact">Contact</HeroFooterLink>
+              <HeroFooterLink href="/privacy">{t.footer.privacy}</HeroFooterLink>
+              <HeroFooterLink href="/terms">{t.footer.terms}</HeroFooterLink>
+              <HeroFooterLink href="/settings/contact">{t.footer.contact}</HeroFooterLink>
             </div>
-            <div style={{ flexShrink: 0 }}>© 2026 VIREKA Space</div>
+            <div style={{ flexShrink: 0 }}>{t.footer.copyright}</div>
           </footer>
         </div>
       </div>

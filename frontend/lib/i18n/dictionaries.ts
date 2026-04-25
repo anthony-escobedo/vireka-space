@@ -11,14 +11,17 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       privacy: 'Privacy',
       terms: 'Terms',
       contact: 'Contact',
+      signIn: 'Sign in',
     },
     hero: {
       badge: 'VIREKA SPACE',
       title: [
         'CLARITY BEFORE DECISION',
-        'CLARITY BEFORE USING AI',
+        'CLARITY BEFORE AI',
       ],
       subtitle: 'VIREKA Space helps distinguish what is happening from what may be assumed, so responses begin from clearer understanding.',
+      homeTagline: 'What is clear carries forward',
+      tryCta: 'Try VIREKA Space',
       clarifyButton: 'Clarify a situation',
       aiButton: 'AI interaction',
       developedBy: 'Developed by Anthony Escobedo',
@@ -28,7 +31,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       privacy: 'Privacy',
       terms: 'Terms',
       contact: 'Contact',
-      copyright: '© VIREKA Space',
+      copyright: '© 2026 VIREKA Space',
     },
     settings: {
       backToHome: 'Back',
@@ -116,6 +119,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
     history: {
       useThisClarification: 'Use this clarification',
       startNewSituation: 'Start a new situation',
+      recents: 'Recents',
     },
     aiInteraction: {
       pageTitle: 'AI interaction',
@@ -486,6 +490,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       privacy: 'Privacidad',
       terms: 'Términos',
       contact: 'Contacto',
+      signIn: 'Iniciar sesión',
     },
     hero: {
       badge: 'VIREKA SPACE',
@@ -494,6 +499,8 @@ const dictionaries: Record<Language, TranslationDictionary> = {
         'CLARIDAD ANTES DE USAR IA',
       ],
       subtitle: 'VIREKA Space ayuda a distinguir lo que sucede de lo que se asume, para que las respuestas partan de una comprensión más clara.',
+      homeTagline: 'Lo que se aclara se puede llevar adelante',
+      tryCta: 'Probar VIREKA Space',
       clarifyButton: 'Aclarar una situación',
       aiButton: 'Interacción con IA',
       developedBy: 'Desarrollado por Anthony Escobedo',
@@ -503,7 +510,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       privacy: 'Privacidad',
       terms: 'Términos',
       contact: 'Contacto',
-      copyright: '© VIREKA Space',
+      copyright: '© 2026 VIREKA Space',
     },
     settings: {
       backToHome: 'Volver',
@@ -591,6 +598,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
     history: {
       useThisClarification: 'Usar esta aclaración',
       startNewSituation: 'Iniciar nueva situación',
+      recents: 'Recientes',
     },
     aiInteraction: {
       pageTitle: 'Interacción con IA',
@@ -962,6 +970,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       privacy: 'Privacidade',
       terms: 'Termos',
       contact: 'Contato',
+      signIn: 'Entrar',
     },
     hero: {
       badge: 'VIREKA SPACE',
@@ -970,6 +979,8 @@ const dictionaries: Record<Language, TranslationDictionary> = {
         'CLAREZA ANTES DE USAR IA',
       ],
       subtitle: 'VIREKA Space ajuda a distinguir o que acontece do que se assume, para que as respostas partam de uma compreensão mais clara.',
+      homeTagline: 'O que se esclarece pode seguir adiante',
+      tryCta: 'Experimentar VIREKA Space',
       clarifyButton: 'Clarificar uma situação',
       aiButton: 'Interação com IA',
       developedBy: 'Desenvolvido por Anthony Escobedo',
@@ -979,7 +990,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       privacy: 'Privacidade',
       terms: 'Termos',
       contact: 'Contato',
-      copyright: '© VIREKA Space',
+      copyright: '© 2026 VIREKA Space',
     },
     settings: {
       backToHome: 'Voltar',
@@ -1067,6 +1078,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
     history: {
       useThisClarification: 'Usar esta clareza',
       startNewSituation: 'Começar nova situação',
+      recents: 'Recentes',
     },
     aiInteraction: {
       pageTitle: 'Interação com IA',

@@ -1777,7 +1777,7 @@ function handleStartNew(): void {
                       marginBottom: "0.1rem",
                     }}
                   >
-                    Recents
+                    {t.history.recents}
                   </div>
                   {railHistoryRows.map((item, index) => {
                     const dt = new Date(item.created_at);
@@ -2027,7 +2027,7 @@ function handleStartNew(): void {
                   textUnderlineOffset: "0.2em",
                 }}
               >
-                Recents
+                {t.history.recents}
               </button>
             ) : null}
 
@@ -2066,7 +2066,7 @@ function handleStartNew(): void {
               textUnderlineOffset: "0.2em",
             }}
           >
-            Recents
+            {t.history.recents}
           </button>
         ) : null}
 
@@ -2190,7 +2190,7 @@ function handleStartNew(): void {
                   letterSpacing: "0.02em",
                 }}
               >
-                Recents
+                {t.history.recents}
               </div>
               <button
                 type="button"

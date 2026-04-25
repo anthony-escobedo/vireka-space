@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { CSSProperties } from "react";
@@ -40,11 +41,35 @@ const mainStyle: CSSProperties = {
   alignItems: "center",
   justifyContent: "flex-start",
   width: "100%",
+  minHeight: 0,
   boxSizing: "border-box",
   paddingLeft: "1.25rem",
   paddingRight: "1.25rem",
-  paddingBottom: "2.5rem",
+  paddingBottom: "1.5rem",
   paddingTop: "clamp(72px, 12vh, 132px)",
+};
+
+const footerStyle: CSSProperties = {
+  width: "100%",
+  maxWidth: "980px",
+  margin: "0 auto",
+  display: "flex",
+  flexWrap: "wrap",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: "0.65rem 1.5rem",
+  fontSize: "0.78rem",
+  color: "rgba(0,0,0,0.42)",
+  padding: "0 2rem 1.25rem",
+  boxSizing: "border-box",
+};
+
+const footerLinksRowStyle: CSSProperties = {
+  display: "flex",
+  flexWrap: "wrap",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: "0.9rem 1.25rem",
 };
 
 const innerStyle: CSSProperties = {
@@ -94,11 +119,11 @@ function getHeroCtaStyle(active: boolean): CSSProperties {
     margin: 0,
     border: "none",
     borderBottom: active
-      ? "1px solid rgba(0,0,0,0.42)"
-      : "1px solid rgba(17,17,17,0.26)",
+      ? "1px solid rgba(0,0,0,0.55)"
+      : "1px solid rgba(17,17,17,0.36)",
     borderRadius: 0,
     backgroundColor: "transparent",
-    color: "#111",
+    color: active ? "rgba(0,0,0,0.9)" : "#111",
     fontSize: "1.05rem",
     fontWeight: 600,
     letterSpacing: "-0.01em",
@@ -108,10 +133,35 @@ function getHeroCtaStyle(active: boolean): CSSProperties {
     cursor: "pointer",
     textAlign: "center",
     boxSizing: "border-box",
-    transform: active ? "scale(1.01)" : "scale(1)",
+    transform: active ? "scale(1.018)" : "scale(1)",
+    textShadow: active ? "0 0.5px 0 rgba(0,0,0,0.1)" : "none",
     transition:
-      "transform 0.2s ease, border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease",
+      "transform 0.2s ease, border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease, text-shadow 0.2s ease",
   };
+}
+
+function HeroFooterLink({
+  href,
+  children,
+}: {
+  href: string;
+  children: string;
+}) {
+  const [over, setOver] = useState(false);
+  return (
+    <Link
+      href={href}
+      onMouseEnter={() => setOver(true)}
+      onMouseLeave={() => setOver(false)}
+      style={{
+        color: over ? "rgba(0,0,0,0.58)" : "rgba(0,0,0,0.48)",
+        textDecoration: "none",
+        transition: "color 0.18s ease",
+      }}
+    >
+      {children}
+    </Link>
+  );
 }
 
 export default function HomePage() {
@@ -138,7 +188,7 @@ export default function HomePage() {
           width: "100%",
           height: "100%",
           objectFit: "cover",
-          opacity: 0.08,
+          opacity: 0.13,
           pointerEvents: "none",
         }}
       >
@@ -149,7 +199,7 @@ export default function HomePage() {
           position: "absolute",
           inset: 0,
           background:
-            "linear-gradient(rgba(245,243,239,0.92), rgba(245,243,239,0.96))",
+            "linear-gradient(rgba(245,243,239,0.86), rgba(245,243,239,0.91))",
         }}
       />
       <div style={{ position: "relative", zIndex: 1 }}>
@@ -192,6 +242,15 @@ export default function HomePage() {
               </div>
             </div>
           </main>
+
+          <footer style={footerStyle}>
+            <div style={footerLinksRowStyle}>
+              <HeroFooterLink href="/privacy">Privacy</HeroFooterLink>
+              <HeroFooterLink href="/terms">Terms</HeroFooterLink>
+              <HeroFooterLink href="/settings/contact">Contact</HeroFooterLink>
+            </div>
+            <div style={{ flexShrink: 0 }}>© 2026 VIREKA Space</div>
+          </footer>
         </div>
       </div>
     </div>

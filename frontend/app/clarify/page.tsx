@@ -1727,7 +1727,8 @@ function handleStartNew(): void {
                   marginBottom: railHistoryRows.length > 0 ? "2.4rem" : 0,
                 }}
               >
-                <div
+                <Link
+                  href="/"
                   style={{
                     fontSize: "1.1rem",
                     lineHeight: 1.25,
@@ -1735,10 +1736,13 @@ function handleStartNew(): void {
                     letterSpacing: "-0.01em",
                     color: "#2f2b27",
                     marginBottom: "0.55rem",
+                    textDecoration: "none",
+                    display: "inline-block",
+                    cursor: "pointer",
                   }}
                 >
                   VIREKA Space
-                </div>
+                </Link>
                 {renderHamburgerButton()}
                 {leftMenuOpen ? renderFloatingMenu(false) : null}
               </div>
@@ -1917,7 +1921,8 @@ function handleStartNew(): void {
                 position: "relative",
               }}
             >
-              <div
+              <Link
+                href="/"
                 style={{
                   fontSize: "1.1rem",
                   lineHeight: 1.25,
@@ -1925,10 +1930,13 @@ function handleStartNew(): void {
                   letterSpacing: "-0.01em",
                   color: "#2f2b27",
                   marginBottom: "0.45rem",
+                  textDecoration: "none",
+                  display: "inline-block",
+                  cursor: "pointer",
                 }}
               >
                 VIREKA Space
-              </div>
+              </Link>
               {renderHamburgerButton()}
               {leftMenuOpen ? renderFloatingMenu(true) : null}
             </div>
@@ -1936,22 +1944,6 @@ function handleStartNew(): void {
             <div />
           )}
         </div>
-        {!homeMode ? <div style={{ marginBottom: "2rem" }}>
-          <Link
-            href="/"
-            style={{
-              fontSize: "0.875rem",
-              color: "#555",
-              textDecoration: "none",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "0.25rem",
-            }}
-          >
-            ← {t.clarify.backLink}
-          </Link>
-        </div> : null}
-
         {!hideInitialHero && (
           <>
             <h1

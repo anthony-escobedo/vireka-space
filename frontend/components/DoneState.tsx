@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useRouter } from "next/navigation";
 import { useLanguage } from "../lib/i18n/useLanguage";
 
 type DoneStateProps = {
@@ -16,6 +17,7 @@ export default function DoneState({
   copyLabel = "Copy result",
   aiReadyText,
 }: DoneStateProps) {
+  const router = useRouter();
   const { t } = useLanguage();
   const [isDesktopInteractive, setIsDesktopInteractive] = React.useState(false);
   const [isCompactViewport, setIsCompactViewport] = React.useState(false);
@@ -353,6 +355,37 @@ export default function DoneState({
             {t.doneState.startNewSituation}
           </button>
 
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => {
+              router.push("/");
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                router.push("/");
+              }
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.textDecoration = "underline";
+              e.currentTarget.style.textDecorationColor = "rgba(0,0,0,0.22)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.textDecoration = "none";
+            }}
+            style={{
+              marginTop: "18px",
+              fontSize: "13px",
+              color: "rgba(0,0,0,0.5)",
+              textAlign: "center",
+              cursor: "pointer",
+              userSelect: "none",
+            }}
+          >
+            {t.navigation.backToHome}
+          </div>
+
           {showAIReadyContext && aiReadyText ? (
             <section
               style={{
@@ -429,6 +462,36 @@ export default function DoneState({
                 >
                   {aiReadyText}
                 </pre>
+              </div>
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={() => {
+                  router.push("/");
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    router.push("/");
+                  }
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.textDecoration = "underline";
+                  e.currentTarget.style.textDecorationColor = "rgba(0,0,0,0.22)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.textDecoration = "none";
+                }}
+                style={{
+                  marginTop: "14px",
+                  fontSize: "13px",
+                  color: "rgba(0,0,0,0.5)",
+                  textAlign: "center",
+                  cursor: "pointer",
+                  userSelect: "none",
+                }}
+              >
+                {t.navigation.backToHome}
               </div>
               <button
                 type="button"

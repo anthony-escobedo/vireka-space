@@ -33,6 +33,9 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       contact: 'Contact',
       copyright: '© 2026 VIREKA Space',
     },
+    navigation: {
+      backToHome: 'Back to home',
+    },
     settings: {
       backToHome: 'Back',
       badge: 'SETTINGS',
@@ -511,6 +514,9 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       terms: 'Términos',
       contact: 'Contacto',
       copyright: '© 2026 VIREKA Space',
+    },
+    navigation: {
+      backToHome: 'Volver al inicio',
     },
     settings: {
       backToHome: 'Volver',
@@ -991,6 +997,9 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       terms: 'Termos',
       contact: 'Contato',
       copyright: '© 2026 VIREKA Space',
+    },
+    navigation: {
+      backToHome: 'Voltar ao início',
     },
     settings: {
       backToHome: 'Voltar',

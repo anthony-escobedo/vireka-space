@@ -33,6 +33,11 @@ export interface TranslationDictionary {
     contact: string;
     copyright: string;
   };
+
+  // App-wide navigation labels
+  navigation: {
+    backToHome: string;
+  };
   
   // Settings Page
   settings: {

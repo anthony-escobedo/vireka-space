@@ -439,7 +439,9 @@ export default function ClarifyPage() {
     setFollowupInput("");
     setError(null);
     setIsDone(false);
-    setOpenPanelIds([]);
+    setOpenPanelIds(
+      nextIterations.slice(0, -1).map((iteration) => `panel-${iteration.id}`)
+    );
     setLatestPanelId(
       nextIterations.length > 0
         ? `panel-${nextIterations[nextIterations.length - 1].id}`
@@ -453,6 +455,8 @@ export default function ClarifyPage() {
   }
 
   async function openHistoryConversation(id: string): Promise<void> {
+    const previousSelectedHistoryConversationId = selectedHistoryConversationId;
+    setSelectedHistoryConversationId(id);
     setHistoryDetailLoading(true);
     setError(null);
     try {
@@ -463,6 +467,7 @@ export default function ClarifyPage() {
       });
       if (!res.ok) {
         console.warn("[clarify] history detail request failed", res.status);
+        setSelectedHistoryConversationId(previousSelectedHistoryConversationId);
         return;
       }
       let data: {
@@ -473,10 +478,12 @@ export default function ClarifyPage() {
         data = (await res.json()) as typeof data;
       } catch {
         console.warn("[clarify] history detail response was not valid JSON");
+        setSelectedHistoryConversationId(previousSelectedHistoryConversationId);
         return;
       }
       if (!data.conversation || !Array.isArray(data.messages)) {
         console.warn("[clarify] history detail payload missing conversation or messages");
+        setSelectedHistoryConversationId(previousSelectedHistoryConversationId);
         return;
       }
 
@@ -488,7 +495,6 @@ export default function ClarifyPage() {
       }));
 
       applyConversationDetail({ conversation: data.conversation, messages });
-      setSelectedHistoryConversationId(id);
       setMobileHistoryOpen(false);
       setTimeout(() => {
         const target = pathTopRef.current ?? resultRef.current;
@@ -496,6 +502,7 @@ export default function ClarifyPage() {
       }, 80);
     } catch (e) {
       console.warn("[clarify] history detail error", e);
+      setSelectedHistoryConversationId(previousSelectedHistoryConversationId);
     } finally {
       setHistoryDetailLoading(false);
     }

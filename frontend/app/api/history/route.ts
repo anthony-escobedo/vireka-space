@@ -61,7 +61,7 @@ console.log(
 const { data, error } = await supabase
   .from("conversations")
   .select("*")
-  .eq("anonymous_id", anonymousId)
+  .filter("anonymous_id", "eq", anonymousId)
   .order("created_at", { ascending: false })
   .limit(20);
 

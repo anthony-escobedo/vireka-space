@@ -248,6 +248,10 @@ export interface TranslationDictionary {
         question: string;
         answer: string[];
       };
+      whatDoesItDo: {
+        question: string;
+        answer: string[];
+      };
       providesAnswers: {
         question: string;
         answer: string[];
@@ -264,11 +268,11 @@ export interface TranslationDictionary {
         question: string;
         answer: string[];
       };
-      clarifyVsAIInteraction: {
+      whyNotUseAIDirectly: {
         question: string;
         answer: string[];
       };
-      whyNotUseAIDirectly: {
+      whatShouldIEnter: {
         question: string;
         answer: string[];
       };

@@ -6,14 +6,14 @@ import type { TranslationDictionary } from '../../lib/i18n/types';
 
 const FAQ_KEYS = [
   'whatIsVirekaSpace',
+  'whatDoesItDo',
   'providesAnswers',
-  'inputPrivacy',
   'isAITool',
-  'worksWithAI',
-  'clarifyVsAIInteraction',
   'whyNotUseAIDirectly',
+  'whatShouldIEnter',
   'whenShouldIUseIt',
   'benefitOfUsingIt',
+  'inputPrivacy',
 ] as const satisfies readonly (keyof TranslationDictionary['faq']['questions'])[];
 
 export default function FAQPage() {

@@ -463,36 +463,6 @@ export default function DoneState({
                   {aiReadyText}
                 </pre>
               </div>
-              <div
-                role="button"
-                tabIndex={0}
-                onClick={() => {
-                  router.push("/");
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    router.push("/");
-                  }
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.textDecoration = "underline";
-                  e.currentTarget.style.textDecorationColor = "rgba(0,0,0,0.22)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.textDecoration = "none";
-                }}
-                style={{
-                  marginTop: "14px",
-                  fontSize: "13px",
-                  color: "rgba(0,0,0,0.5)",
-                  textAlign: "center",
-                  cursor: "pointer",
-                  userSelect: "none",
-                }}
-              >
-                {t.navigation.backToHome}
-              </div>
               <button
                 type="button"
                 onClick={copyAIReadyContext}

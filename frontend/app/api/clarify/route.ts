@@ -178,10 +178,12 @@ Section guidance:
 - In unknown, state clearly what is not yet established.
 - In structural, identify contextual or situational influences such as incentives, timing, roles, expectations, constraints, institutional context, or environment.
 - In orientation, provide an integrated view of the situation as a whole.
-- Orientation should synthesize the relationship between observation, assumption, uncertainty, and conditions influencing interpretation.
-- Orientation should express the structural pattern that becomes visible when these elements are considered together.
-- Orientation should usually be 3–6 sentences unless the situation is extremely minimal.
-- Orientation should remain neutral, observational, concise, and non-prescriptive.
+- Orientation should read as one plain, natural paragraph that reflects what is happening, possible interpretations, and what remains unclear without labeling those parts explicitly.
+- Orientation should use direct, non-academic wording and avoid phrases such as "the situation involves", "may be interpreted in the context of", and "uncertainty remains regarding".
+- Orientation should not sound like a report or essay.
+- Orientation should be a single continuous paragraph with no bullet points, no line breaks between sentences, and no stacked sentence formatting.
+- Orientation should usually be 3-6 sentences unless the situation is extremely minimal.
+- Orientation should remain clear, concise, and non-prescriptive.
 - Orientation should support clearer interpretation without forcing resolution of uncertainty.
 - Orientation should not restate each structural element individually.
 - Orientation should not introduce new conceptual terminology.
@@ -227,10 +229,12 @@ Closure behavior:
 
 Integrated view behavior:
 - When integrated-view mode is requested, synthesize the structural elements into a coherent description of how the situation currently appears when observations, assumptions, unknowns, and influences are considered together.
-- The integrated view should express the structural pattern or relationship that becomes visible across these elements.
-- The integrated view should usually be 2–4 sentences unless the situation is extremely minimal.
-- The integrated view should make visible how meaning may be being interpreted, weighted, or organized within the interaction.
-- The integrated view may acknowledge tensions, ambiguities, mismatches, or interpretive gaps that emerge from the structure of the situation.
+- The integrated view should read as one plain, natural paragraph, not a report or essay.
+- The integrated view should use direct, non-academic wording and avoid phrases such as "the situation involves", "may be interpreted in the context of", and "uncertainty remains regarding".
+- The integrated view should be a single continuous paragraph with no bullet points, no line breaks between sentences, and no stacked sentence formatting.
+- The integrated view should usually be 2-4 sentences unless the situation is extremely minimal.
+- The integrated view should reflect what is happening, possible interpretations, and what remains unclear without labeling these explicitly.
+- The integrated view may acknowledge tensions, ambiguities, mismatches, or interpretive gaps that emerge from the situation.
 
 - Do not simply restate or paraphrase bullet points.
 - Do not repeat section labels.
@@ -238,7 +242,7 @@ Integrated view behavior:
 - Do not introduce completely new facts or scenarios not already present in the clarification.
 - Do not provide advice, recommendations, directives, or next steps.
 - Do not instruct the user what to do.
-- Use neutral, observational language.
+- Use natural, direct language.
 - Avoid second-person phrasing.
 - The goal is structural synthesis, not compression.
 
@@ -281,14 +285,16 @@ For mode "integrated_view", use:
 }
 
 Rules for mode "integrated_view":
-- message should synthesize observable, interpretive, unknown, and structural elements into a coherent structural meaning
-- message should express the pattern or relationship that becomes visible when the elements are considered together
+- message should synthesize observable, interpretive, unknown, and structural elements into one plain, natural paragraph
+- message should use direct, non-academic wording and avoid phrases such as "the situation involves", "may be interpreted in the context of", and "uncertainty remains regarding"
+- message should be a single continuous paragraph with no bullet points, no line breaks between sentences, and no stacked sentence formatting
+- message should reflect what is happening, possible interpretations, and what remains unclear without labeling these explicitly
 - message should usually be 2 to 4 sentences unless the situation is extremely minimal
-- message should express structural synthesis rather than compression
 - message should remain grounded in the clarification that was already produced
 
 - message should not restate bullet points individually
 - message should not function as a summary of each section
+- message should not include section labels or meta language
 - message should not introduce completely new facts or scenarios not already present in the clarification
 - message should not provide advice, recommendations, or next steps
 - message should not prescribe action
@@ -542,10 +548,12 @@ Important:
 - do not add new analysis
 - do not remove important distinctions
 - do not simplify this into a paraphrase of bullet points
-- synthesize the structural elements into a fluid, coherent description
+- write one plain, natural paragraph that reflects what is happening, possible interpretations, and what remains unclear without labeling those parts
+- do not use bullet points, section labels, line breaks between sentences, or stacked sentence formatting
+- avoid academic phrasing such as "the situation involves", "may be interpreted in the context of", and "uncertainty remains regarding"
 - avoid second-person language such as "you" or "your"
 - avoid referring to "the user"
-- keep the wording neutral and directed toward the situation
+- keep the wording direct and directed toward the situation
 
 ${contextLine}
 

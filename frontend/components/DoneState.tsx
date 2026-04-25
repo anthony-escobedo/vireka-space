@@ -6,20 +6,18 @@ import { useLanguage } from "../lib/i18n/useLanguage";
 type DoneStateProps = {
   onCopy: () => void;
   onNew: () => void;
-  onHome: () => void;
   copyLabel?: string;
 };
 
 export default function DoneState({
   onCopy,
   onNew,
-  onHome,
   copyLabel = "Copy result",
 }: DoneStateProps) {
   const { t } = useLanguage();
   const [isDesktopInteractive, setIsDesktopInteractive] = React.useState(false);
   const [isCompactViewport, setIsCompactViewport] = React.useState(false);
-  const [hoveredButton, setHoveredButton] = React.useState<"copy" | "new" | "home" | null>(null);
+  const [hoveredButton, setHoveredButton] = React.useState<"copy" | "new" | null>(null);
   const [cursorNorm, setCursorNorm] = React.useState({ x: 0, y: 0 });
   const [cursorPx, setCursorPx] = React.useState({ x: 50, y: 50 });
 
@@ -86,10 +84,10 @@ export default function DoneState({
     };
   }, [isDesktopInteractive]);
 
-  const getActionStyle = (button: "copy" | "new" | "home"): React.CSSProperties => {
+  const getActionStyle = (button: "copy" | "new"): React.CSSProperties => {
     const isActive = hoveredButton === button;
     const hasActivePeer = hoveredButton !== null && !isActive;
-    const baseColor = button === "home" ? "#726c66" : "#1a1a1a";
+    const baseColor = "#1a1a1a";
 
     return {
       appearance: "none",
@@ -102,7 +100,7 @@ export default function DoneState({
         : "1px solid rgba(17,17,17,0.2)",
       borderRadius: 0,
       backgroundColor: "transparent",
-      color: isActive ? (button === "home" ? "#141210" : "#0d0d0d") : baseColor,
+      color: isActive ? "#0d0d0d" : baseColor,
       fontSize: "0.95rem",
       fontWeight: 500,
       letterSpacing: "-0.01em",
@@ -271,18 +269,6 @@ export default function DoneState({
             onBlur={() => setHoveredButton(null)}
           >
             {t.doneState.startNewSituation}
-          </button>
-
-          <button
-            type="button"
-            onClick={onHome}
-            style={getActionStyle("home")}
-            onMouseEnter={() => setHoveredButton("home")}
-            onMouseLeave={() => setHoveredButton(null)}
-            onFocus={() => setHoveredButton("home")}
-            onBlur={() => setHoveredButton(null)}
-          >
-            {t.doneState.returnHome}
           </button>
         </div>
       </div>

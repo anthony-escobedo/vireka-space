@@ -478,10 +478,6 @@ function handleStartNew(): void {
   resetSession();
 }
 
-function handleReturnHome(): void {
-  router.push("/");
-}
-  
   function handleBeginOnboarding(): void {
   window.localStorage.setItem("vireka_onboarding_accepted", "true");
   setShowOnboarding(false);
@@ -1055,7 +1051,6 @@ function renderActiveResponse(panel: ClarificationPanel) {
         <DoneState
           onCopy={handleCopyResult}
           onNew={handleStartNew}
-          onHome={handleReturnHome}
           copyLabel={copyLabel}
         />
       ) : (

@@ -759,10 +759,6 @@ function handleStartNew(): void {
   resetSession();
 }
   
-function handleReturnHome(): void {
-  router.push("/");
-}
-  
   const panels = getPanels();
   const archivedPanels = panels.slice(0, -1);
   const activePanel = panels.length > 0 ? panels[panels.length - 1] : null;
@@ -773,12 +769,6 @@ function handleReturnHome(): void {
     result !== null &&
     result.mode === "clarify" &&
     !loading;
-  const canShowNewSituationAction =
-    hasClarificationHistory ||
-    history.length > 0 ||
-    result !== null ||
-    conversationId !== null ||
-    selectedHistoryConversationId !== null;
   const composerValue = hasClarificationHistory ? followupInput : topInput;
   const composerPlaceholder = hasClarificationHistory
     ? t.clarify.followupPlaceholder
@@ -1329,7 +1319,6 @@ function handleReturnHome(): void {
         <DoneState
           onCopy={handleCopyResult}
           onNew={handleStartNew}
-          onHome={handleReturnHome}
           copyLabel={copyLabel}
         />
       ) : (
@@ -1405,6 +1394,7 @@ function handleReturnHome(): void {
                             fontSize: 14,
                             lineHeight: "20px",
                             color: unlocked ? "#3f3b36" : "#3f3b36",
+                            fontWeight: active ? 550 : 400,
                             overflowWrap: "anywhere",
                             wordBreak: "break-word",
                           }}
@@ -1466,21 +1456,21 @@ function handleReturnHome(): void {
                           textAlign: "left",
                           cursor: historyDetailLoading ? "wait" : "pointer",
                           border: active
-                            ? "1px solid rgba(0,0,0,0.1)"
+                            ? "1px solid rgba(0,0,0,0.09)"
                             : "1px solid transparent",
                           borderRadius: "8px",
-                          backgroundColor: active ? "rgba(255,255,255,0.72)" : "transparent",
+                          backgroundColor: active ? "rgba(255,255,255,0.58)" : "transparent",
                           boxSizing: "border-box",
                           transition:
                             "background-color 140ms ease, border-color 140ms ease, opacity 140ms ease",
                         }}
                         onMouseEnter={(e) => {
                           if (historyDetailLoading || active) return;
-                          e.currentTarget.style.backgroundColor = "rgba(0,0,0,0.03)";
+                          e.currentTarget.style.backgroundColor = "rgba(0,0,0,0.025)";
                         }}
                         onMouseLeave={(e) => {
                           if (active) {
-                            e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.72)";
+                            e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.58)";
                           } else {
                             e.currentTarget.style.backgroundColor = "transparent";
                           }
@@ -1772,6 +1762,7 @@ function handleReturnHome(): void {
                         fontSize: 14,
                         lineHeight: "20px",
                         color: "#3f3b36",
+                        fontWeight: active ? 550 : 400,
                         overflowWrap: "anywhere",
                         wordBreak: "break-word",
                       }}
@@ -1827,11 +1818,24 @@ function handleReturnHome(): void {
                       textAlign: "left",
                       cursor: historyDetailLoading ? "wait" : "pointer",
                       border: active
-                        ? "1px solid rgba(0,0,0,0.1)"
+                        ? "1px solid rgba(0,0,0,0.09)"
                         : "1px solid transparent",
                       borderRadius: "8px",
-                      backgroundColor: active ? "rgba(255,255,255,0.72)" : "transparent",
+                      backgroundColor: active ? "rgba(255,255,255,0.58)" : "transparent",
                       boxSizing: "border-box",
+                      transition:
+                        "background-color 140ms ease, border-color 140ms ease, opacity 140ms ease",
+                    }}
+                    onMouseEnter={(e) => {
+                      if (historyDetailLoading || active) return;
+                      e.currentTarget.style.backgroundColor = "rgba(0,0,0,0.025)";
+                    }}
+                    onMouseLeave={(e) => {
+                      if (active) {
+                        e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.58)";
+                      } else {
+                        e.currentTarget.style.backgroundColor = "transparent";
+                      }
                     }}
                   >
                     {rowInner}
@@ -1872,39 +1876,14 @@ function handleReturnHome(): void {
           }}
         >
           <div style={{ pointerEvents: "auto" }}>
-            {canShowNewSituationAction || canShowDoneButton ? (
+            {canShowDoneButton ? (
               <div
                 style={{
                   display: "flex",
-                  gap: "0.8rem",
                   justifyContent: "flex-end",
                   marginBottom: "0.4rem",
                 }}
               >
-                {canShowNewSituationAction ? (
-                  <button
-                    type="button"
-                    onClick={resetSession}
-                    disabled={loading}
-                    style={{
-                      fontSize: "0.72rem",
-                      fontWeight: 500,
-                      letterSpacing: "0.02em",
-                      color: "#8a8580",
-                      background: "transparent",
-                      border: "none",
-                      padding: "0.15rem 0.1rem",
-                      cursor: loading ? "not-allowed" : "pointer",
-                      textDecoration: "underline",
-                      textDecorationColor: "rgba(138, 133, 128, 0.4)",
-                      textUnderlineOffset: "0.2em",
-                      opacity: loading ? 0.45 : 1,
-                    }}
-                  >
-                    New situation
-                  </button>
-                ) : null}
-                {canShowDoneButton ? (
                 <button
                   type="button"
                   onClick={() => {
@@ -1930,7 +1909,6 @@ function handleReturnHome(): void {
                 >
                   {t.clarify.doneButton}
                 </button>
-                ) : null}
               </div>
             ) : null}
             <InterpretationInput

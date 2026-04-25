@@ -110,6 +110,7 @@ export default function ClarifyPage() {
   >(null);
   const [historyDetailLoading, setHistoryDetailLoading] = useState(false);
   const [mobileHistoryOpen, setMobileHistoryOpen] = useState(false);
+  const [isReviewingHistorySession, setIsReviewingHistorySession] = useState(false);
   const { t, language } = useLanguage();
   const [copyLabel, setCopyLabel] = useState(t.clarify.copyResult);
   const topInputRef = useRef<HTMLTextAreaElement | null>(null);
@@ -495,6 +496,7 @@ export default function ClarifyPage() {
       }));
 
       applyConversationDetail({ conversation: data.conversation, messages });
+      setIsReviewingHistorySession(true);
       setMobileHistoryOpen(false);
       setTimeout(() => {
         const target = pathTopRef.current ?? resultRef.current;
@@ -513,6 +515,8 @@ export default function ClarifyPage() {
     source: "top" | "followup",
     overrideInput?: string
   ): Promise<boolean> {
+    if (isReviewingHistorySession) return false;
+
     const isFollowup = iterationsRef.current.length > 0;
     const effectiveSource: "top" | "followup" =
       isFollowup ? "followup" : "top";
@@ -1295,6 +1299,7 @@ function handleStartNew(): void {
   setSelectedHistoryConversationId(null);
   setHistoryDetailLoading(false);
   setMobileHistoryOpen(false);
+  setIsReviewingHistorySession(false);
   scheduleHistoryRefresh();
 }
   
@@ -1897,6 +1902,37 @@ function handleStartNew(): void {
           }}
         >
           <div style={{ pointerEvents: "auto" }}>
+            {isReviewingHistorySession ? (
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  padding: "0.25rem 0",
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={handleStartNew}
+                  disabled={loading}
+                  style={{
+                    fontSize: "0.82rem",
+                    fontWeight: 500,
+                    letterSpacing: "0.01em",
+                    color: "#6f6962",
+                    background: "rgba(245,243,239,0.92)",
+                    border: "1px solid rgba(0,0,0,0.08)",
+                    borderRadius: "999px",
+                    padding: "0.55rem 0.8rem",
+                    cursor: loading ? "not-allowed" : "pointer",
+                    opacity: loading ? 0.45 : 1,
+                    boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
+                  }}
+                >
+                  Start new situation
+                </button>
+              </div>
+            ) : (
+              <>
             {canShowDoneButton ? (
               <div
                 style={{
@@ -1957,6 +1993,8 @@ function handleStartNew(): void {
                 borderColor: "#dfdcd6",
               }}
             />
+              </>
+            )}
           </div>
         </div>
       )}

@@ -223,6 +223,11 @@ export interface TranslationDictionary {
     clarityEstablished: string;
     structureSupportsClarity: string;
     copyResult: string;
+    prepareForAI: string;
+    aiReadyContext: string;
+    aiReadyDescription: string;
+    copyAIReadyContext: string;
+    copied: string;
     startNewSituation: string;
     returnHome: string;
   };

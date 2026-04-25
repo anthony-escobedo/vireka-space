@@ -7,19 +7,26 @@ type DoneStateProps = {
   onCopy: () => void;
   onNew: () => void;
   copyLabel?: string;
+  aiReadyText?: string;
 };
 
 export default function DoneState({
   onCopy,
   onNew,
   copyLabel = "Copy result",
+  aiReadyText,
 }: DoneStateProps) {
   const { t } = useLanguage();
   const [isDesktopInteractive, setIsDesktopInteractive] = React.useState(false);
   const [isCompactViewport, setIsCompactViewport] = React.useState(false);
-  const [hoveredButton, setHoveredButton] = React.useState<"copy" | "new" | null>(null);
+  const [hoveredButton, setHoveredButton] = React.useState<
+    "copy" | "prepare" | "new" | "aiCopy" | null
+  >(null);
+  const [showAIReadyContext, setShowAIReadyContext] = React.useState(false);
+  const [aiCopyLabel, setAICopyLabel] = React.useState(t.doneState.copyAIReadyContext);
   const [cursorNorm, setCursorNorm] = React.useState({ x: 0, y: 0 });
   const [cursorPx, setCursorPx] = React.useState({ x: 50, y: 50 });
+  const aiCopyResetTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   React.useEffect(() => {
     if (typeof window === "undefined") return;
@@ -58,6 +65,18 @@ export default function DoneState({
   }, []);
 
   React.useEffect(() => {
+    setAICopyLabel(t.doneState.copyAIReadyContext);
+  }, [t.doneState.copyAIReadyContext]);
+
+  React.useEffect(() => {
+    return () => {
+      if (aiCopyResetTimeoutRef.current) {
+        clearTimeout(aiCopyResetTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  React.useEffect(() => {
     if (!isDesktopInteractive || typeof window === "undefined") {
       setCursorNorm({ x: 0, y: 0 });
       setCursorPx({ x: 50, y: 50 });
@@ -84,7 +103,7 @@ export default function DoneState({
     };
   }, [isDesktopInteractive]);
 
-  const getActionStyle = (button: "copy" | "new"): React.CSSProperties => {
+  const getActionStyle = (button: "copy" | "prepare" | "new" | "aiCopy"): React.CSSProperties => {
     const isActive = hoveredButton === button;
     const hasActivePeer = hoveredButton !== null && !isActive;
     const baseColor = "#1a1a1a";
@@ -114,6 +133,55 @@ export default function DoneState({
       transform: isActive ? "scale(1.01)" : "scale(1)",
       transition: "transform 0.2s ease, opacity 0.2s ease, border-color 0.2s ease, color 0.2s ease",
     };
+  };
+
+  const copyAIReadyContext = () => {
+    if (!aiReadyText) return;
+
+    const resetLabel = () => {
+      if (aiCopyResetTimeoutRef.current) {
+        clearTimeout(aiCopyResetTimeoutRef.current);
+      }
+      aiCopyResetTimeoutRef.current = setTimeout(() => {
+        setAICopyLabel(t.doneState.copyAIReadyContext);
+      }, 1500);
+    };
+
+    const fallbackCopy = () => {
+      const textarea = document.createElement("textarea");
+      textarea.value = aiReadyText;
+      textarea.setAttribute("readonly", "");
+      textarea.style.position = "fixed";
+      textarea.style.opacity = "0";
+      textarea.style.pointerEvents = "none";
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+
+      let successful = false;
+      try {
+        successful = document.execCommand("copy");
+      } catch {
+        successful = false;
+      }
+
+      document.body.removeChild(textarea);
+      if (successful) setAICopyLabel(t.doneState.copied);
+      resetLabel();
+    };
+
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard
+        .writeText(aiReadyText)
+        .then(() => {
+          setAICopyLabel(t.doneState.copied);
+          resetLabel();
+        })
+        .catch(fallbackCopy);
+      return;
+    }
+
+    fallbackCopy();
   };
 
   return (
@@ -259,6 +327,20 @@ export default function DoneState({
             {copyLabel}
           </button>
 
+          {aiReadyText ? (
+            <button
+              type="button"
+              onClick={() => setShowAIReadyContext((visible) => !visible)}
+              style={getActionStyle("prepare")}
+              onMouseEnter={() => setHoveredButton("prepare")}
+              onMouseLeave={() => setHoveredButton(null)}
+              onFocus={() => setHoveredButton("prepare")}
+              onBlur={() => setHoveredButton(null)}
+            >
+              {t.doneState.prepareForAI}
+            </button>
+          ) : null}
+
           <button
             type="button"
             onClick={onNew}
@@ -270,6 +352,101 @@ export default function DoneState({
           >
             {t.doneState.startNewSituation}
           </button>
+
+          {showAIReadyContext && aiReadyText ? (
+            <section
+              style={{
+                width: "100%",
+                marginTop: "0.85rem",
+                textAlign: "left",
+              }}
+            >
+              <h3
+                style={{
+                  margin: "0 0 0.45rem 0",
+                  fontSize: "1rem",
+                  lineHeight: 1.35,
+                  fontWeight: 600,
+                  color: "#211d19",
+                }}
+              >
+                {t.doneState.aiReadyContext}
+              </h3>
+              <p
+                style={{
+                  margin: "0 0 0.9rem 0",
+                  fontSize: "0.9rem",
+                  lineHeight: 1.55,
+                  color: "#6f6962",
+                }}
+              >
+                {t.doneState.aiReadyDescription}
+              </p>
+              <div
+                style={{
+                  position: "relative",
+                  border: "1px solid rgba(0,0,0,0.08)",
+                  borderRadius: "14px",
+                  backgroundColor: "rgba(245,243,239,0.72)",
+                  padding: "2.6rem 1rem 1rem",
+                  maxHeight: "280px",
+                  overflow: "auto",
+                  boxSizing: "border-box",
+                }}
+              >
+                <button
+                  type="button"
+                  aria-label={t.doneState.copyAIReadyContext}
+                  onClick={copyAIReadyContext}
+                  style={{
+                    position: "absolute",
+                    top: "0.7rem",
+                    right: "0.7rem",
+                    border: "1px solid rgba(0,0,0,0.08)",
+                    borderRadius: "999px",
+                    backgroundColor: "rgba(255,255,255,0.72)",
+                    color: "#4f4942",
+                    cursor: "pointer",
+                    fontSize: "0.82rem",
+                    lineHeight: 1,
+                    padding: "0.35rem 0.45rem",
+                  }}
+                >
+                  ⧉
+                </button>
+                <pre
+                  style={{
+                    margin: 0,
+                    whiteSpace: "pre-wrap",
+                    overflowWrap: "anywhere",
+                    fontFamily:
+                      'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                    fontSize: "0.82rem",
+                    lineHeight: 1.6,
+                    color: "#3f3a34",
+                    userSelect: "text",
+                  }}
+                >
+                  {aiReadyText}
+                </pre>
+              </div>
+              <button
+                type="button"
+                onClick={copyAIReadyContext}
+                style={{
+                  ...getActionStyle("aiCopy"),
+                  marginTop: "0.85rem",
+                  minWidth: "100%",
+                }}
+                onMouseEnter={() => setHoveredButton("aiCopy")}
+                onMouseLeave={() => setHoveredButton(null)}
+                onFocus={() => setHoveredButton("aiCopy")}
+                onBlur={() => setHoveredButton(null)}
+              >
+                {aiCopyLabel}
+              </button>
+            </section>
+          ) : null}
         </div>
       </div>
     </div>

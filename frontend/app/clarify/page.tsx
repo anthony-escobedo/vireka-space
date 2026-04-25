@@ -772,6 +772,48 @@ function handleCopyResult(): void {
     fallbackCopy();
   }
 }
+
+function buildAIReadyContext(): string | undefined {
+  if (!result || result.mode === "close") return undefined;
+
+  const sections: string[] = [
+    "Use the following clarified context as the basis for your response.",
+    "",
+    "Do not assume unresolved points are facts. Where uncertainty remains, preserve it or ask for clarification before proceeding.",
+    "",
+    "Context:",
+  ];
+
+  const appendListSection = (label: string, items: string[]) => {
+    const lines = items.map((item) => item.trim()).filter(Boolean);
+    if (!lines.length) return;
+    sections.push("", `${label}:`, ...lines.map((item) => `- ${item}`));
+  };
+
+  const appendTextSection = (label: string, text: string | undefined) => {
+    const value = text?.trim();
+    if (!value) return;
+    sections.push("", `${label}:`, value);
+  };
+
+  appendListSection("What appears to be happening", result.observable);
+  appendListSection("What may be assumed", result.interpretive);
+  appendListSection("What remains unclear", result.unknown);
+  appendListSection("What may be influencing the situation", result.structural);
+  appendTextSection("Integrated view", result.orientation);
+  appendTextSection("Clarifying question", result.question);
+
+  sections.push(
+    "",
+    "Task:",
+    "",
+    "Based on this context, respond in a way that moves the situation forward without introducing unsupported assumptions.",
+    "",
+    "If needed, ask clarifying questions before proceeding."
+  );
+
+  return sections.join("\n");
+}
   
 function handleStartNew(): void {
   if (copyResetTimeoutRef.current) {
@@ -1550,6 +1592,7 @@ function handleStartNew(): void {
           onCopy={handleCopyResult}
           onNew={handleStartNew}
           copyLabel={copyLabel}
+          aiReadyText={buildAIReadyContext()}
         />
       ) : (
         <div

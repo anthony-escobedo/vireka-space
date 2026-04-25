@@ -81,10 +81,10 @@ const innerStyle: CSSProperties = {
 };
 
 const headlineStyle: CSSProperties = {
-  fontSize: "clamp(38px, 5vw, 68px)",
-  fontWeight: 700,
-  lineHeight: 1.02,
-  letterSpacing: "-0.035em",
+  fontSize: "clamp(36px, 4.7vw, 64px)",
+  fontWeight: 600,
+  lineHeight: 1.04,
+  letterSpacing: "-0.025em",
   textTransform: "uppercase",
   color: "#1a1a1a",
   margin: 0,
@@ -97,7 +97,7 @@ const sublineStyle: CSSProperties = {
   fontSize: "clamp(16px, 2.2vw, 18px)",
   lineHeight: 1.5,
   color: "rgba(0,0,0,0.6)",
-  margin: "1.1rem 0 0 0",
+  margin: "18px 0 0 0",
   maxWidth: "32rem",
   marginLeft: "auto",
   marginRight: "auto",
@@ -119,13 +119,13 @@ function getHeroCtaStyle(active: boolean): CSSProperties {
     margin: 0,
     border: "none",
     borderBottom: active
-      ? "1px solid rgba(0,0,0,0.55)"
-      : "1px solid rgba(17,17,17,0.36)",
+      ? "1px solid rgba(0,0,0,0.48)"
+      : "1px solid rgba(0,0,0,0.28)",
     borderRadius: 0,
     backgroundColor: "transparent",
-    color: active ? "rgba(0,0,0,0.9)" : "#111",
+    color: active ? "rgba(0,0,0,0.94)" : "rgba(0,0,0,0.82)",
     fontSize: "1.05rem",
-    fontWeight: 600,
+    fontWeight: 550,
     letterSpacing: "-0.01em",
     lineHeight: 1.35,
     padding: "12px 10px",

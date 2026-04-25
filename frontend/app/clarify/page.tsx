@@ -1724,6 +1724,9 @@ function handleStartNew(): void {
                 ref={leftMenuRef}
                 style={{
                   position: "relative",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "flex-start",
                   marginBottom: railHistoryRows.length > 0 ? "2.4rem" : 0,
                 }}
               >
@@ -1919,6 +1922,9 @@ function handleStartNew(): void {
               ref={mobileMenuRef}
               style={{
                 position: "relative",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-start",
               }}
             >
               <Link
@@ -1953,7 +1959,7 @@ function handleStartNew(): void {
                 lineHeight: 1.15,
                 letterSpacing: "-0.03em",
                 color: "#111",
-                margin: "0 0 1.25rem 0",
+                margin: "1rem 0 1.25rem 0",
               }}
             >
               {workspaceTitle}
@@ -1971,7 +1977,20 @@ function handleStartNew(): void {
               >
                 {workspaceOrientation}
               </p>
-            ) : null}
+            ) : (
+              <p
+                style={{
+                  margin: "0 0 18px 0",
+                  color: "rgba(0,0,0,0.58)",
+                  fontSize: "1.05rem",
+                  fontWeight: 450,
+                  lineHeight: 1.5,
+                  maxWidth: "44rem",
+                }}
+              >
+                {t.clarify.clarificationPathDescription}
+              </p>
+            )}
 
             {!showDesktopHistoryPanel && railHistoryRows.length > 0 ? (
               <button

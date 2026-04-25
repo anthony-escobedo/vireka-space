@@ -58,26 +58,55 @@ console.log(
   }))
 );
 
-const { data: allRecentConversations, error } = await supabase
-  .from("conversations")
-  .select("*")
+const { data: userRows, error } = await supabase
+  .from("messages")
+  .select("conversation_id, content, created_at")
+  .eq("role", "user")
   .order("created_at", { ascending: false })
   .limit(1000);
 
-const data = (allRecentConversations ?? [])
-  .filter((row) => String(row.anonymous_id) === anonymousId)
-  .sort(
-    (a, b) =>
-      new Date(String(b.created_at)).getTime() -
-      new Date(String(a.created_at)).getTime()
-  )
-  .slice(0, 20);
-
-if (error || !data) {
+if (error || !userRows) {
   return NextResponse.json(
     { conversations: [] as HistoryConversation[] },
     { headers: NO_STORE_HEADERS }
   );
+}
+
+console.log("[api/history] messages count:", userRows.length);
+
+const latestUserMessageByConversationId = new Map<string, { content: unknown; created_at: string }>();
+for (const row of userRows) {
+  const conversationId = String((row as { conversation_id: string }).conversation_id);
+  if (latestUserMessageByConversationId.has(conversationId)) continue;
+  latestUserMessageByConversationId.set(conversationId, {
+    content: (row as { content: unknown }).content,
+    created_at: String((row as { created_at: string }).created_at),
+  });
+}
+
+const ids = Array.from(latestUserMessageByConversationId.keys());
+let data: Array<{
+  id: string;
+  anonymous_id?: string | null;
+  mode?: string | null;
+  source?: string | null;
+  created_at: string;
+}> = [];
+
+if (ids.length > 0) {
+  const { data: conversationRows, error: conversationErr } = await supabase
+    .from("conversations")
+    .select("id, anonymous_id, mode, source, created_at")
+    .in("id", ids);
+
+  if (conversationErr || !conversationRows) {
+    return NextResponse.json(
+      { conversations: [] as HistoryConversation[] },
+      { headers: NO_STORE_HEADERS }
+    );
+  }
+
+  data = conversationRows.filter((row) => String(row.anonymous_id) === anonymousId);
 }
 
 console.log("[api/history] anonymousId:", anonymousId);
@@ -87,45 +116,24 @@ console.log(
   data.map((row) => row.id)
 );
 
-const ids = data.map((row) => String(row.id));
-const previewById = new Map<string, string>();
+const conversationById = new Map(data.map((row) => [String(row.id), row]));
 
-if (ids.length > 0) {
-  const { data: userRows, error: userErr } = await supabase
-    .from("messages")
-    .select("conversation_id, content, created_at")
-    .in("conversation_id", ids)
-    .eq("role", "user")
-    .order("created_at", { ascending: false });
-
-  if (!userErr && userRows) {
-    console.log("[api/history] messages count:", userRows.length);
-
-    for (const row of userRows) {
-      const cid = String(
-        (row as { conversation_id: string }).conversation_id
-      );
-
-      if (previewById.has(cid)) continue;
-
-      const raw = (row as { content: unknown }).content;
-      const source = normalizeMessageContentToPreviewSource(raw);
-
-      previewById.set(cid, truncateHistoryPreview(source, 60));
-    }
-  }
-}
-
-const conversations: HistoryConversation[] = data.map((row) => {
+const conversations: HistoryConversation[] = ids.flatMap((conversationId) => {
+  const row = conversationById.get(conversationId);
+  const latestUserMessage = latestUserMessageByConversationId.get(conversationId);
+  if (!row || !latestUserMessage) return [];
   const id = String(row.id);
 
-  return {
+  return [{
     id,
     mode: String(row.source ?? row.mode ?? "unknown"),
-    created_at: String(row.created_at),
-    preview: previewById.get(id) ?? "",
-  };
-});
+    created_at: latestUserMessage.created_at,
+    preview: truncateHistoryPreview(
+      normalizeMessageContentToPreviewSource(latestUserMessage.content),
+      60
+    ),
+  }];
+}).slice(0, 20);
 
 console.log("[api/history] final conversations:", conversations.length);
 console.log("[api/history] first conversation timestamp:", conversations[0]?.created_at ?? null);

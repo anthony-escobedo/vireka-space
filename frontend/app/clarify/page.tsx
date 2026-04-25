@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { type CSSProperties, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import CollapsibleLayer from "../../components/CollapsibleLayer";
 
@@ -128,12 +128,18 @@ export default function ClarifyPage() {
   const [languageMenuOpen, setLanguageMenuOpen] = useState(false);
   const { t, language, setLanguage } = useLanguage();
   const [copyLabel, setCopyLabel] = useState(t.clarify.copyResult);
+  const [historyAIReadyOpen, setHistoryAIReadyOpen] = useState(false);
+  const [historyAICopyLabel, setHistoryAICopyLabel] = useState(t.doneState.copyAIReadyContext);
+  const [hoveredHistoryAction, setHoveredHistoryAction] = useState<
+    "copy" | "prepare" | "new" | "aiCopy" | null
+  >(null);
   const topInputRef = useRef<HTMLTextAreaElement | null>(null);
   const pathTopRef = useRef<HTMLDivElement | null>(null);
   const resultRef = useRef<HTMLDivElement | null>(null);
   const leftMenuRef = useRef<HTMLDivElement | null>(null);
   const mobileMenuRef = useRef<HTMLDivElement | null>(null);
   const copyResetTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const historyAICopyResetTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const historyRefreshTimeoutsRef = useRef<number[]>([]);
   const anonymousIdRef = useRef<string | null>(null);
   const topInputValueRef = useRef("");
@@ -195,12 +201,19 @@ export default function ClarifyPage() {
       if (copyResetTimeoutRef.current) {
         clearTimeout(copyResetTimeoutRef.current);
       }
+      if (historyAICopyResetTimeoutRef.current) {
+        clearTimeout(historyAICopyResetTimeoutRef.current);
+      }
       for (const id of historyRefreshTimeoutsRef.current) {
         clearTimeout(id);
       }
       historyRefreshTimeoutsRef.current = [];
     };
   }, []);
+
+  useEffect(() => {
+    setHistoryAICopyLabel(t.doneState.copyAIReadyContext);
+  }, [t.doneState.copyAIReadyContext]);
 
   const loadHistory = useCallback(async () => {
     try {
@@ -523,6 +536,8 @@ export default function ClarifyPage() {
 
       applyConversationDetail({ conversation: data.conversation, messages });
       setIsReviewingHistorySession(true);
+      setHistoryAIReadyOpen(false);
+      setHistoryAICopyLabel(t.doneState.copyAIReadyContext);
       setMobileHistoryOpen(false);
       setTimeout(() => {
         const target = pathTopRef.current ?? resultRef.current;
@@ -818,6 +833,89 @@ function buildAIReadyContext(): string | undefined {
 
   return sections.join("\n");
 }
+
+function getHistoryActionStyle(
+  action: "copy" | "prepare" | "new" | "aiCopy"
+): CSSProperties {
+  const isActive = hoveredHistoryAction === action;
+  const hasActivePeer = hoveredHistoryAction !== null && !isActive;
+
+  return {
+    appearance: "none",
+    WebkitAppearance: "none",
+    margin: 0,
+    padding: "9px 10px",
+    border: "none",
+    borderBottom: isActive
+      ? "1px solid rgba(0,0,0,0.38)"
+      : "1px solid rgba(17,17,17,0.2)",
+    borderRadius: 0,
+    backgroundColor: "transparent",
+    color: isActive ? "#0d0d0d" : "#1a1a1a",
+    fontSize: "0.95rem",
+    fontWeight: 500,
+    letterSpacing: "-0.01em",
+    lineHeight: 1.35,
+    cursor: loading ? "not-allowed" : "pointer",
+    whiteSpace: "nowrap",
+    textAlign: "center",
+    minWidth: "200px",
+    boxSizing: "border-box",
+    opacity: loading ? 0.45 : hasActivePeer ? 0.93 : 1,
+    transform: isActive ? "scale(1.01)" : "scale(1)",
+    transition: "transform 0.2s ease, opacity 0.2s ease, border-color 0.2s ease, color 0.2s ease",
+  };
+}
+
+function handleCopyHistoryAIReadyContext(): void {
+  const text = buildAIReadyContext();
+  if (!text) return;
+
+  const resetLabel = () => {
+    if (historyAICopyResetTimeoutRef.current) {
+      clearTimeout(historyAICopyResetTimeoutRef.current);
+    }
+    historyAICopyResetTimeoutRef.current = setTimeout(() => {
+      setHistoryAICopyLabel(t.doneState.copyAIReadyContext);
+    }, 1500);
+  };
+
+  const fallbackCopy = () => {
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.setAttribute("readonly", "");
+    textarea.style.position = "fixed";
+    textarea.style.opacity = "0";
+    textarea.style.pointerEvents = "none";
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+
+    let successful = false;
+    try {
+      successful = document.execCommand("copy");
+    } catch {
+      successful = false;
+    }
+
+    document.body.removeChild(textarea);
+    if (successful) setHistoryAICopyLabel(t.doneState.copied);
+    resetLabel();
+  };
+
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        setHistoryAICopyLabel(t.doneState.copied);
+        resetLabel();
+      })
+      .catch(fallbackCopy);
+    return;
+  }
+
+  fallbackCopy();
+}
   
 function handleStartNew(): void {
   if (copyResetTimeoutRef.current) {
@@ -849,6 +947,7 @@ function handleStartNew(): void {
   const hideInitialHero = hasClarificationHistory || history.length > 0;
   const workspaceTitle = t.clarify.heroTitle;
   const workspaceOrientation = homeMode ? t.clarify.descriptionParagraph : "";
+  const historyAIReadyText = isReviewingHistorySession ? buildAIReadyContext() : undefined;
 
   function renderList(items: string[] | undefined, label: string) {
     if (!items || items.length === 0) return null;
@@ -1572,6 +1671,8 @@ function handleStartNew(): void {
   setHistoryDetailLoading(false);
   setMobileHistoryOpen(false);
   setIsReviewingHistorySession(false);
+  setHistoryAIReadyOpen(false);
+  setHistoryAICopyLabel(t.doneState.copyAIReadyContext);
   scheduleHistoryRefresh();
 }
   
@@ -2256,30 +2357,151 @@ function handleStartNew(): void {
               <div
                 style={{
                   display: "flex",
-                  justifyContent: "flex-end",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: "0.85rem",
+                  width: "100%",
+                  maxWidth: "620px",
+                  margin: "0 auto",
                   padding: "0.25rem 0",
                 }}
               >
                 <button
                   type="button"
+                  onClick={handleCopyResult}
+                  disabled={loading}
+                  style={getHistoryActionStyle("copy")}
+                  onMouseEnter={() => setHoveredHistoryAction("copy")}
+                  onMouseLeave={() => setHoveredHistoryAction(null)}
+                  onFocus={() => setHoveredHistoryAction("copy")}
+                  onBlur={() => setHoveredHistoryAction(null)}
+                >
+                  {copyLabel}
+                </button>
+
+                {historyAIReadyText ? (
+                  <button
+                    type="button"
+                    onClick={() => setHistoryAIReadyOpen((open) => !open)}
+                    disabled={loading}
+                    style={getHistoryActionStyle("prepare")}
+                    onMouseEnter={() => setHoveredHistoryAction("prepare")}
+                    onMouseLeave={() => setHoveredHistoryAction(null)}
+                    onFocus={() => setHoveredHistoryAction("prepare")}
+                    onBlur={() => setHoveredHistoryAction(null)}
+                  >
+                    {t.doneState.prepareForAI}
+                  </button>
+                ) : null}
+
+                <button
+                  type="button"
                   onClick={handleStartNew}
                   disabled={loading}
-                  style={{
-                    fontSize: "0.82rem",
-                    fontWeight: 500,
-                    letterSpacing: "0.01em",
-                    color: "#6f6962",
-                    background: "rgba(245,243,239,0.92)",
-                    border: "1px solid rgba(0,0,0,0.08)",
-                    borderRadius: "999px",
-                    padding: "0.55rem 0.8rem",
-                    cursor: loading ? "not-allowed" : "pointer",
-                    opacity: loading ? 0.45 : 1,
-                    boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
-                  }}
+                  style={getHistoryActionStyle("new")}
+                  onMouseEnter={() => setHoveredHistoryAction("new")}
+                  onMouseLeave={() => setHoveredHistoryAction(null)}
+                  onFocus={() => setHoveredHistoryAction("new")}
+                  onBlur={() => setHoveredHistoryAction(null)}
                 >
-                  Start new situation
+                  {t.doneState.startNewSituation}
                 </button>
+
+                {historyAIReadyOpen && historyAIReadyText ? (
+                  <section
+                    style={{
+                      width: "100%",
+                      marginTop: "0.85rem",
+                      textAlign: "left",
+                    }}
+                  >
+                    <h3
+                      style={{
+                        margin: "0 0 0.45rem 0",
+                        fontSize: "1rem",
+                        lineHeight: 1.35,
+                        fontWeight: 600,
+                        color: "#211d19",
+                      }}
+                    >
+                      {t.doneState.aiReadyContext}
+                    </h3>
+                    <p
+                      style={{
+                        margin: "0 0 0.9rem 0",
+                        fontSize: "0.9rem",
+                        lineHeight: 1.55,
+                        color: "#6f6962",
+                      }}
+                    >
+                      {t.doneState.aiReadyDescription}
+                    </p>
+                    <div
+                      style={{
+                        position: "relative",
+                        border: "1px solid rgba(0,0,0,0.08)",
+                        borderRadius: "14px",
+                        backgroundColor: "rgba(245,243,239,0.92)",
+                        padding: "2.6rem 1rem 1rem",
+                        maxHeight: "280px",
+                        overflow: "auto",
+                        boxSizing: "border-box",
+                        boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
+                      }}
+                    >
+                      <button
+                        type="button"
+                        aria-label={t.doneState.copyAIReadyContext}
+                        onClick={handleCopyHistoryAIReadyContext}
+                        style={{
+                          position: "absolute",
+                          top: "0.7rem",
+                          right: "0.7rem",
+                          border: "1px solid rgba(0,0,0,0.08)",
+                          borderRadius: "999px",
+                          backgroundColor: "rgba(255,255,255,0.72)",
+                          color: "#4f4942",
+                          cursor: "pointer",
+                          fontSize: "0.82rem",
+                          lineHeight: 1,
+                          padding: "0.35rem 0.45rem",
+                        }}
+                      >
+                        ⧉
+                      </button>
+                      <pre
+                        style={{
+                          margin: 0,
+                          whiteSpace: "pre-wrap",
+                          overflowWrap: "anywhere",
+                          fontFamily:
+                            'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                          fontSize: "0.82rem",
+                          lineHeight: 1.6,
+                          color: "#3f3a34",
+                          userSelect: "text",
+                        }}
+                      >
+                        {historyAIReadyText}
+                      </pre>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleCopyHistoryAIReadyContext}
+                      style={{
+                        ...getHistoryActionStyle("aiCopy"),
+                        marginTop: "0.85rem",
+                        minWidth: "100%",
+                      }}
+                      onMouseEnter={() => setHoveredHistoryAction("aiCopy")}
+                      onMouseLeave={() => setHoveredHistoryAction(null)}
+                      onFocus={() => setHoveredHistoryAction("aiCopy")}
+                      onBlur={() => setHoveredHistoryAction(null)}
+                    >
+                      {historyAICopyLabel}
+                    </button>
+                  </section>
+                ) : null}
               </div>
             ) : (
               <>

@@ -4,7 +4,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import CollapsibleLayer from "../../components/CollapsibleLayer";
 
-import OnboardingModal from "../../components/OnboardingModal";
 import { usePathname, useRouter } from "next/navigation";
 import DoneState from "../../components/DoneState";
 import InterpretationInput from "../../components/InterpretationInput";
@@ -31,18 +30,17 @@ const RAIL_HISTORY_DISPLAY_LIMIT = 8;
 const HISTORY_REFRESH_RETRY_DELAYS_MS = [750, 1500] as const;
 
 const MENU_LINKS = [
-  { label: "Plan", href: "/settings/plan" },
   { label: "About", href: "/about" },
   { label: "FAQ", href: "/faq" },
-  { label: "Contact", href: "/settings/contact" },
   { label: "Privacy", href: "/privacy" },
   { label: "Terms", href: "/terms" },
+  { label: "Contact", href: "/settings/contact" },
 ] as const;
 
 const MENU_LANGUAGES: { code: Language; label: string }[] = [
   { code: "en", label: "English" },
-  { code: "es", label: "Español" },
-  { code: "pt", label: "Português" },
+  { code: "es", label: "Spanish" },
+  { code: "pt", label: "Portuguese" },
 ];
 
 type RequestAction = "clarify";
@@ -117,8 +115,6 @@ export default function ClarifyPage() {
   const [iterations, setIterations] = useState<ClarificationIteration[]>([]);
   const [openPanelIds, setOpenPanelIds] = useState<string[]>([]);
   const [latestPanelId, setLatestPanelId] = useState<string | null>(null);
-  const [showOnboarding, setShowOnboarding] = useState<boolean>(false);
-  const [checkedOnboarding, setCheckedOnboarding] = useState(false);
   const [historyConversations, setHistoryConversations] = useState<HistoryConversation[]>([]);
   const [showDesktopHistoryPanel, setShowDesktopHistoryPanel] = useState(false);
   const [selectedHistoryConversationId, setSelectedHistoryConversationId] = useState<
@@ -128,12 +124,14 @@ export default function ClarifyPage() {
   const [mobileHistoryOpen, setMobileHistoryOpen] = useState(false);
   const [isReviewingHistorySession, setIsReviewingHistorySession] = useState(false);
   const [leftMenuOpen, setLeftMenuOpen] = useState(false);
+  const [languageMenuOpen, setLanguageMenuOpen] = useState(false);
   const { t, language, setLanguage } = useLanguage();
   const [copyLabel, setCopyLabel] = useState(t.clarify.copyResult);
   const topInputRef = useRef<HTMLTextAreaElement | null>(null);
   const pathTopRef = useRef<HTMLDivElement | null>(null);
   const resultRef = useRef<HTMLDivElement | null>(null);
   const leftMenuRef = useRef<HTMLDivElement | null>(null);
+  const mobileMenuRef = useRef<HTMLDivElement | null>(null);
   const copyResetTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const historyRefreshTimeoutsRef = useRef<number[]>([]);
   const anonymousIdRef = useRef<string | null>(null);
@@ -188,14 +186,7 @@ export default function ClarifyPage() {
     iterationsRef.current = iterations;
   }, [iterations]);
 
-    useEffect(() => {
-  const accepted =
-    typeof window !== "undefined" &&
-    window.localStorage.getItem("vireka_onboarding_accepted") === "true";
-
-  setShowOnboarding(!accepted);
-  setCheckedOnboarding(true);
-
+  useEffect(() => {
     return () => {
       if (redirectTimeoutRef.current) {
         clearTimeout(redirectTimeoutRef.current);
@@ -281,7 +272,9 @@ export default function ClarifyPage() {
       const target = event.target;
       if (!(target instanceof Node)) return;
       if (leftMenuRef.current?.contains(target)) return;
+      if (mobileMenuRef.current?.contains(target)) return;
       setLeftMenuOpen(false);
+      setLanguageMenuOpen(false);
     };
 
     document.addEventListener("mousedown", handlePointerDown);
@@ -697,21 +690,6 @@ export default function ClarifyPage() {
       setLoading(false);
     }
   }
-
-  function handleBeginOnboarding(): void {
-  if (typeof window !== "undefined") {
-    window.localStorage.setItem("vireka_onboarding_accepted", "true");
-  }
-  setShowOnboarding(false);
-
-  setTimeout(() => {
-    topInputRef.current?.focus();
-  }, 0);
-}
-  
-  function handleDismissOnboarding(): void {
-  router.push("/");
-}
 
 function handleCopyResult(): void {
   if (!result) return;
@@ -1311,6 +1289,219 @@ function handleStartNew(): void {
     );
   }
 
+  function renderMenuLink(item: (typeof MENU_LINKS)[number]) {
+    return (
+      <Link
+        key={item.href}
+        href={item.href}
+        onClick={() => setLeftMenuOpen(false)}
+        style={{
+          display: "block",
+          padding: "0.5rem 0.55rem",
+          borderRadius: "8px",
+          color: "#3f3b36",
+          fontSize: "0.88rem",
+          lineHeight: 1.35,
+          textDecoration: "none",
+          transition: "background-color 150ms ease, color 150ms ease, transform 150ms ease",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = "rgba(0,0,0,0.07)";
+          e.currentTarget.style.color = "rgba(0,0,0,0.9)";
+          e.currentTarget.style.transform = "translateY(-0.5px)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = "transparent";
+          e.currentTarget.style.color = "#3f3b36";
+          e.currentTarget.style.transform = "none";
+        }}
+      >
+        {item.label}
+      </Link>
+    );
+  }
+
+  function renderHamburgerButton() {
+    return (
+      <button
+        type="button"
+        aria-label="Open menu"
+        aria-expanded={leftMenuOpen}
+        onClick={() => {
+          setLeftMenuOpen((open) => !open);
+          setLanguageMenuOpen(false);
+        }}
+        style={{
+          margin: 0,
+          padding: 0,
+          border: "none",
+          background: "transparent",
+          color: "rgba(0,0,0,0.65)",
+          cursor: "pointer",
+          width: "18px",
+          height: "14px",
+          display: "inline-flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          transition: "color 150ms ease",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.color = "rgba(0,0,0,0.9)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.color = "rgba(0,0,0,0.65)";
+        }}
+      >
+        {[0, 1, 2].map((line) => (
+          <span
+            key={line}
+            aria-hidden
+            style={{
+              display: "block",
+              width: "18px",
+              height: "2px",
+              borderRadius: "999px",
+              backgroundColor: "currentColor",
+            }}
+          />
+        ))}
+      </button>
+    );
+  }
+
+  function renderFloatingMenu(isMobile = false) {
+    const languageOptions = (
+      <div
+        style={{
+          padding: "0.35rem",
+          borderRadius: "10px",
+          border: isMobile ? "none" : "1px solid rgba(0,0,0,0.05)",
+          backgroundColor: isMobile ? "transparent" : "rgba(250,248,244,0.95)",
+          boxShadow: isMobile ? "none" : "0 8px 24px rgba(0,0,0,0.08)",
+          minWidth: isMobile ? "auto" : "132px",
+        }}
+      >
+        {MENU_LANGUAGES.map((option) => (
+          <button
+            key={option.code}
+            type="button"
+            onClick={() => {
+              setLanguage(option.code);
+              setLeftMenuOpen(false);
+              setLanguageMenuOpen(false);
+            }}
+            style={{
+              display: "block",
+              width: "100%",
+              margin: 0,
+              padding: "0.45rem 0.5rem",
+              border: "none",
+              borderRadius: "8px",
+              background: "transparent",
+              color: language === option.code ? "rgba(0,0,0,0.9)" : "#3f3b36",
+              cursor: "pointer",
+              font: "inherit",
+              fontSize: "0.86rem",
+              fontWeight: language === option.code ? 600 : 400,
+              lineHeight: 1.35,
+              textAlign: "left",
+              transition: "background-color 150ms ease, color 150ms ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "rgba(0,0,0,0.07)";
+              e.currentTarget.style.color = "rgba(0,0,0,0.9)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "transparent";
+              e.currentTarget.style.color =
+                language === option.code ? "rgba(0,0,0,0.9)" : "#3f3b36";
+            }}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+    );
+
+    return (
+      <div
+        style={{
+          position: "absolute",
+          top: "3.35rem",
+          left: 0,
+          width: isMobile ? "220px" : "230px",
+          padding: "0.45rem",
+          borderRadius: "12px",
+          border: "1px solid rgba(0,0,0,0.05)",
+          backgroundColor: "rgba(250,248,244,0.94)",
+          boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
+          backdropFilter: "blur(8px)",
+          zIndex: 40,
+        }}
+      >
+        {MENU_LINKS.slice(0, 2).map((item) => renderMenuLink(item))}
+        <div
+          style={{ position: "relative" }}
+          onMouseEnter={() => setLanguageMenuOpen(true)}
+          onMouseLeave={() => {
+            if (!isMobile) setLanguageMenuOpen(false);
+          }}
+        >
+          <button
+            type="button"
+            onClick={() => setLanguageMenuOpen((open) => !open)}
+            onFocus={() => setLanguageMenuOpen(true)}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              width: "100%",
+              margin: 0,
+              padding: "0.5rem 0.55rem",
+              border: "none",
+              borderRadius: "8px",
+              background: "transparent",
+              color: "#3f3b36",
+              cursor: "pointer",
+              font: "inherit",
+              fontSize: "0.88rem",
+              lineHeight: 1.35,
+              textAlign: "left",
+              transition: "background-color 150ms ease, color 150ms ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "rgba(0,0,0,0.07)";
+              e.currentTarget.style.color = "rgba(0,0,0,0.9)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "transparent";
+              e.currentTarget.style.color = "#3f3b36";
+            }}
+          >
+            <span>Language</span>
+            <span aria-hidden>›</span>
+          </button>
+          {languageMenuOpen ? (
+            <div
+              style={
+                isMobile
+                  ? { marginTop: "0.2rem" }
+                  : {
+                      position: "absolute",
+                      top: 0,
+                      left: "calc(100% + 0.35rem)",
+                    }
+              }
+            >
+              {languageOptions}
+            </div>
+          ) : null}
+        </div>
+        {MENU_LINKS.slice(2).map((item) => renderMenuLink(item))}
+      </div>
+    );
+  }
+
   function resetSession(): void {
   topInputValueRef.current = "";
   followupInputValueRef.current = "";
@@ -1337,14 +1528,6 @@ function handleStartNew(): void {
   
   return (
   <div>
-    {checkedOnboarding && (
-      <OnboardingModal
-        isOpen={showOnboarding}
-        onBegin={handleBeginOnboarding}
-        onDismiss={handleDismissOnboarding}
-      />
-    )}
-
         <main
       style={{
         minHeight: "100svh",
@@ -1389,12 +1572,14 @@ function handleStartNew(): void {
                 flexShrink: 0,
                 borderRight: "1px solid rgba(0,0,0,0.045)",
                 padding: "0.55rem 1rem 0.55rem 0",
-                minHeight: "220px",
+                minHeight: "calc(100svh - 3rem)",
                 position: "sticky",
                 top: "1.5rem",
                 alignSelf: "stretch",
                 zIndex: 2,
                 pointerEvents: "auto",
+                display: "flex",
+                flexDirection: "column",
               }}
             >
               <div
@@ -1416,161 +1601,8 @@ function handleStartNew(): void {
                 >
                   VIREKA Space
                 </div>
-                <button
-                  type="button"
-                  aria-expanded={leftMenuOpen}
-                  onClick={() => setLeftMenuOpen((open) => !open)}
-                  style={{
-                    margin: 0,
-                    padding: "0.35rem 0.45rem",
-                    border: "1px solid transparent",
-                    borderRadius: "8px",
-                    background: "transparent",
-                    color: "#6f6962",
-                    cursor: "pointer",
-                    font: "inherit",
-                    fontSize: "0.85rem",
-                    lineHeight: 1.3,
-                    transition: "background-color 150ms ease, border-color 150ms ease",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = "rgba(0,0,0,0.04)";
-                    e.currentTarget.style.borderColor = "rgba(0,0,0,0.05)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "transparent";
-                    e.currentTarget.style.borderColor = "transparent";
-                  }}
-                >
-                  Menu
-                </button>
-                {leftMenuOpen ? (
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: "4.7rem",
-                      left: 0,
-                      width: "230px",
-                      padding: "0.45rem",
-                      borderRadius: "12px",
-                      border: "1px solid rgba(0,0,0,0.05)",
-                      backgroundColor: "rgba(250,248,244,0.9)",
-                      boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
-                      backdropFilter: "blur(8px)",
-                      zIndex: 12,
-                    }}
-                  >
-                    {MENU_LINKS.slice(0, 4).map((item) => (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        onClick={() => setLeftMenuOpen(false)}
-                        style={{
-                          display: "block",
-                          padding: "0.5rem 0.55rem",
-                          borderRadius: "8px",
-                          color: "#3f3b36",
-                          fontSize: "0.88rem",
-                          lineHeight: 1.35,
-                          textDecoration: "none",
-                          transition: "background-color 150ms ease, transform 150ms ease",
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = "rgba(0,0,0,0.045)";
-                          e.currentTarget.style.transform = "translateY(-0.5px)";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = "transparent";
-                          e.currentTarget.style.transform = "none";
-                        }}
-                      >
-                        {item.label}
-                      </Link>
-                    ))}
-                    <div
-                      style={{
-                        padding: "0.6rem 0.55rem 0.45rem",
-                        margin: "0.15rem 0",
-                        borderTop: "1px solid rgba(0,0,0,0.05)",
-                        borderBottom: "1px solid rgba(0,0,0,0.05)",
-                      }}
-                    >
-                      <div
-                        style={{
-                          fontSize: "0.76rem",
-                          lineHeight: 1.35,
-                          color: "#8b857e",
-                          marginBottom: "0.25rem",
-                        }}
-                      >
-                        Language
-                      </div>
-                      <div
-                        style={{
-                          display: "flex",
-                          flexWrap: "wrap",
-                          alignItems: "center",
-                          gap: "0.25rem",
-                          color: "#aaa39c",
-                          fontSize: "0.82rem",
-                          lineHeight: 1.4,
-                        }}
-                      >
-                        {MENU_LANGUAGES.map((option, index) => (
-                          <span key={option.code}>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setLanguage(option.code);
-                                setLeftMenuOpen(false);
-                              }}
-                              style={{
-                                margin: 0,
-                                padding: 0,
-                                border: "none",
-                                background: "none",
-                                color: language === option.code ? "#2f2b27" : "#6f6962",
-                                cursor: "pointer",
-                                font: "inherit",
-                                fontWeight: language === option.code ? 600 : 400,
-                              }}
-                            >
-                              {option.label}
-                            </button>
-                            {index < MENU_LANGUAGES.length - 1 ? " · " : ""}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                    {MENU_LINKS.slice(4).map((item) => (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        onClick={() => setLeftMenuOpen(false)}
-                        style={{
-                          display: "block",
-                          padding: "0.5rem 0.55rem",
-                          borderRadius: "8px",
-                          color: "#3f3b36",
-                          fontSize: "0.88rem",
-                          lineHeight: 1.35,
-                          textDecoration: "none",
-                          transition: "background-color 150ms ease, transform 150ms ease",
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = "rgba(0,0,0,0.045)";
-                          e.currentTarget.style.transform = "translateY(-0.5px)";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = "transparent";
-                          e.currentTarget.style.transform = "none";
-                        }}
-                      >
-                        {item.label}
-                      </Link>
-                    ))}
-                  </div>
-                ) : null}
+                {renderHamburgerButton()}
+                {leftMenuOpen ? renderFloatingMenu(false) : null}
               </div>
               {railHistoryRows.length > 0 ? (
                 <div
@@ -1721,6 +1753,17 @@ function handleStartNew(): void {
                   ) : null}
                 </div>
               ) : null}
+              <div
+                style={{
+                  marginTop: "auto",
+                  paddingTop: "1.5rem",
+                  fontSize: 11,
+                  lineHeight: 1.4,
+                  color: "#aaa39c",
+                }}
+              >
+                © 2026 Vireka Space
+              </div>
             </aside>
           ) : null}
 
@@ -1729,10 +1772,37 @@ function handleStartNew(): void {
         <div
           style={{
             display: "flex",
-            justifyContent: "flex-end",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+            gap: "1rem",
             marginBottom: "0.65rem",
           }}
         >
+          {!showDesktopHistoryPanel ? (
+            <div
+              ref={mobileMenuRef}
+              style={{
+                position: "relative",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: "0.95rem",
+                  lineHeight: 1.25,
+                  fontWeight: 600,
+                  letterSpacing: "-0.01em",
+                  color: "#2f2b27",
+                  marginBottom: "0.45rem",
+                }}
+              >
+                VIREKA Space
+              </div>
+              {renderHamburgerButton()}
+              {leftMenuOpen ? renderFloatingMenu(true) : null}
+            </div>
+          ) : (
+            <div />
+          )}
           <Link
             href="/settings/account"
             style={{

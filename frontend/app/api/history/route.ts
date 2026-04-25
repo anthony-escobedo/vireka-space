@@ -21,17 +21,9 @@ preview: string;
 };
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
-console.log("HISTORY ROUTE HIT v2");
-console.log("NEW HISTORY CODE ACTIVE 06714ac");
 const headerAnonymousId = req.headers.get("x-anonymous-id")?.trim();
 const queryAnonymousId = req.nextUrl.searchParams.get("anonymousId")?.trim();
 const anonymousId = headerAnonymousId || queryAnonymousId;
-console.log("[history API identity]", { anonymousId });
-console.log("[history anonymous id]", {
-  anonymousId,
-  headerAnonymousId,
-  queryAnonymousId,
-});
 
 if (!anonymousId) {
 return NextResponse.json(
@@ -48,15 +40,6 @@ const { data: latestRawConversations } = await supabase
   .select("id, anonymous_id, mode, source, created_at")
   .order("created_at", { ascending: false })
   .limit(5);
-console.log("[api/history] latest raw conversations", latestRawConversations);
-console.log(
-  "[api/history] comparing anonymous ids",
-  latestRawConversations?.map((row) => ({
-    requestedAnonymousId: anonymousId,
-    rowAnonymousId: row.anonymous_id,
-    matches: row.anonymous_id === anonymousId,
-  }))
-);
 
 const { data: conversationRows, error: conversationsError } = await supabase
   .from("conversations")
@@ -64,7 +47,6 @@ const { data: conversationRows, error: conversationsError } = await supabase
   .eq("anonymous_id", anonymousId)
   .order("created_at", { ascending: false })
   .limit(20);
-console.log("[api/history] newest conversation from DB:", conversationRows?.[0] ?? null);
 
 if (conversationsError || !conversationRows) {
   return NextResponse.json(
@@ -73,74 +55,50 @@ if (conversationsError || !conversationRows) {
   );
 }
 
-console.log("[api/history] conversation rows count:", conversationRows.length);
-
 const conversationIds = conversationRows.map((row) => String(row.id));
-console.log("[api/history] conversation ids count:", conversationIds.length);
 
-const latestUserMessageByConversationId = new Map<string, { content: unknown; created_at: string }>();
+const latestMessageByConversationId = new Map<string, { content: unknown; created_at: string }>();
 
 if (conversationIds.length > 0) {
-  const { data: userMessages, error: messagesError } = await supabase
+  const { data: messages, error: messagesError } = await supabase
     .from("messages")
     .select("conversation_id, content, created_at")
     .in("conversation_id", conversationIds)
-    .eq("role", "user")
     .order("created_at", { ascending: false });
 
-  if (messagesError || !userMessages) {
+  if (messagesError || !messages) {
     return NextResponse.json(
       { conversations: [] as HistoryConversation[] },
       { headers: NO_STORE_HEADERS }
     );
   }
 
-  console.log("[api/history] user messages count:", userMessages.length);
-
-  for (const row of userMessages) {
+  for (const row of messages) {
     const conversationId = String((row as { conversation_id: string }).conversation_id);
-    if (latestUserMessageByConversationId.has(conversationId)) continue;
-    latestUserMessageByConversationId.set(conversationId, {
+    if (latestMessageByConversationId.has(conversationId)) continue;
+    latestMessageByConversationId.set(conversationId, {
       content: (row as { content: unknown }).content,
       created_at: String((row as { created_at: string }).created_at),
     });
   }
 }
 
-console.log("[api/history] anonymousId:", anonymousId);
-console.log("[api/history] final conversations count:", conversationRows.length);
-console.log(
-  "[api/history] conversation ids:",
-  conversationRows.map((row) => row.id)
-);
-
 const conversations: HistoryConversation[] = conversationRows.map((row) => {
   const id = String(row.id);
-  const latestUserMessage = latestUserMessageByConversationId.get(id);
+  const latestMessage = latestMessageByConversationId.get(id);
 
   return {
     id,
     mode: String(row.source ?? row.mode ?? "unknown"),
     created_at: String(row.created_at),
-    preview: latestUserMessage
+    preview: latestMessage
       ? truncateHistoryPreview(
-        normalizeMessageContentToPreviewSource(latestUserMessage.content),
+        normalizeMessageContentToPreviewSource(latestMessage.content),
         60
       )
       : "",
   };
 });
-
-console.log("[api/history] final conversations:", conversations.length);
-console.log("[api/history] first conversation timestamp:", conversations[0]?.created_at ?? null);
-console.log("[api/history] first preview:", conversations[0]?.preview ?? null);
-console.log(
-  "[api/history] previews:",
-  conversations.map((c) => ({
-    id: c.id,
-    preview: c.preview,
-  }))
-);
 
 return NextResponse.json({ conversations }, { headers: NO_STORE_HEADERS });
 

@@ -820,10 +820,6 @@ export async function POST(req: NextRequest) {
     if (!incomingConversationId) {
       try {
         conversationId = await createConversation(persistenceAnonymousId, context);
-        console.log("[clarify created conversation]", {
-          persistedConversationId: conversationId,
-          persistenceAnonymousId,
-        });
       } catch (error) {
         return NextResponse.json(
           {
@@ -855,16 +851,6 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    console.log("[clarify API]", {
-      incomingConversationId,
-      finalConversationId: conversationId,
-      createdNew: !incomingConversationId,
-    });
-    console.log("[clarify API identity]", {
-      persistenceAnonymousId,
-      conversationId,
-    });
-    
     if (action === "clarify" && !input) {
       return NextResponse.json({ error: "Input required" }, { status: 400 });
     }
@@ -948,12 +934,6 @@ export async function POST(req: NextRequest) {
           role: "assistant",
           content: closeResponse.message,
         });
-        console.log("[clarify insert message result]", {
-          conversationId,
-          role: "assistant",
-          data: null,
-          error: null,
-        });
       } catch {
         // fail silently
       }
@@ -984,12 +964,6 @@ export async function POST(req: NextRequest) {
           conversationId,
           role: "user",
           content: input,
-        });
-        console.log("[clarify insert message result]", {
-          conversationId,
-          role: "user",
-          data: null,
-          error: null,
         });
       } catch {
         // fail silently
@@ -1068,12 +1042,6 @@ export async function POST(req: NextRequest) {
         conversationId,
         role: "assistant",
         content: assistantContent,
-      });
-      console.log("[clarify insert message result]", {
-        conversationId,
-        role: "assistant",
-        data: null,
-        error: null,
       });
     } catch {
       // fail silently

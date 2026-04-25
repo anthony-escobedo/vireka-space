@@ -1572,7 +1572,8 @@ function handleStartNew(): void {
               style={{
                 width: "260px",
                 flexShrink: 0,
-                borderRight: "1px solid rgba(0,0,0,0.045)",
+                borderRight: "1px solid rgba(0,0,0,0.035)",
+                backgroundColor: "rgba(250, 248, 244, 0.45)",
                 padding: "0.55rem 1rem 0.55rem 0",
                 minHeight: "calc(100svh - 3rem)",
                 position: "sticky",
@@ -1618,10 +1619,11 @@ function handleStartNew(): void {
                 >
                   <div
                     style={{
-                      fontSize: 12,
+                      fontSize: "0.72rem",
                       lineHeight: "16px",
-                      color: "#8b857e",
-                      letterSpacing: "0.02em",
+                      color: "#8f8a84",
+                      fontWeight: 600,
+                      letterSpacing: "0.04em",
                       marginBottom: "0.1rem",
                     }}
                   >
@@ -1645,10 +1647,10 @@ function handleStartNew(): void {
                       <>
                         <div
                           style={{
-                            fontSize: 14,
-                            lineHeight: 1.35,
-                            color: unlocked ? "#3f3b36" : "#3f3b36",
-                            fontWeight: active ? 550 : 400,
+                            fontSize: "0.9rem",
+                            lineHeight: 1.4,
+                            color: "#4a4642",
+                            fontWeight: active ? 550 : 450,
                             display: "-webkit-box",
                             WebkitLineClamp: 2,
                             WebkitBoxOrient: "vertical",
@@ -1846,10 +1848,10 @@ function handleStartNew(): void {
               <p
                 style={{
                   margin: "8px 0 18px 0",
-                  color: "rgba(0, 0, 0, 0.72)",
-                  fontSize: "0.98rem",
-                  fontWeight: 500,
-                  lineHeight: 1.45,
+                  color: "rgba(0,0,0,0.58)",
+                  fontSize: "1.05rem",
+                  fontWeight: 450,
+                  lineHeight: 1.5,
                   maxWidth: "44rem",
                 }}
               >
@@ -2088,10 +2090,10 @@ function handleStartNew(): void {
                   <>
                     <div
                       style={{
-                        fontSize: 14,
-                        lineHeight: 1.35,
-                        color: "#3f3b36",
-                        fontWeight: active ? 550 : 400,
+                        fontSize: "0.9rem",
+                        lineHeight: 1.4,
+                        color: "#4a4642",
+                        fontWeight: active ? 550 : 450,
                         display: "-webkit-box",
                         WebkitLineClamp: 2,
                         WebkitBoxOrient: "vertical",

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import type { CSSProperties } from "react";
 
 const pageStyle: CSSProperties = {
@@ -51,13 +52,14 @@ const innerStyle: CSSProperties = {
   width: "100%",
   textAlign: "center",
   margin: "0 auto",
+  paddingTop: "0.65rem",
 };
 
 const headlineStyle: CSSProperties = {
-  fontSize: "clamp(42px, 5.6vw, 76px)",
+  fontSize: "clamp(38px, 5vw, 68px)",
   fontWeight: 700,
-  lineHeight: 0.98,
-  letterSpacing: "-0.045em",
+  lineHeight: 1.02,
+  letterSpacing: "-0.035em",
   textTransform: "uppercase",
   color: "#1a1a1a",
   margin: 0,
@@ -80,50 +82,41 @@ const buttonsWrapStyle: CSSProperties = {
   display: "flex",
   flexDirection: "column",
   alignItems: "center",
-  gap: "14px",
+  gap: "0.85rem",
   marginTop: "2.25rem",
   width: "100%",
 };
 
-const ctaBase: CSSProperties = {
-  appearance: "none",
-  WebkitAppearance: "none",
-  margin: 0,
-  width: "100%",
-  maxWidth: "min(100%, 360px)",
-  borderRadius: "14px",
-  border: "1px solid rgba(0,0,0,0.1)",
-  backgroundColor: "rgba(255,255,255,0.88)",
-  color: "#1f1c18",
-  fontSize: "0.95rem",
-  fontWeight: 600,
-  letterSpacing: "0.01em",
-  padding: "1rem 1.5rem",
-  cursor: "pointer",
-  boxSizing: "border-box",
-  boxShadow: "0 2px 10px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)",
-  transition: "box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease",
-};
-
-const primaryCtaStyle: CSSProperties = {
-  ...ctaBase,
-  backgroundColor: "rgba(255,255,255,0.95)",
-  border: "1px solid rgba(0,0,0,0.12)",
-  boxShadow: "0 4px 18px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.05)",
-  fontWeight: 650,
-};
-
-const secondaryCtaStyle: CSSProperties = {
-  ...ctaBase,
-  backgroundColor: "rgba(252,250,248,0.9)",
-  border: "1px solid rgba(0,0,0,0.08)",
-  boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-  fontWeight: 580,
-  color: "#2f2b27",
-};
+function getHeroCtaStyle(active: boolean): CSSProperties {
+  return {
+    appearance: "none",
+    WebkitAppearance: "none",
+    margin: 0,
+    border: "none",
+    borderBottom: active
+      ? "1px solid rgba(0,0,0,0.42)"
+      : "1px solid rgba(17,17,17,0.26)",
+    borderRadius: 0,
+    backgroundColor: "transparent",
+    color: "#111",
+    fontSize: "1.05rem",
+    fontWeight: 600,
+    letterSpacing: "-0.01em",
+    lineHeight: 1.35,
+    padding: "12px 10px",
+    minWidth: "clamp(240px, 85vw, 260px)",
+    cursor: "pointer",
+    textAlign: "center",
+    boxSizing: "border-box",
+    transform: active ? "scale(1.01)" : "scale(1)",
+    transition:
+      "transform 0.2s ease, border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease",
+  };
+}
 
 export default function HomePage() {
   const router = useRouter();
+  const [hovered, setHovered] = useState<null | "try" | "signin">(null);
 
   return (
     <div
@@ -176,14 +169,22 @@ export default function HomePage() {
               <div style={buttonsWrapStyle}>
                 <button
                   type="button"
-                  style={primaryCtaStyle}
+                  style={getHeroCtaStyle(hovered === "try")}
+                  onMouseEnter={() => setHovered("try")}
+                  onMouseLeave={() => setHovered(null)}
+                  onFocus={() => setHovered("try")}
+                  onBlur={() => setHovered(null)}
                   onClick={() => router.push("/clarify")}
                 >
                   Try VIREKA Space
                 </button>
                 <button
                   type="button"
-                  style={secondaryCtaStyle}
+                  style={getHeroCtaStyle(hovered === "signin")}
+                  onMouseEnter={() => setHovered("signin")}
+                  onMouseLeave={() => setHovered(null)}
+                  onFocus={() => setHovered("signin")}
+                  onBlur={() => setHovered(null)}
                   onClick={() => router.push("/sign-in")}
                 >
                   Sign in

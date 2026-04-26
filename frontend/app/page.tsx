@@ -21,12 +21,20 @@ const pageStyle: CSSProperties = {
 const navStyle: CSSProperties = {
   display: "flex",
   alignItems: "center",
-  justifyContent: "flex-start",
+  justifyContent: "space-between",
   padding: "1rem 1.5rem",
   maxWidth: "980px",
   width: "100%",
   margin: "0 auto",
   boxSizing: "border-box",
+};
+
+const headerSignInStyle: CSSProperties = {
+  fontSize: "0.82rem",
+  fontWeight: 500,
+  color: "rgba(0,0,0,0.42)",
+  textDecoration: "none",
+  letterSpacing: "0.01em",
 };
 
 const brandStyle: CSSProperties = {
@@ -209,6 +217,9 @@ export default function HomePage() {
         <div style={pageStyle}>
           <header style={navStyle}>
             <span style={brandStyle}>VIREKA Space</span>
+            <Link href="/sign-in" style={headerSignInStyle}>
+              {t.header.signIn}
+            </Link>
           </header>
 
           <main style={mainStyle}>

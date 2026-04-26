@@ -36,6 +36,12 @@ const dictionaries: Record<Language, TranslationDictionary> = {
     navigation: {
       backToHome: 'Back to home',
     },
+    signIn: {
+      intro: 'Sign in to continue with your plan.',
+      continueWithEmail: 'Continue with email',
+      paidPlanNote:
+        'Authentication will be used only when continuing with a paid plan.',
+    },
     settings: {
       backToHome: 'Back',
       badge: 'SETTINGS',
@@ -517,6 +523,12 @@ const dictionaries: Record<Language, TranslationDictionary> = {
     },
     navigation: {
       backToHome: 'Volver al inicio',
+    },
+    signIn: {
+      intro: 'Inicia sesión para continuar con tu plan.',
+      continueWithEmail: 'Continuar con el correo',
+      paidPlanNote:
+        'La autenticación solo se utilizará al continuar con un plan de pago.',
     },
     settings: {
       backToHome: 'Volver',
@@ -1000,6 +1012,12 @@ const dictionaries: Record<Language, TranslationDictionary> = {
     },
     navigation: {
       backToHome: 'Voltar ao início',
+    },
+    signIn: {
+      intro: 'Entre para continuar com o seu plano.',
+      continueWithEmail: 'Continuar com o e-mail',
+      paidPlanNote:
+        'A autenticação será usada somente ao continuar com um plano pago.',
     },
     settings: {
       backToHome: 'Voltar',

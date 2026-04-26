@@ -38,6 +38,13 @@ export interface TranslationDictionary {
   navigation: {
     backToHome: string;
   };
+
+  // Sign-in page (UI shell; auth wiring comes later)
+  signIn: {
+    intro: string;
+    continueWithEmail: string;
+    paidPlanNote: string;
+  };
   
   // Settings Page
   settings: {

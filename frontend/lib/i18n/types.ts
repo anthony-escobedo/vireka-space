@@ -55,6 +55,7 @@ export interface TranslationDictionary {
   signIn: {
     intro: string;
     continueWithEmail: string;
+    continueWithGoogle: string;
     paidPlanNote: string;
     emailPlaceholder: string;
     sending: string;

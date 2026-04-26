@@ -41,6 +41,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
     signIn: {
       intro: 'Sign in to continue with your plan.',
       continueWithEmail: 'Continue with email',
+      continueWithGoogle: 'Continue with Google',
       paidPlanNote: 'Sign-in is only required for paid access.',
       emailPlaceholder: 'Email address',
       sending: 'Sending…',
@@ -566,6 +567,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
     signIn: {
       intro: 'Inicia sesión para continuar con tu plan.',
       continueWithEmail: 'Continuar con el correo',
+      continueWithGoogle: 'Continuar con Google',
       paidPlanNote: 'El inicio de sesión solo es necesario para el acceso de pago.',
       emailPlaceholder: 'Correo electrónico',
       sending: 'Enviando…',
@@ -1092,6 +1094,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
     signIn: {
       intro: 'Entre para continuar com o seu plano.',
       continueWithEmail: 'Continuar com o e-mail',
+      continueWithGoogle: 'Continuar com o Google',
       paidPlanNote: 'O login só é necessário para acesso pago.',
       emailPlaceholder: 'E-mail',
       sending: 'Enviando…',

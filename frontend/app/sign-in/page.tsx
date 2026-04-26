@@ -90,6 +90,21 @@ const primaryButtonDisabledStyle: CSSProperties = {
   opacity: 0.6,
 };
 
+const googlePrimaryButtonStyle: CSSProperties = {
+  ...primaryButtonStyle,
+  margin: "0 0 0.9rem 0",
+  backgroundColor: "#1f1d1a",
+  color: "#f5f3ef",
+  border: "1px solid rgba(0,0,0,0.2)",
+  fontWeight: 600,
+};
+
+const googlePrimaryButtonDisabledStyle: CSSProperties = {
+  ...googlePrimaryButtonStyle,
+  cursor: "not-allowed",
+  opacity: 0.6,
+};
+
 const errorTextStyle: CSSProperties = {
   margin: "0.65rem 0 0 0",
   fontSize: "0.85rem",
@@ -362,6 +377,7 @@ export default function SignInPage() {
   const [cooldownMs, setCooldownMs] = useState(0);
   const [resendSecondsLeft, setResendSecondsLeft] = useState(0);
   const [resendSubmitting, setResendSubmitting] = useState(false);
+  const [oauthLoading, setOauthLoading] = useState(false);
 
   useEffect(() => {
     if (status === "success") return;
@@ -470,12 +486,35 @@ export default function SignInPage() {
     setResendSecondsLeft(0);
   }, []);
 
+  const handleGoogleSignIn = useCallback(async () => {
+    if (oauthLoading) return;
+    setErrorMessage(null);
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+      setErrorMessage(t.signIn.errorGeneric);
+      return;
+    }
+    setOauthLoading(true);
+    const safeRedirectPath = getSafeRedirectPath();
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}${safeRedirectPath}`,
+      },
+    });
+    if (error) {
+      setErrorMessage(t.signIn.errorGeneric);
+      setOauthLoading(false);
+    }
+  }, [oauthLoading, t.signIn.errorGeneric]);
+
   const remainingCooldown = cooldownMs;
   const canSubmit =
     isValidEmail(email) &&
     status !== "loading" &&
     status !== "success" &&
-    remainingCooldown === 0;
+    remainingCooldown === 0 &&
+    !oauthLoading;
   const isLoading = status === "loading";
   const canResend =
     isValidEmail(email) && resendSecondsLeft === 0 && !resendSubmitting;
@@ -519,6 +558,20 @@ export default function SignInPage() {
           </div>
         ) : (
           <>
+            <button
+              type="button"
+              onClick={() => {
+                void handleGoogleSignIn();
+              }}
+              disabled={isLoading || oauthLoading}
+              style={
+                isLoading || oauthLoading
+                  ? googlePrimaryButtonDisabledStyle
+                  : googlePrimaryButtonStyle
+              }
+            >
+              {oauthLoading ? t.signIn.sending : t.signIn.continueWithGoogle}
+            </button>
             <label htmlFor="sign-in-email" style={{ display: "none" }}>
               {t.signIn.emailPlaceholder}
             </label>
@@ -540,7 +593,7 @@ export default function SignInPage() {
                   void handleSubmit();
                 }
               }}
-              disabled={isLoading || remainingCooldown > 0}
+              disabled={isLoading || remainingCooldown > 0 || oauthLoading}
               placeholder={t.signIn.emailPlaceholder}
               style={inputStyle}
             />

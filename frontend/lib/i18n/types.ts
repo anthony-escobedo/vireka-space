@@ -240,6 +240,9 @@ export interface TranslationDictionary {
       subscription: string;
       /** Shown when subscription is active and no next renewal / period end is shown. */
       renewsAutomatically: string;
+      /** Quiet link to Stripe Customer Portal; active / trialing subscribers. */
+      manageBilling: string;
+      billingPortalError: string;
       dailyInteractions: string;
       history: string;
       perDay: string;

@@ -1653,8 +1653,13 @@ function handleStartNew(): void {
             fontWeight: 500,
             color: "rgba(0,0,0,0.78)",
             lineHeight: 1.4,
-            wordBreak: "break-word",
+            minWidth: 0,
+            maxWidth: "100%",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
           }}
+          title={workspaceMenuAuth.email}
         >
           {workspaceMenuAuth.email}
         </div>
@@ -1707,13 +1712,7 @@ function handleStartNew(): void {
             setLanguageMenuOpen(false);
             const supabase = getSupabaseClient();
             await supabase?.auth.signOut();
-            setWorkspaceMenuAuth({
-              ready: true,
-              email: null,
-              plan: null,
-              planLoading: false,
-            });
-            window.location.reload();
+            window.location.assign("/");
           }}
           style={{
             display: "block",
@@ -1893,7 +1892,7 @@ function handleStartNew(): void {
           backgroundColor: "rgba(250,248,244,0.94)",
           boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
           backdropFilter: "blur(8px)",
-          zIndex: 40,
+          zIndex: 45,
         }}
       >
         {renderWorkspaceMenuAccount()}
@@ -2055,7 +2054,9 @@ function handleStartNew(): void {
                 width: "260px",
                 flexShrink: 0,
                 borderRight: "1px solid rgba(0,0,0,0.035)",
-                backgroundColor: "rgba(250, 248, 244, 0.45)",
+                backgroundColor: leftMenuOpen
+                  ? "rgba(248, 245, 238, 0.58)"
+                  : "rgba(250, 248, 244, 0.45)",
                 padding: "0.55rem 1rem 0.55rem 0",
                 minHeight: "calc(100svh - 3rem)",
                 position: "sticky",
@@ -2065,6 +2066,7 @@ function handleStartNew(): void {
                 pointerEvents: "auto",
                 display: "flex",
                 flexDirection: "column",
+                transition: "background-color 200ms ease",
               }}
             >
               <div
@@ -2253,7 +2255,15 @@ function handleStartNew(): void {
             </aside>
           ) : null}
 
-          <div style={{ flex: 1, minWidth: 0, position: "relative" }}>
+          <div
+            style={{
+              flex: 1,
+              minWidth: 0,
+              position: "relative",
+              opacity: leftMenuOpen ? 0.96 : 1,
+              transition: "opacity 200ms ease",
+            }}
+          >
             <div style={{ minWidth: 0, width: "100%", maxWidth: "780px" }}>
         <div
           style={{

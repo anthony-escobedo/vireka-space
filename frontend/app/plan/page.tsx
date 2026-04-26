@@ -158,6 +158,31 @@ const planStatusRenewsHintStyle: CSSProperties = {
   color: "rgba(0, 0, 0, 0.4)",
 };
 
+const planManageBillingLinkStyle: CSSProperties = {
+  margin: "0.15rem 0 0 0",
+  padding: 0,
+  border: "none",
+  background: "none",
+  cursor: "pointer",
+  font: "inherit",
+  fontSize: "0.78rem",
+  lineHeight: 1.45,
+  fontWeight: 400,
+  color: "rgba(0, 0, 0, 0.42)",
+  textDecoration: "underline",
+  textUnderlineOffset: "0.15em",
+  textDecorationColor: "rgba(0,0,0,0.18)",
+  alignSelf: "flex-start",
+};
+
+const planBillingErrorStyle: CSSProperties = {
+  margin: "0.25rem 0 0 0",
+  fontSize: "0.76rem",
+  lineHeight: 1.4,
+  color: "rgba(120, 55, 45, 0.88)",
+  fontWeight: 450,
+};
+
 type RemotePlanStatus = {
   plan: PlanId;
   dailyLimit: number;
@@ -198,6 +223,10 @@ export default function PlanPage() {
   const [statusLoading, setStatusLoading] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
   const [remoteStatus, setRemoteStatus] = useState<RemotePlanStatus | null>(
+    null
+  );
+  const [billingPortalLoading, setBillingPortalLoading] = useState(false);
+  const [billingPortalError, setBillingPortalError] = useState<string | null>(
     null
   );
 
@@ -312,6 +341,44 @@ export default function PlanPage() {
   ];
 
   const s = t.plan.statusSection;
+  const openBillingPortal = useCallback(async () => {
+    setBillingPortalError(null);
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+      router.push(signInToPlan());
+      return;
+    }
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session?.access_token) {
+      router.push(signInToPlan());
+      return;
+    }
+    setBillingPortalLoading(true);
+    try {
+      const res = await fetch("/api/stripe/portal", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+      if (res.status === 401) {
+        router.push(signInToPlan());
+        return;
+      }
+      const data = (await res.json()) as { url?: string | null; error?: string };
+      if (!res.ok || !data?.url) {
+        setBillingPortalError(s.billingPortalError);
+        return;
+      }
+      window.location.href = data.url;
+    } catch {
+      setBillingPortalError(s.billingPortalError);
+    } finally {
+      setBillingPortalLoading(false);
+    }
+  }, [router, s.billingPortalError]);
   const accessForDisplay: RemotePlanStatus = remoteStatus ?? {
     plan: "free",
     dailyLimit: 10,
@@ -325,6 +392,10 @@ export default function PlanPage() {
     Boolean(accessForDisplay.status) &&
     isActiveOrTrialingStatus(accessForDisplay.status) &&
     !accessForDisplay.currentPeriodEnd;
+  const showManageBilling =
+    signedIn &&
+    !statusLoading &&
+    isActiveOrTrialingStatus(accessForDisplay.status);
   const historyLabelValue = accessForDisplay.hasFullHistory
     ? s.historyFull
     : s.historyLimited;
@@ -386,6 +457,27 @@ export default function PlanPage() {
                   <p style={planStatusRenewsHintStyle}>
                     {s.renewsAutomatically}
                   </p>
+                ) : null}
+                {showManageBilling ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        void openBillingPortal();
+                      }}
+                      disabled={billingPortalLoading}
+                      style={{
+                        ...planManageBillingLinkStyle,
+                        opacity: billingPortalLoading ? 0.55 : 1,
+                        cursor: billingPortalLoading ? "wait" : "pointer",
+                      }}
+                    >
+                      {s.manageBilling}
+                    </button>
+                    {billingPortalError ? (
+                      <p style={planBillingErrorStyle}>{billingPortalError}</p>
+                    ) : null}
+                  </>
                 ) : null}
               </div>
             </div>

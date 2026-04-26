@@ -10,6 +10,7 @@ import DoneState from "../../components/DoneState";
 import InterpretationInput from "../../components/InterpretationInput";
 import IntegratedViewTtsButton from "../../components/IntegratedViewTtsButton";
 
+import { getClarifyRequestHeaders } from "../../lib/clarifyRequestHeaders";
 import { getOrCreateAnonymousId } from "../../lib/anonymous";
 import { useLanguage } from "../../lib/i18n/useLanguage";
 
@@ -267,22 +268,20 @@ export default function AIInteractionPage() {
     setIsDone(false);
 
     try {
+      const anonymousId = getOrCreateAnonymousId();
       const payload = {
       input: trimmed,
       action,
       history,
       context: "ai-interaction",
-      anonymousId: getOrCreateAnonymousId(),
+      anonymousId,
       conversationId,
       language,
     };
 
       const res = await fetch("/api/clarify", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-anonymous-id": getOrCreateAnonymousId(),
-        },
+        headers: await getClarifyRequestHeaders(anonymousId),
         body: JSON.stringify(payload),
       });
 

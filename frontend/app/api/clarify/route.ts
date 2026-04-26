@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { getDailyLimitForClarifyRequest } from "../../../lib/plan/server";
 import { recordUsageEvent } from "../../../lib/usage";
 import { createConversation, saveMessage } from "../../../lib/history";
 
@@ -865,6 +866,9 @@ export async function POST(req: NextRequest) {
 
     // Usage tracking with Supabase conditional
     if (supabase) {
+      const authHeader = req.headers.get("authorization");
+      const dailyLimit = await getDailyLimitForClarifyRequest(supabase, authHeader);
+
       const { data: existingUsage, error: usageReadError } = await supabase
         .from("usage_tracking")
         .select("id, interaction_count")
@@ -879,7 +883,7 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      if (existingUsage && existingUsage.interaction_count >= 10) {
+      if (existingUsage && existingUsage.interaction_count >= dailyLimit) {
         return NextResponse.json(
           {
             error:

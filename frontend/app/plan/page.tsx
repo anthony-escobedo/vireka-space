@@ -1,7 +1,10 @@
 "use client";
 
 import type { CSSProperties } from "react";
+import { useRouter } from "next/navigation";
+import { useCallback } from "react";
 import StaticPageShell from "../../components/StaticPageShell";
+import { getSupabaseBrowserClient } from "../../lib/supabase/client";
 import { useLanguage } from "../../lib/i18n/useLanguage";
 
 const gridStyle: CSSProperties = {
@@ -60,15 +63,69 @@ const actionStyle: CSSProperties = {
   fontWeight: 500,
 };
 
+const proPlusInactiveStyle: CSSProperties = {
+  ...actionStyle,
+  opacity: 0.55,
+  cursor: "not-allowed",
+};
+
 export default function PlanPage() {
   const { t } = useLanguage();
-  const tiers = [t.plan.tiers.free, t.plan.tiers.pro, t.plan.tiers.proPlus];
+  const router = useRouter();
+
+  const startProCheckout = useCallback(async () => {
+    try {
+      const supabase = getSupabaseBrowserClient();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        router.push("/sign-in?next=" + encodeURIComponent("/plan"));
+        return;
+      }
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+      if (res.status === 401) {
+        router.push("/sign-in?next=" + encodeURIComponent("/plan"));
+        return;
+      }
+      if (!res.ok) {
+        window.alert(
+          "Checkout could not be started. Please try again or check that billing is configured."
+        );
+        return;
+      }
+      const data = (await res.json()) as { url?: string | null };
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        window.alert("Checkout could not be started. Please try again.");
+      }
+    } catch {
+      window.alert("Checkout could not be started. Please try again.");
+    }
+  }, [router]);
+
+  const tierCards: {
+    key: string;
+    tier: (typeof t.plan.tiers)["free"];
+    variant: "free" | "pro" | "proPlus";
+  }[] = [
+    { key: "free", tier: t.plan.tiers.free, variant: "free" },
+    { key: "pro", tier: t.plan.tiers.pro, variant: "pro" },
+    { key: "proPlus", tier: t.plan.tiers.proPlus, variant: "proPlus" },
+  ];
 
   return (
     <StaticPageShell title={t.plan.pageTitle} intro={t.plan.pageIntro}>
       <section style={gridStyle}>
-        {tiers.map((tier) => (
-          <article key={tier.name} style={cardStyle}>
+        {tierCards.map(({ key, tier, variant }) => (
+          <article key={key} style={cardStyle}>
             <div>
               <h2 style={tierNameStyle}>{tier.name}</h2>
               <ul style={featureListStyle}>
@@ -79,7 +136,30 @@ export default function PlanPage() {
                 ))}
               </ul>
             </div>
-            <span style={actionStyle}>{tier.action}</span>
+            {variant === "free" ? (
+              <span style={actionStyle}>{tier.action}</span>
+            ) : variant === "pro" ? (
+              <button
+                type="button"
+                onClick={() => {
+                  void startProCheckout();
+                }}
+                style={{
+                  ...actionStyle,
+                  cursor: "pointer",
+                  font: "inherit",
+                }}
+              >
+                {tier.action}
+              </button>
+            ) : (
+              <span
+                style={proPlusInactiveStyle}
+                aria-disabled
+              >
+                {tier.action}
+              </span>
+            )}
           </article>
         ))}
       </section>

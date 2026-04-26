@@ -9,6 +9,7 @@ import DoneState from "../../components/DoneState";
 import InterpretationInput from "../../components/InterpretationInput";
 import IntegratedViewTtsButton from "../../components/IntegratedViewTtsButton";
 
+import { getClarifyRequestHeaders } from "../../lib/clarifyRequestHeaders";
 import { getOrCreateAnonymousId } from "../../lib/anonymous";
 import { normalizeMessageContentToPreviewSource } from "../../lib/historyReadHelpers";
 import type { Language } from "../../lib/i18n/config";
@@ -591,10 +592,7 @@ export default function ClarifyPage() {
 
       const res = await fetch("/api/clarify", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-anonymous-id": anonymousId,
-    },
+    headers: await getClarifyRequestHeaders(anonymousId),
     body: JSON.stringify(payload),
   });
       

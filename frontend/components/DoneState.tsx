@@ -9,6 +9,8 @@ type DoneStateProps = {
   onNew: () => void;
   copyLabel?: string;
   aiReadyText?: string;
+  /** Shown when the session ended in close mode (e.g. closing message from the model). */
+  completionMessage?: string;
 };
 
 export default function DoneState({
@@ -16,6 +18,7 @@ export default function DoneState({
   onNew,
   copyLabel = "Copy result",
   aiReadyText,
+  completionMessage,
 }: DoneStateProps) {
   const router = useRouter();
   const { t } = useLanguage();
@@ -301,6 +304,24 @@ export default function DoneState({
         >
           {t.doneState.structureSupportsClarity}
         </p>
+
+        {completionMessage?.trim() ? (
+          <p
+            style={{
+              position: "relative",
+              zIndex: 1,
+              margin: "0 0 2rem 0",
+              fontSize: "0.95rem",
+              lineHeight: 1.65,
+              color: "#333",
+              whiteSpace: "pre-wrap",
+              overflowWrap: "anywhere",
+              wordBreak: "break-word",
+            }}
+          >
+            {completionMessage.trim()}
+          </p>
+        ) : null}
 
         <div
           style={{

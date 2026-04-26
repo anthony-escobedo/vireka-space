@@ -307,13 +307,17 @@ export default function AIInteractionPage() {
 
       setResult(typedData);
 
-      setTimeout(() => {
-        const target = pathTopRef.current ?? resultRef.current;
-        target?.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        });
-      }, 100);
+      if (typedData.mode === "close") {
+        setIsDone(true);
+      } else {
+        setTimeout(() => {
+          const target = pathTopRef.current ?? resultRef.current;
+          target?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+        }, 100);
+      }
       return true;
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "";
@@ -992,6 +996,11 @@ function renderActiveResponse(panel: ClarificationPanel) {
           onCopy={handleCopyResult}
           onNew={handleStartNew}
           copyLabel={copyLabel}
+          completionMessage={
+            result?.mode === "close" && result.message?.trim()
+              ? result.message
+              : undefined
+          }
         />
       ) : (
         <div

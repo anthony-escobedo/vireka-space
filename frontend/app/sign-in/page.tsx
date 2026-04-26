@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import type { CSSProperties } from "react";
 import { getSupabaseClient } from "../../lib/supabaseClient";
 import { useLanguage } from "../../lib/i18n/useLanguage";
@@ -134,16 +134,6 @@ const backWrapStyle: CSSProperties = {
   textAlign: "center" as const,
 };
 
-function getSafeInternalPath(raw: string | null | undefined): string {
-  const fallback = "/plan";
-  if (raw == null) return fallback;
-  const trimmed = String(raw).trim();
-  if (!trimmed.startsWith("/")) return fallback;
-  if (trimmed.startsWith("//")) return fallback;
-  if (trimmed.includes("://")) return fallback;
-  return trimmed;
-}
-
 function isValidEmail(value: string): boolean {
   const t = value.trim();
   if (t.length < 3) return false;
@@ -159,13 +149,6 @@ export default function SignInPage() {
     "idle"
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [postAuthPath, setPostAuthPath] = useState("/plan");
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const params = new URLSearchParams(window.location.search);
-    setPostAuthPath(getSafeInternalPath(params.get("redirect")));
-  }, []);
 
   const handleSubmit = useCallback(async () => {
     if (status === "loading") return;
@@ -182,8 +165,12 @@ export default function SignInPage() {
       return;
     }
     setStatus("loading");
-    const origin = window.location.origin;
-    const emailRedirectTo = `${origin}${postAuthPath}`;
+    const redirectParam = new URLSearchParams(window.location.search).get(
+      "redirect"
+    );
+    const safeRedirect =
+      redirectParam && redirectParam.startsWith("/") ? redirectParam : "/plan";
+    const emailRedirectTo = `${window.location.origin}${safeRedirect}`;
 
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
@@ -194,12 +181,13 @@ export default function SignInPage() {
     });
 
     if (error) {
-      setErrorMessage(t.signIn.errorGeneric);
+      console.error("Supabase sign-in error:", error);
+      setErrorMessage(t.signIn.couldNotSendLink);
       setStatus("error");
       return;
     }
     setStatus("success");
-  }, [email, postAuthPath, status, t.signIn.errorGeneric]);
+  }, [email, status, t.signIn.couldNotSendLink, t.signIn.errorGeneric]);
 
   const canSubmit = isValidEmail(email) && status !== "loading" && status !== "success";
   const isLoading = status === "loading";

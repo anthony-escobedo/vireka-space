@@ -12,6 +12,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       terms: 'Terms',
       contact: 'Contact',
       signIn: 'Sign in',
+      signOut: 'Sign out',
     },
     hero: {
       badge: 'VIREKA SPACE',
@@ -45,6 +46,8 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       sending: 'Sending…',
       success: 'Check your email for a sign-in link.',
       errorGeneric:
+        "We couldn’t send the sign-in link. Please try again.",
+      couldNotSendLink:
         "We couldn’t send the sign-in link. Please try again.",
     },
     settings: {
@@ -516,6 +519,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       terms: 'Términos',
       contact: 'Contacto',
       signIn: 'Iniciar sesión',
+      signOut: 'Cerrar sesión',
     },
     hero: {
       badge: 'VIREKA SPACE',
@@ -550,6 +554,8 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       success: 'Revisa tu correo para el enlace de acceso.',
       errorGeneric:
         'No pudimos enviar el enlace. Inténtalo de nuevo.',
+      couldNotSendLink:
+        'No pudimos enviar el enlace de acceso. Inténtalo de nuevo.',
     },
     settings: {
       backToHome: 'Volver',
@@ -1021,6 +1027,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       terms: 'Termos',
       contact: 'Contato',
       signIn: 'Entrar',
+      signOut: 'Encerrar sessão',
     },
     hero: {
       badge: 'VIREKA SPACE',
@@ -1055,6 +1062,8 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       success: 'Verifique seu e-mail para o link de acesso.',
       errorGeneric:
         'Não foi possível enviar o link. Tente novamente.',
+      couldNotSendLink:
+        'Não foi possível enviar o link de acesso. Tente novamente.',
     },
     settings: {
       backToHome: 'Voltar',

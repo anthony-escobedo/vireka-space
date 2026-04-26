@@ -11,6 +11,7 @@ export interface TranslationDictionary {
     terms: string;
     contact: string;
     signIn: string;
+    signOut: string;
   };
   
   // Homepage Hero
@@ -48,6 +49,7 @@ export interface TranslationDictionary {
     sending: string;
     success: string;
     errorGeneric: string;
+    couldNotSendLink: string;
   };
   
   // Settings Page

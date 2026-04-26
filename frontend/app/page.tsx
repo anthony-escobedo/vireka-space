@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { CSSProperties } from "react";
 
+import { getSupabaseClient } from "../lib/supabaseClient";
 import { useLanguage } from "../lib/i18n/useLanguage";
 
 const pageStyle: CSSProperties = {
@@ -170,6 +171,18 @@ export default function HomePage() {
   const router = useRouter();
   const { t } = useLanguage();
   const [hovered, setHovered] = useState<null | "try" | "signin">(null);
+  const [signedIn, setSignedIn] = useState(false);
+
+  useEffect(() => {
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+      setSignedIn(false);
+      return;
+    }
+    void supabase.auth.getSession().then(({ data: { session } }) => {
+      setSignedIn(Boolean(session));
+    });
+  }, []);
 
   return (
     <div
@@ -238,9 +251,21 @@ export default function HomePage() {
                   onMouseLeave={() => setHovered(null)}
                   onFocus={() => setHovered("signin")}
                   onBlur={() => setHovered(null)}
-                  onClick={() => router.push("/sign-in")}
+                  onClick={() => {
+                    if (signedIn) {
+                      void (async () => {
+                        const supabase = getSupabaseClient();
+                        if (supabase) {
+                          await supabase.auth.signOut();
+                        }
+                        window.location.reload();
+                      })();
+                    } else {
+                      router.push("/sign-in");
+                    }
+                  }}
                 >
-                  {t.header.signIn}
+                  {signedIn ? t.header.signOut : t.header.signIn}
                 </button>
               </div>
             </div>

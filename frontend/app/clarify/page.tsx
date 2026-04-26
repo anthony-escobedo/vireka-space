@@ -1503,6 +1503,18 @@ function handleStartNew(): void {
         )}
 
         {activePanel && renderActiveResponse(activePanel)}
+
+        {isReviewingHistorySession ? (
+          <div
+            style={{
+              marginTop: "2.25rem",
+              marginBottom: "0.25rem",
+              width: "100%",
+            }}
+          >
+            {renderHistoryEndActionButtons()}
+          </div>
+        ) : null}
       </div>
     );
   }
@@ -2036,7 +2048,9 @@ function handleStartNew(): void {
           style={{
             width: "100%",
             boxSizing: "border-box",
-            padding: "1.5rem 1.25rem 240px",
+            padding: isReviewingHistorySession
+              ? "1.5rem 1.25rem max(3rem, calc(env(safe-area-inset-bottom) + 2.5rem))"
+              : "1.5rem 1.25rem 240px",
             overflowX: "hidden",
             minWidth: 0,
           }}
@@ -2701,7 +2715,7 @@ function handleStartNew(): void {
           </div>
         </>
       ) : null}
-      {!isDone && (
+      {!isDone && !isReviewingHistorySession && (
         <div
           style={{
             position: "fixed",
@@ -2718,10 +2732,7 @@ function handleStartNew(): void {
           }}
         >
           <div style={{ pointerEvents: "auto" }}>
-            {isReviewingHistorySession ? (
-              renderHistoryEndActionButtons()
-            ) : (
-              <>
+            <>
             {canShowDoneButton ? (
               <div
                 style={{
@@ -2784,8 +2795,7 @@ function handleStartNew(): void {
                 borderColor: "#dfdcd6",
               }}
             />
-              </>
-            )}
+            </>
           </div>
         </div>
       )}

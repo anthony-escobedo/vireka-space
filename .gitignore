@@ -7,6 +7,9 @@ frontend/.next
 .env
 .env.local
 
+# Local one-off test (not committed)
+frontend/scripts/test-subscription-confirmation-email.ts
+
 *.tsbuildinfo
 
 .DS_Store.cursor

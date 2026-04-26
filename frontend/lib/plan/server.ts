@@ -1,8 +1,14 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { type PlanId, dailyLimitForPlan, PRO_PLUS_ENFORCED } from "../plans";
+import { type PlanId, dailyLimitForPlan } from "../plans";
 
 const ACTIVE_SUBSCRIPTION = new Set(["active", "trialing"]);
+
+export type PlanAccess = {
+  plan: PlanId;
+  dailyLimit: number;
+  hasFullHistory: boolean;
+};
 
 /**
  * Resolves the signed-in user id from an optional `Authorization: Bearer <access_token>` header.
@@ -23,8 +29,7 @@ export async function getUserIdFromAuthorization(
 }
 
 /**
- * Effective plan for entitlements, using `public.subscriptions` (see `supabase/schema.sql`).
- * pro_plus in DB: Pro-level limits (50/day) when PRO_PLUS_ENFORCED is off; 100/day when on.
+ * Effective product plan from `public.subscriptions` (active or trialing only).
  */
 export async function getEffectivePlanId(
   supabase: SupabaseClient,
@@ -55,17 +60,43 @@ export async function getEffectivePlanId(
     .replace(/\s+/g, "_");
 
   if (planRow === "pro") return "pro";
-  if (planRow === "pro_plus" || planRow === "proplus") {
-    return PRO_PLUS_ENFORCED ? "pro_plus" : "pro";
-  }
+  if (planRow === "pro_plus" || planRow === "proplus") return "pro_plus";
   return "free";
+}
+
+/**
+ * Plan entitlements: daily interaction cap and history scope (Pro / Pro+ get full list access on API + UI).
+ */
+export async function getPlanAccess(
+  supabase: SupabaseClient,
+  userId: string | null
+): Promise<PlanAccess> {
+  const plan = await getEffectivePlanId(supabase, userId);
+  return {
+    plan,
+    dailyLimit: dailyLimitForPlan(plan),
+    hasFullHistory: plan === "pro" || plan === "pro_plus",
+  };
+}
+
+export async function getPlanAccessForRequest(
+  supabase: SupabaseClient,
+  authorizationHeader: string | null
+): Promise<PlanAccess> {
+  const userId = await getUserIdFromAuthorization(
+    supabase,
+    authorizationHeader
+  );
+  return getPlanAccess(supabase, userId);
 }
 
 export async function getDailyLimitForClarifyRequest(
   supabase: SupabaseClient,
   authorizationHeader: string | null
 ): Promise<number> {
-  const userId = await getUserIdFromAuthorization(supabase, authorizationHeader);
-  const plan = await getEffectivePlanId(supabase, userId);
-  return dailyLimitForPlan(plan);
+  const { dailyLimit } = await getPlanAccessForRequest(
+    supabase,
+    authorizationHeader
+  );
+  return dailyLimit;
 }

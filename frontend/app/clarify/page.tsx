@@ -118,6 +118,7 @@ export default function ClarifyPage() {
   const [openPanelIds, setOpenPanelIds] = useState<string[]>([]);
   const [latestPanelId, setLatestPanelId] = useState<string | null>(null);
   const [historyConversations, setHistoryConversations] = useState<HistoryConversation[]>([]);
+  const [historyHasFullAccess, setHistoryHasFullAccess] = useState(false);
   const [showDesktopHistoryPanel, setShowDesktopHistoryPanel] = useState(false);
   const [selectedHistoryConversationId, setSelectedHistoryConversationId] = useState<
     string | null
@@ -210,26 +211,28 @@ export default function ClarifyPage() {
   const loadHistory = useCallback(async () => {
     try {
       const anonymousId = getStableAnonymousId();
+      const headers = await getClarifyRequestHeaders(anonymousId);
       const res = await fetch(
         `/api/history?anonymousId=${encodeURIComponent(anonymousId)}`,
         {
-        method: "GET",
-        headers: {
-          "x-anonymous-id": anonymousId,
-        },
-        cache: "no-store",
+          method: "GET",
+          headers,
+          cache: "no-store",
         }
       );
       if (!res.ok) return;
-      const data = (await res.json()) as { conversations?: HistoryConversation[] };
+      const data = (await res.json()) as {
+        conversations?: HistoryConversation[];
+        hasFullHistory?: boolean;
+      };
+      const list = Array.isArray(data.conversations) ? data.conversations : [];
+      const full = Boolean(data.hasFullHistory);
+      setHistoryHasFullAccess(full);
       setHistoryConversations(
-        Array.isArray(data.conversations)
-          ? data.conversations.slice(0, RAIL_HISTORY_DISPLAY_LIMIT)
-          : []
+        full ? list : list.slice(0, RAIL_HISTORY_DISPLAY_LIMIT)
       );
       setSelectedHistoryConversationId((prev) => {
         if (!prev) return prev;
-        const list = Array.isArray(data.conversations) ? data.conversations : [];
         return list.some((c) => c.id === prev) ? prev : null;
       });
     } catch {
@@ -492,9 +495,11 @@ export default function ClarifyPage() {
     setHistoryDetailLoading(true);
     setError(null);
     try {
+      const anonymousId = getStableAnonymousId();
+      const headers = await getClarifyRequestHeaders(anonymousId);
       const res = await fetch(`/api/history/${encodeURIComponent(id)}`, {
         method: "GET",
-        headers: { "x-anonymous-id": getStableAnonymousId() },
+        headers,
         cache: "no-store",
       });
       if (!res.ok) {
@@ -885,8 +890,11 @@ function handleStartNew(): void {
   const composerSource: "top" | "followup" = hasClarificationHistory
     ? "followup"
     : "top";
-  const railHistoryRows = historyConversations.slice(0, RAIL_HISTORY_DISPLAY_LIMIT);
-  const hasLockedHistoryRows = railHistoryRows.length > FREE_HISTORY_VISIBLE_LIMIT;
+  const railHistoryRows = historyHasFullAccess
+    ? historyConversations
+    : historyConversations.slice(0, RAIL_HISTORY_DISPLAY_LIMIT);
+  const hasLockedHistoryRows =
+    !historyHasFullAccess && railHistoryRows.length > FREE_HISTORY_VISIBLE_LIMIT;
   const hideInitialHero = hasClarificationHistory || history.length > 0;
   const workspaceTitle = t.clarify.heroTitle;
   const workspaceOrientation = homeMode ? t.clarify.descriptionParagraph : "";
@@ -1790,7 +1798,8 @@ function handleStartNew(): void {
                         (item.mode === "ai-interaction" ? "AI Interaction" : "Session")
                     );
                     const active = item.id === selectedHistoryConversationId;
-                    const unlocked = index < FREE_HISTORY_VISIBLE_LIMIT;
+                    const unlocked =
+                      historyHasFullAccess || index < FREE_HISTORY_VISIBLE_LIMIT;
                     const rowInner = (
                       <>
                         <div
@@ -2232,7 +2241,8 @@ function handleStartNew(): void {
                     (item.mode === "ai-interaction" ? "AI Interaction" : "Session")
                 );
                 const active = item.id === selectedHistoryConversationId;
-                const unlocked = index < FREE_HISTORY_VISIBLE_LIMIT;
+                const unlocked =
+                  historyHasFullAccess || index < FREE_HISTORY_VISIBLE_LIMIT;
                 const rowInner = (
                   <>
                     <div

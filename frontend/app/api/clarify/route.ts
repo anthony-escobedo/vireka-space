@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { getDailyLimitForClarifyRequest } from "../../../lib/plan/server";
+import {
+  getDailyLimitForClarifyRequest,
+  getUserIdFromAuthorization,
+} from "../../../lib/plan/server";
 import { recordUsageEvent } from "../../../lib/usage";
 import { createConversation, saveMessage } from "../../../lib/history";
 
@@ -867,14 +870,23 @@ export async function POST(req: NextRequest) {
     // Usage tracking with Supabase conditional
     if (supabase) {
       const authHeader = req.headers.get("authorization");
-      const dailyLimit = await getDailyLimitForClarifyRequest(supabase, authHeader);
+      const dailyLimit = await getDailyLimitForClarifyRequest(
+        supabase,
+        authHeader
+      );
+      const userId = await getUserIdFromAuthorization(supabase, authHeader);
 
-      const { data: existingUsage, error: usageReadError } = await supabase
+      let usageQuery = supabase
         .from("usage_tracking")
         .select("id, interaction_count")
-        .eq("anonymous_id", persistenceAnonymousId)
-        .eq("usage_date", today)
-        .maybeSingle();
+        .eq("usage_date", today);
+      if (userId) {
+        usageQuery = usageQuery.eq("user_id", userId);
+      } else {
+        usageQuery = usageQuery.eq("anonymous_id", persistenceAnonymousId);
+      }
+      const { data: existingUsage, error: usageReadError } =
+        await usageQuery.maybeSingle();
 
       if (usageReadError) {
         return NextResponse.json(
@@ -911,11 +923,19 @@ export async function POST(req: NextRequest) {
       } else {
         const { error: usageInsertError } = await supabase
           .from("usage_tracking")
-          .insert({
-            anonymous_id: persistenceAnonymousId,
-            usage_date: today,
-            interaction_count: 1,
-          });
+          .insert(
+            userId
+              ? {
+                  user_id: userId,
+                  usage_date: today,
+                  interaction_count: 1,
+                }
+              : {
+                  anonymous_id: persistenceAnonymousId,
+                  usage_date: today,
+                  interaction_count: 1,
+                }
+          );
 
         if (usageInsertError) {
           return NextResponse.json(

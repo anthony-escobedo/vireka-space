@@ -45,6 +45,24 @@ create table if not exists public.usage_events (
   created_at timestamptz not null default now()
 );
 
+-- Daily interaction caps (anonymous and/or signed-in; service-role only from API)
+create table if not exists public.usage_tracking (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete cascade,
+  anonymous_id text,
+  usage_date text not null,
+  interaction_count integer not null default 0,
+  created_at timestamptz not null default now()
+);
+
+create unique index if not exists usage_tracking_user_id_usage_date
+  on public.usage_tracking (user_id, usage_date)
+  where user_id is not null;
+
+create unique index if not exists usage_tracking_anonymous_id_usage_date
+  on public.usage_tracking (anonymous_id, usage_date)
+  where anonymous_id is not null;
+
 create table if not exists public.conversations (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references auth.users(id) on delete cascade,

@@ -41,6 +41,11 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       continueWithEmail: 'Continue with email',
       paidPlanNote:
         'Authentication will be used only when continuing with a paid plan.',
+      emailPlaceholder: 'Email address',
+      sending: 'Sending…',
+      success: 'Check your email for a sign-in link.',
+      errorGeneric:
+        "We couldn’t send the sign-in link. Please try again.",
     },
     settings: {
       backToHome: 'Back',
@@ -529,6 +534,11 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       continueWithEmail: 'Continuar con el correo',
       paidPlanNote:
         'La autenticación solo se utilizará al continuar con un plan de pago.',
+      emailPlaceholder: 'Correo electrónico',
+      sending: 'Enviando…',
+      success: 'Revisa tu correo para el enlace de acceso.',
+      errorGeneric:
+        'No pudimos enviar el enlace. Inténtalo de nuevo.',
     },
     settings: {
       backToHome: 'Volver',
@@ -1018,6 +1028,11 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       continueWithEmail: 'Continuar com o e-mail',
       paidPlanNote:
         'A autenticação será usada somente ao continuar com um plano pago.',
+      emailPlaceholder: 'E-mail',
+      sending: 'Enviando…',
+      success: 'Verifique seu e-mail para o link de acesso.',
+      errorGeneric:
+        'Não foi possível enviar o link. Tente novamente.',
     },
     settings: {
       backToHome: 'Voltar',

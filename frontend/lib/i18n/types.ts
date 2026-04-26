@@ -44,6 +44,10 @@ export interface TranslationDictionary {
     intro: string;
     continueWithEmail: string;
     paidPlanNote: string;
+    emailPlaceholder: string;
+    sending: string;
+    success: string;
+    errorGeneric: string;
   };
   
   // Settings Page

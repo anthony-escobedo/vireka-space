@@ -1,7 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 import type { CSSProperties } from "react";
+import { getSupabaseClient } from "../../lib/supabaseClient";
 import { useLanguage } from "../../lib/i18n/useLanguage";
 
 const pageStyle: CSSProperties = {
@@ -42,11 +44,26 @@ const titleStyle: CSSProperties = {
 };
 
 const introStyle: CSSProperties = {
-  margin: "0 0 1.5rem 0",
+  margin: "0 0 1.25rem 0",
   fontSize: "0.95rem",
   lineHeight: 1.55,
   color: "rgba(0,0,0,0.55)",
   fontWeight: 450,
+};
+
+const inputStyle: CSSProperties = {
+  display: "block",
+  width: "100%",
+  boxSizing: "border-box",
+  margin: "0 0 0.85rem 0",
+  padding: "0.65rem 0.75rem",
+  border: "1px solid rgba(0,0,0,0.1)",
+  borderRadius: "10px",
+  backgroundColor: "rgba(255,255,255,0.95)",
+  color: "#2f2b27",
+  fontSize: "0.92rem",
+  fontFamily: "inherit",
+  outline: "none",
 };
 
 const primaryButtonStyle: CSSProperties = {
@@ -62,9 +79,30 @@ const primaryButtonStyle: CSSProperties = {
   fontSize: "0.9rem",
   fontWeight: 500,
   letterSpacing: "-0.01em",
-  cursor: "not-allowed",
-  opacity: 0.9,
+  cursor: "pointer",
   fontFamily: "inherit",
+};
+
+const primaryButtonDisabledStyle: CSSProperties = {
+  ...primaryButtonStyle,
+  cursor: "not-allowed",
+  opacity: 0.6,
+};
+
+const errorTextStyle: CSSProperties = {
+  margin: "0.65rem 0 0 0",
+  fontSize: "0.85rem",
+  lineHeight: 1.45,
+  color: "#7a2e2e",
+  fontWeight: 450,
+};
+
+const successTextStyle: CSSProperties = {
+  margin: "0.75rem 0 0 0",
+  fontSize: "0.95rem",
+  lineHeight: 1.5,
+  color: "rgba(0,0,0,0.6)",
+  fontWeight: 450,
 };
 
 const noteStyle: CSSProperties = {
@@ -96,19 +134,128 @@ const backWrapStyle: CSSProperties = {
   textAlign: "center" as const,
 };
 
+function getSafeInternalPath(raw: string | null | undefined): string {
+  const fallback = "/plan";
+  if (raw == null) return fallback;
+  const trimmed = String(raw).trim();
+  if (!trimmed.startsWith("/")) return fallback;
+  if (trimmed.startsWith("//")) return fallback;
+  if (trimmed.includes("://")) return fallback;
+  return trimmed;
+}
+
+function isValidEmail(value: string): boolean {
+  const t = value.trim();
+  if (t.length < 3) return false;
+  if (!t.includes("@")) return false;
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(t);
+}
+
 export default function SignInPage() {
   const router = useRouter();
   const { t } = useLanguage();
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">(
+    "idle"
+  );
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [postAuthPath, setPostAuthPath] = useState("/plan");
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    setPostAuthPath(getSafeInternalPath(params.get("redirect")));
+  }, []);
+
+  const handleSubmit = useCallback(async () => {
+    if (status === "loading") return;
+    setErrorMessage(null);
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+      setErrorMessage(t.signIn.errorGeneric);
+      setStatus("error");
+      return;
+    }
+    if (!isValidEmail(email)) {
+      setErrorMessage(t.signIn.errorGeneric);
+      setStatus("error");
+      return;
+    }
+    setStatus("loading");
+    const origin = window.location.origin;
+    const emailRedirectTo = `${origin}${postAuthPath}`;
+
+    const { error } = await supabase.auth.signInWithOtp({
+      email: email.trim(),
+      options: {
+        emailRedirectTo,
+        shouldCreateUser: true,
+      },
+    });
+
+    if (error) {
+      setErrorMessage(t.signIn.errorGeneric);
+      setStatus("error");
+      return;
+    }
+    setStatus("success");
+  }, [email, postAuthPath, status, t.signIn.errorGeneric]);
+
+  const canSubmit = isValidEmail(email) && status !== "loading" && status !== "success";
+  const isLoading = status === "loading";
 
   return (
     <div style={pageStyle}>
       <div style={cardStyle}>
         <h1 style={titleStyle}>{t.header.signIn}</h1>
         <p style={introStyle}>{t.signIn.intro}</p>
-        <button type="button" style={primaryButtonStyle} disabled>
-          {t.signIn.continueWithEmail}
-        </button>
-        <p style={noteStyle}>{t.signIn.paidPlanNote}</p>
+
+        {status === "success" ? (
+          <p style={successTextStyle} role="status">
+            {t.signIn.success}
+          </p>
+        ) : (
+          <>
+            <label htmlFor="sign-in-email" style={{ display: "none" }}>
+              {t.signIn.emailPlaceholder}
+            </label>
+            <input
+              id="sign-in-email"
+              type="email"
+              name="email"
+              autoComplete="email"
+              inputMode="email"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (errorMessage) setErrorMessage(null);
+                if (status === "error") setStatus("idle");
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && canSubmit) {
+                  e.preventDefault();
+                  void handleSubmit();
+                }
+              }}
+              disabled={isLoading}
+              placeholder={t.signIn.emailPlaceholder}
+              style={inputStyle}
+            />
+            <button
+              type="button"
+              onClick={() => {
+                void handleSubmit();
+              }}
+              disabled={!canSubmit}
+              style={!canSubmit ? primaryButtonDisabledStyle : primaryButtonStyle}
+            >
+              {isLoading ? t.signIn.sending : t.signIn.continueWithEmail}
+            </button>
+            {errorMessage ? <p style={errorTextStyle}>{errorMessage}</p> : null}
+            <p style={noteStyle}>{t.signIn.paidPlanNote}</p>
+          </>
+        )}
+
         <div style={backWrapStyle}>
           <button
             type="button"

@@ -179,9 +179,20 @@ export default function HomePage() {
       setSignedIn(false);
       return;
     }
-    void supabase.auth.getSession().then(({ data: { session } }) => {
-      setSignedIn(Boolean(session));
+    const applySession = () => {
+      void supabase.auth.getSession().then(({ data: { session } }) => {
+        setSignedIn(Boolean(session));
+      });
+    };
+    applySession();
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(() => {
+      applySession();
     });
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   return (
@@ -253,19 +264,13 @@ export default function HomePage() {
                   onBlur={() => setHovered(null)}
                   onClick={() => {
                     if (signedIn) {
-                      void (async () => {
-                        const supabase = getSupabaseClient();
-                        if (supabase) {
-                          await supabase.auth.signOut();
-                        }
-                        window.location.reload();
-                      })();
+                      router.push("/clarify");
                     } else {
                       router.push("/sign-in");
                     }
                   }}
                 >
-                  {signedIn ? t.header.signOut : t.header.signIn}
+                  {signedIn ? t.hero.enterVirekaSpace : t.header.signIn}
                 </button>
               </div>
             </div>

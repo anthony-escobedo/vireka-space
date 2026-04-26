@@ -31,6 +31,7 @@ export interface TranslationDictionary {
     subtitle: string;
     homeTagline: string;
     tryCta: string;
+    enterVirekaSpace: string;
     clarifyButton: string;
     aiButton: string;
     developedBy: string;

@@ -2,8 +2,9 @@
 
 import type { CSSProperties } from "react";
 import { useRouter } from "next/navigation";
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import StaticPageShell from "../../components/StaticPageShell";
+import type { PlanId } from "../../lib/plans";
 import { getSupabaseClient } from "../../lib/supabaseClient";
 import { useLanguage } from "../../lib/i18n/useLanguage";
 
@@ -71,9 +72,117 @@ const proPlusInactiveStyle: CSSProperties = {
   cursor: "not-allowed",
 };
 
+const planStatusWrapStyle: CSSProperties = {
+  margin: "0 0 1.2rem 0",
+  padding: "0.9rem 1.05rem",
+  borderRadius: "12px",
+  border: "1px solid rgba(0,0,0,0.06)",
+  backgroundColor: "rgba(255,255,255,0.5)",
+  maxWidth: "100%",
+  boxSizing: "border-box",
+};
+
+const planStatusRowStyle: CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "minmax(7rem, 9.5rem) 1fr",
+  columnGap: "0.75rem",
+  rowGap: "0.2rem",
+  alignItems: "baseline",
+  fontSize: "0.86rem",
+  lineHeight: 1.45,
+  color: "rgba(55, 50, 45, 0.88)",
+  marginBottom: "0.55rem",
+};
+
+const planStatusRowLastStyle: CSSProperties = {
+  ...planStatusRowStyle,
+  marginBottom: 0,
+};
+
+const planStatusLabelStyle: CSSProperties = {
+  fontSize: "0.75rem",
+  fontWeight: 500,
+  letterSpacing: "0.02em",
+  color: "rgba(0,0,0,0.42)",
+};
+
+const planStatusValueStyle: CSSProperties = {
+  fontWeight: 500,
+  color: "rgba(32, 29, 26, 0.9)",
+};
+
+type RemotePlanStatus = {
+  plan: PlanId;
+  dailyLimit: number;
+  hasFullHistory: boolean;
+  status?: string;
+};
+
+function planDisplayName(
+  plan: PlanId,
+  tiers: { free: { name: string }; pro: { name: string }; proPlus: { name: string } }
+): string {
+  if (plan === "pro") return tiers.pro.name;
+  if (plan === "pro_plus") return tiers.proPlus.name;
+  return tiers.free.name;
+}
+
+function formatSubscriptionStatus(
+  raw: string | undefined,
+  noSubLabel: string
+): string {
+  if (raw === undefined || raw === "") return noSubLabel;
+  const s = String(raw);
+  if (s.length === 0) return noSubLabel;
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
 export default function PlanPage() {
   const { t } = useLanguage();
   const router = useRouter();
+  const [statusLoading, setStatusLoading] = useState(false);
+  const [signedIn, setSignedIn] = useState(false);
+  const [remoteStatus, setRemoteStatus] = useState<RemotePlanStatus | null>(
+    null
+  );
+
+  useEffect(() => {
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+      setSignedIn(false);
+      setRemoteStatus(null);
+      return;
+    }
+    void (async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        setSignedIn(false);
+        setRemoteStatus(null);
+        return;
+      }
+      setSignedIn(true);
+      setStatusLoading(true);
+      try {
+        const res = await fetch("/api/plan/status", {
+          method: "GET",
+          headers: { Authorization: `Bearer ${session.access_token}` },
+          cache: "no-store",
+        });
+        if (!res.ok) {
+          setRemoteStatus(null);
+          return;
+        }
+        const data = (await res.json()) as RemotePlanStatus;
+        setRemoteStatus(data);
+      } catch {
+        setRemoteStatus(null);
+      } finally {
+        setStatusLoading(false);
+      }
+    })();
+  }, []);
 
   const startProCheckout = useCallback(async () => {
     try {
@@ -131,8 +240,78 @@ export default function PlanPage() {
     { key: "proPlus", tier: t.plan.tiers.proPlus, variant: "proPlus" },
   ];
 
+  const s = t.plan.statusSection;
+  const accessForDisplay: RemotePlanStatus = remoteStatus ?? {
+    plan: "free",
+    dailyLimit: 10,
+    hasFullHistory: false,
+  };
+  const historyLabelValue = accessForDisplay.hasFullHistory
+    ? s.historyFull
+    : s.historyLimited;
+
   return (
     <StaticPageShell title={t.plan.pageTitle} intro={t.plan.pageIntro}>
+      <div style={planStatusWrapStyle} aria-live="polite">
+        {statusLoading && signedIn ? (
+          <p
+            style={{
+              ...planStatusValueStyle,
+              margin: 0,
+              fontSize: "0.86rem",
+            }}
+          >
+            {s.loading}
+          </p>
+        ) : !signedIn ? (
+          <>
+            <div style={planStatusRowStyle}>
+              <span style={planStatusLabelStyle}>{s.currentAccess}</span>
+              <span style={planStatusValueStyle}>
+                {planDisplayName("free", t.plan.tiers)}
+              </span>
+            </div>
+            <div style={planStatusRowStyle}>
+              <span style={planStatusLabelStyle}>{s.dailyInteractions}</span>
+              <span style={planStatusValueStyle}>
+                10 {s.perDay}
+              </span>
+            </div>
+            <div style={planStatusRowLastStyle}>
+              <span style={planStatusLabelStyle}>{s.history}</span>
+              <span style={planStatusValueStyle}>{s.historyLimited}</span>
+            </div>
+          </>
+        ) : (
+          <>
+            <div style={planStatusRowStyle}>
+              <span style={planStatusLabelStyle}>{s.currentAccess}</span>
+              <span style={planStatusValueStyle}>
+                {planDisplayName(accessForDisplay.plan, t.plan.tiers)}
+              </span>
+            </div>
+            <div style={planStatusRowStyle}>
+              <span style={planStatusLabelStyle}>{s.subscription}</span>
+              <span style={planStatusValueStyle}>
+                {formatSubscriptionStatus(
+                  accessForDisplay.status,
+                  s.noActiveSubscription
+                )}
+              </span>
+            </div>
+            <div style={planStatusRowStyle}>
+              <span style={planStatusLabelStyle}>{s.dailyInteractions}</span>
+              <span style={planStatusValueStyle}>
+                {accessForDisplay.dailyLimit} {s.perDay}
+              </span>
+            </div>
+            <div style={planStatusRowLastStyle}>
+              <span style={planStatusLabelStyle}>{s.history}</span>
+              <span style={planStatusValueStyle}>{historyLabelValue}</span>
+            </div>
+          </>
+        )}
+      </div>
       <section style={gridStyle}>
         {tierCards.map(({ key, tier, variant }) => (
           <article key={key} style={cardStyle}>

@@ -205,6 +205,17 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       subscriptionEnablesAdditional: 'Subscription enables additional usage beyond the daily free limit.',
       planStructureMayEvolve: 'Plan structure may evolve as the service develops.',
       fullHistoryAvailableWithSubscription: 'Full history available with subscription',
+      statusSection: {
+        currentAccess: 'Current access',
+        subscription: 'Subscription',
+        dailyInteractions: 'Daily interactions',
+        history: 'History',
+        perDay: 'per day',
+        historyLimited: 'Limited',
+        historyFull: 'Full',
+        loading: 'Loading…',
+        noActiveSubscription: 'No active subscription',
+      },
       tiers: {
         free: {
           name: 'Free',
@@ -698,6 +709,17 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       subscriptionEnablesAdditional: 'La suscripción habilita uso adicional más allá del límite gratuito diario.',
       planStructureMayEvolve: 'La estructura del plan puede evolucionar a medida que el servicio se desarrolla.',
       fullHistoryAvailableWithSubscription: 'Historial completo disponible con suscripción',
+      statusSection: {
+        currentAccess: 'Acceso actual',
+        subscription: 'Suscripción',
+        dailyInteractions: 'Interacciones diarias',
+        history: 'Historial',
+        perDay: 'por día',
+        historyLimited: 'Limitado',
+        historyFull: 'Completo',
+        loading: 'Cargando…',
+        noActiveSubscription: 'Sin suscripción activa',
+      },
       tiers: {
         free: {
           name: 'Free',
@@ -1192,6 +1214,17 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       subscriptionEnablesAdditional: 'A assinatura habilita uso adicional além do limite gratuito diário.',
       planStructureMayEvolve: 'A estrutura do plano pode evoluir conforme o serviço se desenvolve.',
       fullHistoryAvailableWithSubscription: 'Histórico completo disponível com assinatura',
+      statusSection: {
+        currentAccess: 'Acesso atual',
+        subscription: 'Assinatura',
+        dailyInteractions: 'Interações diárias',
+        history: 'Histórico',
+        perDay: 'por dia',
+        historyLimited: 'Limitado',
+        historyFull: 'Completo',
+        loading: 'Carregando…',
+        noActiveSubscription: 'Sem assinatura ativa',
+      },
       tiers: {
         free: {
           name: 'Free',

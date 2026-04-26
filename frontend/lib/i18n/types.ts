@@ -213,6 +213,17 @@ export interface TranslationDictionary {
     subscriptionEnablesAdditional: string;
     planStructureMayEvolve: string;
     fullHistoryAvailableWithSubscription: string;
+    statusSection: {
+      currentAccess: string;
+      subscription: string;
+      dailyInteractions: string;
+      history: string;
+      perDay: string;
+      historyLimited: string;
+      historyFull: string;
+      loading: string;
+      noActiveSubscription: string;
+    };
     tiers: {
       free: {
         name: string;

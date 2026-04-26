@@ -2,7 +2,7 @@
 
 import type { CSSProperties } from "react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
 import StaticPageShell from "../../components/StaticPageShell";
 import { getSupabaseClient } from "../../lib/supabaseClient";
 import { useLanguage } from "../../lib/i18n/useLanguage";
@@ -71,28 +71,9 @@ const proPlusInactiveStyle: CSSProperties = {
   cursor: "not-allowed",
 };
 
-const sessionHintStyle: CSSProperties = {
-  fontSize: "0.82rem",
-  color: "rgba(0,0,0,0.42)",
-  lineHeight: 1.45,
-  margin: "0 0 1.15rem 0",
-};
-
 export default function PlanPage() {
   const { t } = useLanguage();
   const router = useRouter();
-  const [sessionEmailHint, setSessionEmailHint] = useState<string | null>(null);
-
-  useEffect(() => {
-    const supabase = getSupabaseClient();
-    if (!supabase) return;
-    void supabase.auth
-      .getSession()
-      .then(({ data: { session } }) => {
-        const email = session?.user?.email;
-        if (email) setSessionEmailHint(email);
-      });
-  }, []);
 
   const startProCheckout = useCallback(async () => {
     try {
@@ -152,9 +133,6 @@ export default function PlanPage() {
 
   return (
     <StaticPageShell title={t.plan.pageTitle} intro={t.plan.pageIntro}>
-      {sessionEmailHint ? (
-        <p style={sessionHintStyle}>{sessionEmailHint}</p>
-      ) : null}
       <section style={gridStyle}>
         {tierCards.map(({ key, tier, variant }) => (
           <article key={key} style={cardStyle}>

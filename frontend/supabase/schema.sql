@@ -12,14 +12,28 @@ create table if not exists public.profiles (
 create table if not exists public.subscriptions (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
-  tier text not null default 'free',
-  status text not null default 'inactive',
   stripe_customer_id text,
   stripe_subscription_id text,
+  stripe_price_id text,
+  plan text not null default 'free',
+  status text not null default 'free',
+  current_period_start timestamptz,
   current_period_end timestamptz,
+  cancel_at_period_end boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+create unique index if not exists idx_subscriptions_stripe_subscription_id_unique
+  on public.subscriptions (stripe_subscription_id)
+  where stripe_subscription_id is not null;
+
+create index if not exists idx_subscriptions_stripe_customer_id
+  on public.subscriptions (stripe_customer_id)
+  where stripe_customer_id is not null;
+
+create index if not exists idx_subscriptions_user_id
+  on public.subscriptions (user_id);
 
 create table if not exists public.usage_events (
   id uuid primary key default gen_random_uuid(),

@@ -34,7 +34,7 @@ export async function getEffectivePlanId(
 
   const { data, error } = await supabase
     .from("subscriptions")
-    .select("tier, status")
+    .select("plan, status")
     .eq("user_id", userId)
     .order("updated_at", { ascending: false })
     .limit(1)
@@ -50,12 +50,12 @@ export async function getEffectivePlanId(
   const status = String((data as { status: string }).status).toLowerCase();
   if (!ACTIVE_SUBSCRIPTION.has(status)) return "free";
 
-  const tier = String((data as { tier: string }).tier)
+  const planRow = String((data as { plan: string }).plan)
     .toLowerCase()
     .replace(/\s+/g, "_");
 
-  if (tier === "pro") return "pro";
-  if (tier === "pro_plus" || tier === "proplus") {
+  if (planRow === "pro") return "pro";
+  if (planRow === "pro_plus" || planRow === "proplus") {
     return PRO_PLUS_ENFORCED ? "pro_plus" : "pro";
   }
   return "free";

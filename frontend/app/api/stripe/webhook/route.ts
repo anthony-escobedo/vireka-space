@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type Stripe from "stripe";
+import {
+  getEmailDomainForLog,
+  sendProSubscriptionConfirmationEmail,
+} from "../../../../lib/email/sendSubscriptionConfirmation";
 import { getStripe } from "../../../../lib/stripe/server";
 import { getSupabaseServiceClientOrNull } from "../../../../lib/supabase/server";
 
@@ -12,6 +16,12 @@ function mapSubscriptionStatus(
 ): string {
   return stripeStatus;
 }
+
+/** Fields from Checkout Session used for Pro confirmation email / recipient resolution. */
+type CheckoutSessionEmailFields = {
+  customer_details?: { email?: string | null } | null;
+  customer_email?: string | null;
+};
 
 type SubscriptionRow = {
   user_id: string;
@@ -163,6 +173,20 @@ async function upsertSubscriptionByUserId(
   }
 }
 
+async function resolveCheckoutRecipientEmail(
+  session: CheckoutSessionEmailFields,
+  supabase: SupabaseClient,
+  userId: string
+): Promise<string | null> {
+  const a = session.customer_details?.email?.trim();
+  if (a) return a;
+  const customerEmail = session.customer_email?.trim();
+  if (customerEmail) return customerEmail;
+  const { data, error } = await supabase.auth.admin.getUserById(userId);
+  if (error || !data.user?.email) return null;
+  return data.user.email.trim();
+}
+
 async function updateSubscriptionById(
   supabase: SupabaseClient,
   id: string,
@@ -225,7 +249,11 @@ export async function POST(request: NextRequest) {
 
   try {
     if (event.type === "checkout.session.completed") {
-      const session = event.data.object as Stripe.Checkout.Session;
+      const session = event.data.object as Stripe.Checkout.Session &
+        CheckoutSessionEmailFields;
+      if (session.mode !== "subscription") {
+        return NextResponse.json({ received: true });
+      }
       const userId = session.metadata?.user_id;
       if (!userId) {
         console.warn(
@@ -256,6 +284,40 @@ export async function POST(request: NextRequest) {
       const sub = await stripe.subscriptions.retrieve(subId);
       const row = subscriptionRow(sub, userId, now);
       await upsertSubscriptionByUserId(supabase, row);
+
+      if (row.plan === "pro" || row.plan === "pro_plus") {
+        const to = await resolveCheckoutRecipientEmail(
+          session,
+          supabase,
+          userId
+        );
+        if (to) {
+          console.log(
+            "[stripe/webhook] Pro access confirmation email attempt",
+            {
+              checkoutSessionId: session.id,
+              emailDomain: getEmailDomainForLog(to),
+            }
+          );
+          try {
+            await sendProSubscriptionConfirmationEmail({
+              to,
+              idempotencyKey: `pro-confirm-${session.id}`,
+            });
+          } catch (emailErr) {
+            const msg =
+              emailErr instanceof Error ? emailErr.message : String(emailErr);
+            console.error(
+              "[stripe/webhook] Pro access confirmation email failed (subscription already saved):",
+              msg
+            );
+          }
+        } else {
+          console.warn(
+            "[stripe/webhook] Pro access confirmation: no recipient email; skipped"
+          );
+        }
+      }
     } else if (
       event.type === "customer.subscription.created" ||
       event.type === "customer.subscription.updated"

@@ -2078,6 +2078,7 @@ function handleStartNew(): void {
                   alignItems: "flex-start",
                   gap: "14px",
                   marginBottom: railHistoryRows.length > 0 ? "2.4rem" : 0,
+                  zIndex: 2,
                 }}
               >
                 <Link
@@ -2103,8 +2104,12 @@ function handleStartNew(): void {
                     display: "flex",
                     flexDirection: "column",
                     gap: "0.35rem",
-                    opacity: historyDetailLoading ? 0.55 : 1,
-                    transition: "opacity 160ms ease",
+                    opacity: historyDetailLoading
+                      ? 0.55
+                      : leftMenuOpen
+                        ? 0.9
+                        : 1,
+                    transition: "opacity 200ms ease",
                   }}
                 >
                   <div
@@ -2260,8 +2265,6 @@ function handleStartNew(): void {
               flex: 1,
               minWidth: 0,
               position: "relative",
-              opacity: leftMenuOpen ? 0.96 : 1,
-              transition: "opacity 200ms ease",
             }}
           >
             <div style={{ minWidth: 0, width: "100%", maxWidth: "780px" }}>
@@ -2283,6 +2286,7 @@ function handleStartNew(): void {
                 flexDirection: "column",
                 alignItems: "flex-start",
                 gap: "14px",
+                zIndex: 2,
               }}
             >
               <Link
@@ -2306,6 +2310,12 @@ function handleStartNew(): void {
             <div />
           )}
         </div>
+        <div
+          style={{
+            opacity: leftMenuOpen ? 0.96 : 1,
+            transition: "opacity 200ms ease",
+          }}
+        >
         {!hideInitialHero && (
           <>
             <h1
@@ -2469,6 +2479,7 @@ function handleStartNew(): void {
           </div>
         ) : null}
         </div>
+            </div>
           </div>
         </div>
         </div>

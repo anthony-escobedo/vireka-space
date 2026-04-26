@@ -41,11 +41,14 @@ const dictionaries: Record<Language, TranslationDictionary> = {
     signIn: {
       intro: 'Sign in to continue with your plan.',
       continueWithEmail: 'Continue with email',
-      paidPlanNote:
-        'Authentication will be used only when continuing with a paid plan.',
+      paidPlanNote: 'Sign-in is only required for paid access.',
       emailPlaceholder: 'Email address',
       sending: 'Sending…',
       success: 'Check your email for a sign-in link.',
+      successLine2: 'Open the link to continue with VIREKA Space.',
+      resendLink: 'Resend link',
+      resendAvailableIn: 'Resend available in {seconds} seconds',
+      useAnotherEmail: 'Use another email',
       errorGeneric:
         "We couldn’t send the sign-in link. Please try again.",
       couldNotSendLink:
@@ -127,12 +130,12 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       genericNoticeTitle: 'Notice',
       anUnexpectedErrorOccurred: 'An unexpected error occurred.',
       workspaceMenu: {
-        signedInAs: 'Signed in as',
+        accountHeader: 'Account',
         signIn: 'Sign in',
         signOut: 'Sign out',
         free: 'Free',
-        pro: 'Pro',
-        proPlus: 'Pro+',
+        pro: 'Pro access',
+        proPlus: 'Pro+ access',
       },
       loadingText: 'Clarifying...',
       doneButton: 'Done',
@@ -219,6 +222,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       fullHistoryAvailableWithSubscription: 'Full history available with subscription',
       notCurrentFreeTier: 'Not your current plan',
       statusSection: {
+        yourAccess: 'Your access',
         currentAccess: 'Current access',
         subscription: 'Subscription',
         renewsAutomatically: 'Renews automatically',
@@ -245,7 +249,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
           features: [
             '50 interactions per day',
             'Full history access',
-            'Copy past results from history',
+            'Copy from history',
           ],
           action: 'Upgrade to Pro',
         },
@@ -254,7 +258,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
           features: [
             '100 interactions per day',
             'Full history access',
-            'Copy past results from history',
+            'Copy from history',
             'Similar patterns across past situations',
           ],
           action: 'Coming soon',
@@ -559,11 +563,14 @@ const dictionaries: Record<Language, TranslationDictionary> = {
     signIn: {
       intro: 'Inicia sesión para continuar con tu plan.',
       continueWithEmail: 'Continuar con el correo',
-      paidPlanNote:
-        'La autenticación solo se utilizará al continuar con un plan de pago.',
+      paidPlanNote: 'El inicio de sesión solo es necesario para el acceso de pago.',
       emailPlaceholder: 'Correo electrónico',
       sending: 'Enviando…',
-      success: 'Revisa tu correo para el enlace de acceso.',
+      success: 'Revisa tu correo para encontrar el enlace de inicio de sesión.',
+      successLine2: 'Abre el enlace para continuar en VIREKA Space.',
+      resendLink: 'Reenviar enlace',
+      resendAvailableIn: 'Podrás reenviar el enlace en {seconds} s',
+      useAnotherEmail: 'Usar otro correo',
       errorGeneric:
         'No pudimos enviar el enlace. Inténtalo de nuevo.',
       couldNotSendLink:
@@ -645,12 +652,12 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       genericNoticeTitle: 'Aviso',
       anUnexpectedErrorOccurred: 'Ocurrió un error inesperado.',
       workspaceMenu: {
-        signedInAs: 'Conectado como',
+        accountHeader: 'Cuenta',
         signIn: 'Iniciar sesión',
         signOut: 'Cerrar sesión',
         free: 'Free',
-        pro: 'Pro',
-        proPlus: 'Pro+',
+        pro: 'Acceso Pro',
+        proPlus: 'Acceso Pro+',
       },
       loadingText: 'Aclarando...',
       doneButton: 'Hecho',
@@ -737,6 +744,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       fullHistoryAvailableWithSubscription: 'Historial completo disponible con suscripción',
       notCurrentFreeTier: 'No es su plan actual',
       statusSection: {
+        yourAccess: 'Tu acceso',
         currentAccess: 'Acceso actual',
         subscription: 'Suscripción',
         renewsAutomatically: 'Se renueva automáticamente',
@@ -763,7 +771,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
           features: [
             '50 interacciones por día',
             'Acceso completo al historial',
-            'Copiar resultados anteriores desde el historial',
+            'Copiar desde el historial',
           ],
           action: 'Actualizar a Pro',
         },
@@ -772,7 +780,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
           features: [
             '100 interacciones por día',
             'Acceso completo al historial',
-            'Copiar resultados anteriores desde el historial',
+            'Copiar desde el historial',
             'Patrones similares en situaciones anteriores',
           ],
           action: 'Próximamente',
@@ -1078,11 +1086,14 @@ const dictionaries: Record<Language, TranslationDictionary> = {
     signIn: {
       intro: 'Entre para continuar com o seu plano.',
       continueWithEmail: 'Continuar com o e-mail',
-      paidPlanNote:
-        'A autenticação será usada somente ao continuar com um plano pago.',
+      paidPlanNote: 'O login só é necessário para acesso pago.',
       emailPlaceholder: 'E-mail',
       sending: 'Enviando…',
-      success: 'Verifique seu e-mail para o link de acesso.',
+      success: 'Verifique seu e-mail para encontrar o link de login.',
+      successLine2: 'Abra o link para continuar no VIREKA Space.',
+      resendLink: 'Reenviar link',
+      resendAvailableIn: 'Você poderá reenviar o link em {seconds} s',
+      useAnotherEmail: 'Usar outro e-mail',
       errorGeneric:
         'Não foi possível enviar o link. Tente novamente.',
       couldNotSendLink:
@@ -1164,12 +1175,12 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       genericNoticeTitle: 'Aviso',
       anUnexpectedErrorOccurred: 'Ocorreu um erro inesperado.',
       workspaceMenu: {
-        signedInAs: 'Conectado como',
+        accountHeader: 'Conta',
         signIn: 'Entrar',
         signOut: 'Encerrar sessão',
         free: 'Free',
-        pro: 'Pro',
-        proPlus: 'Pro+',
+        pro: 'Acesso Pro',
+        proPlus: 'Acesso Pro+',
       },
       loadingText: 'Esclarecendo...',
       doneButton: 'Concluído',
@@ -1256,6 +1267,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       fullHistoryAvailableWithSubscription: 'Histórico completo disponível com assinatura',
       notCurrentFreeTier: 'Não é o seu plano atual',
       statusSection: {
+        yourAccess: 'Seu acesso',
         currentAccess: 'Acesso atual',
         subscription: 'Assinatura',
         renewsAutomatically: 'Renova automaticamente',
@@ -1282,7 +1294,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
           features: [
             '50 interações por dia',
             'Acesso completo ao histórico',
-            'Copiar resultados anteriores do histórico',
+            'Copiar do histórico',
           ],
           action: 'Atualizar para Pro',
         },
@@ -1291,7 +1303,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
           features: [
             '100 interações por dia',
             'Acesso completo ao histórico',
-            'Copiar resultados anteriores do histórico',
+            'Copiar do histórico',
             'Padrões semelhantes em situações anteriores',
           ],
           action: 'Em breve',

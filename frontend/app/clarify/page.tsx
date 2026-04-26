@@ -1645,7 +1645,7 @@ function handleStartNew(): void {
             marginBottom: "0.25rem",
           }}
         >
-          {wm.signedInAs}
+          {wm.accountHeader}
         </div>
         <div
           style={{

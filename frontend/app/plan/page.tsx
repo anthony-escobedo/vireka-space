@@ -105,6 +105,15 @@ const planStatusWrapStyle: CSSProperties = {
   boxSizing: "border-box",
 };
 
+const planStatusSectionHeadingStyle: CSSProperties = {
+  margin: "0 0 0.65rem 0",
+  fontSize: "0.68rem",
+  fontWeight: 600,
+  letterSpacing: "0.06em",
+  textTransform: "uppercase",
+  color: "rgba(0,0,0,0.38)",
+};
+
 const planStatusRowStyle: CSSProperties = {
   display: "grid",
   gridTemplateColumns: "minmax(7rem, 9.5rem) 1fr",
@@ -324,15 +333,18 @@ export default function PlanPage() {
     <StaticPageShell title={t.plan.pageTitle} intro={t.plan.pageIntro}>
       <div style={planStatusWrapStyle} aria-live="polite">
         {statusLoading && signedIn ? (
-          <p
-            style={{
-              ...planStatusValueStyle,
-              margin: 0,
-              fontSize: "0.86rem",
-            }}
-          >
-            {s.loading}
-          </p>
+          <>
+            <h2 style={planStatusSectionHeadingStyle}>{s.yourAccess}</h2>
+            <p
+              style={{
+                ...planStatusValueStyle,
+                margin: 0,
+                fontSize: "0.86rem",
+              }}
+            >
+              {s.loading}
+            </p>
+          </>
         ) : !signedIn ? (
           <>
             <div style={planStatusRowStyle}>
@@ -354,6 +366,7 @@ export default function PlanPage() {
           </>
         ) : (
           <>
+            <h2 style={planStatusSectionHeadingStyle}>{s.yourAccess}</h2>
             <div style={planStatusRowStyle}>
               <span style={planStatusLabelStyle}>{s.currentAccess}</span>
               <span style={planStatusValueStyle}>
@@ -405,7 +418,7 @@ export default function PlanPage() {
             {variant === "free" ? (
               isFreePlan ? (
                 <span style={actionStyle}>{tier.action}</span>
-              ) : (
+              ) : isProPlan || isProPlusPlan ? null : (
                 <span
                   style={freeTierInactiveActionStyle}
                   aria-hidden

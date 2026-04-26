@@ -2,7 +2,7 @@ import { Language } from './config';
 
 /** Clarify hamburger “account” block (signed-in / plan / sign out). */
 export interface ClarifyWorkspaceMenu {
-  signedInAs: string;
+  accountHeader: string;
   signIn: string;
   signOut: string;
   free: string;
@@ -59,6 +59,11 @@ export interface TranslationDictionary {
     emailPlaceholder: string;
     sending: string;
     success: string;
+    successLine2: string;
+    resendLink: string;
+    /** Use `"{seconds}"` placeholder for countdown (seconds remaining). */
+    resendAvailableIn: string;
+    useAnotherEmail: string;
     errorGeneric: string;
     couldNotSendLink: string;
   };
@@ -230,6 +235,7 @@ export interface TranslationDictionary {
     /** Shown on the Free tier card when the user’s access is a higher plan (e.g. Pro). */
     notCurrentFreeTier: string;
     statusSection: {
+      yourAccess: string;
       currentAccess: string;
       subscription: string;
       /** Shown when subscription is active and no next renewal / period end is shown. */

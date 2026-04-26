@@ -98,12 +98,46 @@ const errorTextStyle: CSSProperties = {
   fontWeight: 450,
 };
 
-const successTextStyle: CSSProperties = {
-  margin: "0.75rem 0 0 0",
+const successTextFirstStyle: CSSProperties = {
+  margin: 0,
   fontSize: "0.95rem",
   lineHeight: 1.5,
   color: "rgba(0,0,0,0.6)",
   fontWeight: 450,
+};
+
+const successTextSecondStyle: CSSProperties = {
+  margin: "0.4rem 0 0 0",
+  fontSize: "0.95rem",
+  lineHeight: 1.5,
+  color: "rgba(0,0,0,0.6)",
+  fontWeight: 450,
+};
+
+const resendBlockStyle: CSSProperties = {
+  marginTop: "1rem",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "stretch",
+  gap: "0.5rem",
+};
+
+const resendButtonStyle: CSSProperties = {
+  ...primaryButtonStyle,
+  margin: 0,
+};
+
+const resendButtonDisabledStyle: CSSProperties = {
+  ...resendButtonStyle,
+  ...primaryButtonDisabledStyle,
+};
+
+const resendCooldownTextStyle: CSSProperties = {
+  margin: 0,
+  fontSize: "0.8rem",
+  lineHeight: 1.4,
+  color: "rgba(0,0,0,0.5)",
+  fontWeight: 400,
 };
 
 const noteStyle: CSSProperties = {
@@ -137,6 +171,8 @@ const backWrapStyle: CSSProperties = {
 
 const RATE_LIMIT_OTP_MESSAGE =
   "Too many sign-in emails were requested. Please wait and try again.";
+
+const RESEND_SUCCESS_COOLDOWN_SEC = 60;
 
 const OTP_COOLDOWN_MS = 90_000;
 const OTP_COOLDOWN_STORAGE = "vireka_signin_otp_cooldown";
@@ -324,6 +360,8 @@ export default function SignInPage() {
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [cooldownMs, setCooldownMs] = useState(0);
+  const [resendSecondsLeft, setResendSecondsLeft] = useState(0);
+  const [resendSubmitting, setResendSubmitting] = useState(false);
 
   useEffect(() => {
     if (status === "success") return;
@@ -334,6 +372,14 @@ export default function SignInPage() {
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
   }, [email, status]);
+
+  useEffect(() => {
+    if (resendSecondsLeft <= 0) return;
+    const id = setInterval(() => {
+      setResendSecondsLeft((s) => (s <= 1 ? 0 : s - 1));
+    }, 1000);
+    return () => clearInterval(id);
+  }, [resendSecondsLeft]);
 
   const handleSubmit = useCallback(async () => {
     if (status === "loading") return;
@@ -379,6 +425,51 @@ export default function SignInPage() {
     setCooldownMs(getRemainingOtpCooldownMsForEmail(email));
   }, [email, status, t.signIn.couldNotSendLink, t.signIn.errorGeneric]);
 
+  const handleResendLink = useCallback(async () => {
+    if (resendSecondsLeft > 0 || resendSubmitting) return;
+    setErrorMessage(null);
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+      setErrorMessage(t.signIn.errorGeneric);
+      return;
+    }
+    if (!isValidEmail(email)) {
+      setErrorMessage(t.signIn.errorGeneric);
+      return;
+    }
+    setResendSubmitting(true);
+    const emailTrim = email.trim();
+    const emailRedirectTo = getAuthRedirectTo();
+    const { error } = await supabase.auth.signInWithOtp({
+      email: emailTrim,
+      options: {
+        emailRedirectTo,
+        shouldCreateUser: true,
+      },
+    });
+    if (error) {
+      logSignInOtpFailure(error, emailTrim, emailRedirectTo);
+      setErrorMessage(
+        userFacingOtpError(error, t.signIn.couldNotSendLink)
+      );
+    } else {
+      setResendSecondsLeft(RESEND_SUCCESS_COOLDOWN_SEC);
+    }
+    setResendSubmitting(false);
+  }, [
+    email,
+    resendSecondsLeft,
+    resendSubmitting,
+    t.signIn.couldNotSendLink,
+    t.signIn.errorGeneric,
+  ]);
+
+  const handleUseAnotherEmail = useCallback(() => {
+    setStatus("idle");
+    setErrorMessage(null);
+    setResendSecondsLeft(0);
+  }, []);
+
   const remainingCooldown = cooldownMs;
   const canSubmit =
     isValidEmail(email) &&
@@ -386,6 +477,12 @@ export default function SignInPage() {
     status !== "success" &&
     remainingCooldown === 0;
   const isLoading = status === "loading";
+  const canResend =
+    isValidEmail(email) && resendSecondsLeft === 0 && !resendSubmitting;
+  const resendCooldownText = t.signIn.resendAvailableIn.replace(
+    /\{seconds\}/g,
+    String(resendSecondsLeft)
+  );
 
   return (
     <div style={pageStyle}>
@@ -394,9 +491,32 @@ export default function SignInPage() {
         <p style={introStyle}>{t.signIn.intro}</p>
 
         {status === "success" ? (
-          <p style={successTextStyle} role="status">
-            {t.signIn.success}
-          </p>
+          <div role="status">
+            <p style={successTextFirstStyle}>{t.signIn.success}</p>
+            <p style={successTextSecondStyle}>{t.signIn.successLine2}</p>
+            {errorMessage ? (
+              <p style={errorTextStyle}>{errorMessage}</p>
+            ) : null}
+            <div style={resendBlockStyle}>
+              <button
+                type="button"
+                onClick={() => {
+                  void handleResendLink();
+                }}
+                disabled={!canResend}
+                style={
+                  !canResend ? resendButtonDisabledStyle : resendButtonStyle
+                }
+              >
+                {resendSubmitting
+                  ? t.signIn.sending
+                  : t.signIn.resendLink}
+              </button>
+              {resendSecondsLeft > 0 ? (
+                <p style={resendCooldownTextStyle}>{resendCooldownText}</p>
+              ) : null}
+            </div>
+          </div>
         ) : (
           <>
             <label htmlFor="sign-in-email" style={{ display: "none" }}>
@@ -456,15 +576,25 @@ export default function SignInPage() {
         )}
 
         <div style={backWrapStyle}>
-          <button
-            type="button"
-            style={backButtonStyle}
-            onClick={() => {
-              router.push("/");
-            }}
-          >
-            {t.settings.backToHome}
-          </button>
+          {status === "success" ? (
+            <button
+              type="button"
+              style={backButtonStyle}
+              onClick={handleUseAnotherEmail}
+            >
+              {t.signIn.useAnotherEmail}
+            </button>
+          ) : (
+            <button
+              type="button"
+              style={backButtonStyle}
+              onClick={() => {
+                router.push("/");
+              }}
+            >
+              {t.settings.backToHome}
+            </button>
+          )}
         </div>
       </div>
     </div>

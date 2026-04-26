@@ -474,14 +474,9 @@ export default function ClarifyPage() {
     setFollowupInput("");
     setError(null);
     setIsDone(false);
-    setOpenPanelIds(
-      nextIterations.slice(0, -1).map((iteration) => `panel-${iteration.id}`)
-    );
-    setLatestPanelId(
-      nextIterations.length > 0
-        ? `panel-${nextIterations[nextIterations.length - 1].id}`
-        : null
-    );
+    // History replay: all reflection/refinement sections start collapsed; user expands manually.
+    setOpenPanelIds([]);
+    setLatestPanelId(null);
     conversationIdRef.current = payload.conversation.id;
     historyRef.current = nextChat;
     iterationsRef.current = nextIterations;
@@ -874,8 +869,13 @@ function handleStartNew(): void {
 }
   
   const panels = getPanels();
-  const archivedPanels = panels.slice(0, -1);
-  const activePanel = panels.length > 0 ? panels[panels.length - 1] : null;
+  const historyReplay = isReviewingHistorySession;
+  const archivedPanels = historyReplay ? panels : panels.slice(0, -1);
+  const activePanel = historyReplay
+    ? null
+    : panels.length > 0
+      ? panels[panels.length - 1]
+      : null;
   const hasClarificationHistory = iterations.length > 0;
   const hasInitialClarifyResponse = iterations.some((it) => it.source === "top");
   const canShowDoneButton =

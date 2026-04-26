@@ -851,6 +851,46 @@ function getHistoryEndActionStyle(action: "use" | "new"): CSSProperties {
   };
 }
 
+  /** History replay: use / start-new. Continuation uses `result` and `iterations` (latest = last item) from `applyConversationDetail`. */
+  function renderHistoryEndActionButtons() {
+    return (
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: "0.85rem",
+          width: "100%",
+        }}
+      >
+        <button
+          type="button"
+          onClick={handleUseClarificationFromHistory}
+          disabled={loading}
+          style={getHistoryEndActionStyle("use")}
+          onMouseEnter={() => setHoveredHistoryEndAction("use")}
+          onMouseLeave={() => setHoveredHistoryEndAction(null)}
+          onFocus={() => setHoveredHistoryEndAction("use")}
+          onBlur={() => setHoveredHistoryEndAction(null)}
+        >
+          {t.history.useThisClarification}
+        </button>
+        <button
+          type="button"
+          onClick={handleStartNew}
+          disabled={loading}
+          style={getHistoryEndActionStyle("new")}
+          onMouseEnter={() => setHoveredHistoryEndAction("new")}
+          onMouseLeave={() => setHoveredHistoryEndAction(null)}
+          onFocus={() => setHoveredHistoryEndAction("new")}
+          onBlur={() => setHoveredHistoryEndAction("new")}
+        >
+          {t.history.startNewSituation}
+        </button>
+      </div>
+    );
+  }
+
 function handleUseClarificationFromHistory(): void {
   if (copyResetTimeoutRef.current) {
     clearTimeout(copyResetTimeoutRef.current);
@@ -983,8 +1023,7 @@ function handleStartNew(): void {
 
   function renderClarifyContent(
     panel: ClarificationPanel,
-    showYourInput?: string,
-    showHistoryEndActions = false
+    showYourInput?: string
   ) {
     const response = panel.iteration.response;
     const refinementQuestions = getDistinctSuggestedQuestions(response);
@@ -1230,45 +1269,6 @@ function handleStartNew(): void {
             </div>
           </div>
         )}
-
-        {showHistoryEndActions ? (
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: "0.85rem",
-              marginTop: "2rem",
-              paddingTop: "0.25rem",
-              width: "100%",
-            }}
-          >
-            <button
-              type="button"
-              onClick={handleUseClarificationFromHistory}
-              disabled={loading}
-              style={getHistoryEndActionStyle("use")}
-              onMouseEnter={() => setHoveredHistoryEndAction("use")}
-              onMouseLeave={() => setHoveredHistoryEndAction(null)}
-              onFocus={() => setHoveredHistoryEndAction("use")}
-              onBlur={() => setHoveredHistoryEndAction(null)}
-            >
-              {t.history.useThisClarification}
-            </button>
-            <button
-              type="button"
-              onClick={handleStartNew}
-              disabled={loading}
-              style={getHistoryEndActionStyle("new")}
-              onMouseEnter={() => setHoveredHistoryEndAction("new")}
-              onMouseLeave={() => setHoveredHistoryEndAction(null)}
-              onFocus={() => setHoveredHistoryEndAction("new")}
-              onBlur={() => setHoveredHistoryEndAction(null)}
-            >
-              {t.history.startNewSituation}
-            </button>
-          </div>
-        ) : null}
       </div>
     );
   }
@@ -1291,7 +1291,7 @@ function handleStartNew(): void {
         >
           {open ? (
             <div style={{ paddingBottom: "0.1rem" }}>
-              {renderClarifyContent(panel, showYourInput, false)}
+              {renderClarifyContent(panel, showYourInput)}
             </div>
           ) : null}
         </CollapsibleLayer>
@@ -1317,11 +1317,7 @@ function handleStartNew(): void {
           boxSizing: "border-box",
         }}
       >
-        {renderClarifyContent(
-          panel,
-          showYourInput,
-          isReviewingHistorySession && !isDone
-        )}
+        {renderClarifyContent(panel, showYourInput)}
       </div>
     );
   }
@@ -2374,7 +2370,9 @@ function handleStartNew(): void {
           }}
         >
           <div style={{ pointerEvents: "auto" }}>
-            {isReviewingHistorySession ? null : (
+            {isReviewingHistorySession ? (
+              renderHistoryEndActionButtons()
+            ) : (
               <>
             {canShowDoneButton ? (
               <div

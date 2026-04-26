@@ -1,8 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { CSSProperties } from "react";
+import type { AuthError } from "@supabase/supabase-js";
 import { getSupabaseClient } from "../../lib/supabaseClient";
 import { useLanguage } from "../../lib/i18n/useLanguage";
 
@@ -137,6 +138,13 @@ const backWrapStyle: CSSProperties = {
 const RATE_LIMIT_OTP_MESSAGE =
   "Too many sign-in emails were requested. Please wait and try again.";
 
+const OTP_COOLDOWN_MS = 90_000;
+const OTP_COOLDOWN_STORAGE = "vireka_signin_otp_cooldown";
+const OTP_COOLDOWN_WAIT =
+  "Please wait before requesting another sign-in link.";
+
+type OtpCooldownRecord = { email: string; until: number };
+
 function isValidEmail(value: string): boolean {
   const t = value.trim();
   if (t.length < 3) return false;
@@ -144,6 +152,50 @@ function isValidEmail(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(t);
 }
 
+function readOtpCooldownRecord(): OtpCooldownRecord | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = sessionStorage.getItem(OTP_COOLDOWN_STORAGE);
+    if (!raw) return null;
+    const rec = JSON.parse(raw) as OtpCooldownRecord;
+    if (typeof rec?.email === "string" && typeof rec?.until === "number") {
+      return rec;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function getRemainingOtpCooldownMsForEmail(email: string): number {
+  if (!isValidEmail(email)) return 0;
+  const normalized = email.trim().toLowerCase();
+  const rec = readOtpCooldownRecord();
+  if (!rec || rec.email !== normalized) return 0;
+  return Math.max(0, rec.until - Date.now());
+}
+
+function setOtpCooldownForEmail(email: string): void {
+  if (typeof window === "undefined" || !isValidEmail(email)) return;
+  const normalized = email.trim().toLowerCase();
+  const rec: OtpCooldownRecord = {
+    email: normalized,
+    until: Date.now() + OTP_COOLDOWN_MS,
+  };
+  sessionStorage.setItem(OTP_COOLDOWN_STORAGE, JSON.stringify(rec));
+}
+
+function formatCountdownMs(ms: number): string {
+  const s = Math.ceil(ms / 1000);
+  const m = Math.floor(s / 60);
+  const r = s % 60;
+  return `${m}:${r.toString().padStart(2, "0")}`;
+}
+
+/**
+ * Post–magic-link landing path. Use `?redirect=/...` (relative) when present; otherwise `/clarify`.
+ * `emailRedirectTo` in signInWithOtp = `${window.location.origin}` + this path.
+ */
 function getSafeRedirectPath(): string {
   const redirectParam = new URLSearchParams(window.location.search).get(
     "redirect"
@@ -153,6 +205,92 @@ function getSafeRedirectPath(): string {
 
 function getAuthRedirectTo(): string {
   return `${window.location.origin}${getSafeRedirectPath()}`;
+}
+
+function emailDomainForLog(email: string): string {
+  const trimmed = email.trim();
+  const at = trimmed.lastIndexOf("@");
+  if (at < 1 || at === trimmed.length - 1) return "(invalid-or-missing)";
+  return trimmed.slice(at + 1).toLowerCase();
+}
+
+function getAuthErrorFields(error: unknown): {
+  message: string;
+  name?: string;
+  code?: string;
+  status?: number;
+} {
+  const e = error as AuthError & { statusCode?: number };
+  return {
+    message: e?.message ?? String(error),
+    name: e?.name,
+    code: typeof (e as { code?: string }).code === "string"
+      ? (e as { code: string }).code
+      : undefined,
+    status: (e as { status?: number }).status ?? e?.statusCode,
+  };
+}
+
+function logSignInOtpFailure(
+  error: unknown,
+  emailForDomain: string,
+  emailRedirectTo: string
+): void {
+  const f = getAuthErrorFields(error);
+  console.error("[sign-in] signInWithOtp failed", {
+    message: f.message,
+    name: f.name,
+    code: f.code,
+    status: f.status,
+    emailRedirectTo,
+    emailDomain: emailDomainForLog(emailForDomain),
+  });
+}
+
+/**
+ * When safe, prefer specific or server-provided text over a single generic string.
+ */
+function userFacingOtpError(
+  error: unknown,
+  couldNotSendLink: string
+): string {
+  if (isOtpRateLimited(error as { status?: number; message?: string; code?: string })) {
+    return RATE_LIMIT_OTP_MESSAGE;
+  }
+  const f = getAuthErrorFields(error);
+  const msg = (f.message || "").toLowerCase();
+  const code = (f.code || "").toLowerCase();
+
+  if (f.status === 403 || msg.includes("forbidden") || code.includes("not_allowed") || code === "action_disabled") {
+    return "This sign-in action is not allowed. Check the app’s Supabase email settings, or try again later.";
+  }
+  if (msg.includes("redirect") && (msg.includes("url") || msg.includes("invalid"))) {
+    return "The sign-in redirect URL is not allowed. Ask the app operator to add this site’s URL in Supabase Auth redirect settings.";
+  }
+  if (msg.includes("signups not allowed") || code === "signup_disabled") {
+    return "New sign-ups are disabled. Use an account that already exists, or contact support.";
+  }
+  if (msg.includes("email") && (msg.includes("invalid") || code.includes("invalid_email"))) {
+    return "This email address could not be used. Check the address and try again.";
+  }
+  if (
+    msg.includes("network") ||
+    msg.includes("fetch") ||
+    msg.includes("failed to fetch") ||
+    msg.includes("load failed")
+  ) {
+    return "Could not reach the sign-in service. Check your network and try again.";
+  }
+  if (msg.length > 0 && msg.length < 280) {
+    if (
+      /https?:\/\//i.test(f.message) ||
+      /[a-z0-9]{8}-[a-z0-9]{4}/i.test(f.message)
+    ) {
+      return couldNotSendLink;
+    }
+    return f.message;
+  }
+  return couldNotSendLink;
 }
 
 function isOtpRateLimited(
@@ -185,9 +323,25 @@ export default function SignInPage() {
     "idle"
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [cooldownMs, setCooldownMs] = useState(0);
+
+  useEffect(() => {
+    if (status === "success") return;
+    const tick = () => {
+      setCooldownMs(getRemainingOtpCooldownMsForEmail(email));
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [email, status]);
 
   const handleSubmit = useCallback(async () => {
     if (status === "loading") return;
+    if (isValidEmail(email) && getRemainingOtpCooldownMsForEmail(email) > 0) {
+      setErrorMessage(OTP_COOLDOWN_WAIT);
+      setStatus("error");
+      return;
+    }
     setErrorMessage(null);
     const supabase = getSupabaseClient();
     if (!supabase) {
@@ -202,9 +356,10 @@ export default function SignInPage() {
     }
     setStatus("loading");
     const emailRedirectTo = getAuthRedirectTo();
+    const emailTrim = email.trim();
 
     const { error } = await supabase.auth.signInWithOtp({
-      email: email.trim(),
+      email: emailTrim,
       options: {
         emailRedirectTo,
         shouldCreateUser: true,
@@ -212,22 +367,24 @@ export default function SignInPage() {
     });
 
     if (error) {
-      console.error("Supabase sign-in error:", error);
+      logSignInOtpFailure(error, emailTrim, emailRedirectTo);
       setErrorMessage(
-        isOtpRateLimited(error)
-          ? RATE_LIMIT_OTP_MESSAGE
-          : t.signIn.couldNotSendLink
+        userFacingOtpError(error, t.signIn.couldNotSendLink)
       );
       setStatus("error");
       return;
     }
+    setOtpCooldownForEmail(email);
     setStatus("success");
+    setCooldownMs(getRemainingOtpCooldownMsForEmail(email));
   }, [email, status, t.signIn.couldNotSendLink, t.signIn.errorGeneric]);
 
+  const remainingCooldown = cooldownMs;
   const canSubmit =
     isValidEmail(email) &&
     status !== "loading" &&
-    status !== "success";
+    status !== "success" &&
+    remainingCooldown === 0;
   const isLoading = status === "loading";
 
   return (
@@ -263,7 +420,7 @@ export default function SignInPage() {
                   void handleSubmit();
                 }
               }}
-              disabled={isLoading}
+              disabled={isLoading || remainingCooldown > 0}
               placeholder={t.signIn.emailPlaceholder}
               style={inputStyle}
             />
@@ -275,8 +432,24 @@ export default function SignInPage() {
               disabled={!canSubmit}
               style={!canSubmit ? primaryButtonDisabledStyle : primaryButtonStyle}
             >
-              {isLoading ? t.signIn.sending : t.signIn.continueWithEmail}
+              {isLoading
+                ? t.signIn.sending
+                : remainingCooldown > 0
+                  ? "Wait to send again"
+                  : t.signIn.continueWithEmail}
             </button>
+            {remainingCooldown > 0 && !isLoading ? (
+              <p
+                style={{
+                  margin: "0.4rem 0 0 0",
+                  fontSize: "0.8rem",
+                  lineHeight: 1.4,
+                  color: "rgba(0,0,0,0.5)",
+                }}
+              >
+                You can request another sign-in link in {formatCountdownMs(remainingCooldown)}.
+              </p>
+            ) : null}
             {errorMessage ? <p style={errorTextStyle}>{errorMessage}</p> : null}
             <p style={noteStyle}>{t.signIn.paidPlanNote}</p>
           </>

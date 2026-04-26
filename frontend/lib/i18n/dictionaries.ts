@@ -273,7 +273,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       clarityEstablished: 'Clarity established',
       structureSupportsClarity: 'Structure supports clearer understanding.',
       copyResult: 'Copy result',
-      prepareForAI: 'Prepare for AI',
+      prepareForAI: 'Send to AI',
       aiReadyContext: 'AI-ready context',
       aiReadyDescription: 'This prepares the clarification for use in another AI system.',
       copyAIReadyContext: 'Copy AI-ready context',
@@ -368,7 +368,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
           ],
         },
         prepareForAI: {
-          question: 'What is “Prepare for AI”?',
+          question: 'What is “Send to AI”?',
           answer: [
             'It is a way to use the clarity developed in VIREKA Space within another AI system.',
             'From a clarified situation, a structured context is generated that can be copied and used as the basis for an AI interaction. This context preserves the distinction between what appears to be happening, what may be assumed, and what remains unclear.',
@@ -790,7 +790,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       clarityEstablished: 'Claridad establecida',
       structureSupportsClarity: 'La estructura apoya una comprensión más clara.',
       copyResult: 'Copiar resultado',
-      prepareForAI: 'Preparar para IA',
+      prepareForAI: 'Enviar a la IA',
       aiReadyContext: 'Contexto listo para IA',
       aiReadyDescription: 'Esto prepara la aclaración para su uso en otro sistema de IA.',
       copyAIReadyContext: 'Copiar contexto para IA',
@@ -885,7 +885,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
           ],
         },
         prepareForAI: {
-          question: '¿Qué es “Preparar para IA”?',
+          question: '¿Qué es “Enviar a la IA”?',
           answer: [
             'Es una forma de utilizar la claridad obtenida en VIREKA Space dentro de otro sistema de IA.',
             'A partir de una situación ya clarificada, se genera un contexto estructurado que puede copiarse y usarse como base para una interacción con IA. Este contexto mantiene la distinción entre lo que aparece, lo que puede estar siendo asumido y lo que permanece incierto.',
@@ -1307,7 +1307,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       clarityEstablished: 'Clareza estabelecida',
       structureSupportsClarity: 'Estrutura suporta uma compreensão mais clara.',
       copyResult: 'Copiar resultado',
-      prepareForAI: 'Preparar para IA',
+      prepareForAI: 'Enviar para a IA',
       aiReadyContext: 'Contexto pronto para IA',
       aiReadyDescription: 'Isso prepara a clarificação para uso em outro sistema de IA.',
       copyAIReadyContext: 'Copiar contexto para IA',
@@ -1402,7 +1402,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
           ],
         },
         prepareForAI: {
-          question: 'O que é “Preparar para IA”?',
+          question: 'O que é “Enviar para a IA”?',
           answer: [
             'É uma forma de utilizar a clareza desenvolvida no VIREKA Space em outro sistema de IA.',
             'A partir de uma situação já clarificada, é gerado um contexto estruturado que pode ser copiado e utilizado como base para uma interação com IA. Esse contexto mantém a distinção entre o que aparece, o que pode estar sendo assumido e o que permanece incerto.',

@@ -148,7 +148,7 @@ function getSafeRedirectPath(): string {
   const redirectParam = new URLSearchParams(window.location.search).get(
     "redirect"
   );
-  return redirectParam && redirectParam.startsWith("/") ? redirectParam : "/plan";
+  return redirectParam && redirectParam.startsWith("/") ? redirectParam : "/clarify";
 }
 
 function getAuthRedirectTo(): string {

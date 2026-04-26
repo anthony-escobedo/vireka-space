@@ -32,12 +32,13 @@ type ClarifyResponse = {
   unknown: string[];
   structural: string[];
   orientation: string;
+  currentClarity?: string;
   question?: string;
-  suggestedQuestions?: string[];
 };
 type IntegratedViewResponse = {
   mode: "integrated_view";
   message: string;
+  currentClarity?: string;
 };
 
 type CloseResponse = {
@@ -93,8 +94,6 @@ export default function AIInteractionPage() {
   const copyResetTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const router = useRouter();
-  const redirectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
   useEffect(() => {
   getOrCreateAnonymousId();
 }, []);
@@ -108,51 +107,16 @@ export default function AIInteractionPage() {
   setCheckedOnboarding(true);
 
     return () => {
-    if (redirectTimeoutRef.current) {
-      clearTimeout(redirectTimeoutRef.current);
-    }
     if (copyResetTimeoutRef.current) {
       clearTimeout(copyResetTimeoutRef.current);
     }
   };
 }, []);
 
-  function normalizeQuestion(text: string): string {
-    return text
-      .trim()
-      .toLowerCase()
-      .replace(/[^\w\s]/g, "")
-      .replace(/\s+/g, " ");
-  }
-
   function truncateText(text: string, maxLength = 78): string {
     const trimmed = text.trim();
     if (trimmed.length <= maxLength) return trimmed;
     return `${trimmed.slice(0, maxLength).trimEnd()}…`;
-  }
-
-  function getDistinctSuggestedQuestions(response: ClarifyResponse): string[] {
-    const mainQuestionNormalized = response.question
-      ? normalizeQuestion(response.question)
-      : "";
-
-    const seen = new Set<string>();
-    const rawSuggestions = response.suggestedQuestions ?? [];
-    const distinct: string[] = [];
-
-    for (const item of rawSuggestions) {
-      const trimmed = item.trim();
-      if (!trimmed) continue;
-      const normalized = normalizeQuestion(trimmed);
-      if (!normalized) continue;
-      if (mainQuestionNormalized && normalized === mainQuestionNormalized) continue;
-      if (seen.has(normalized)) continue;
-      seen.add(normalized);
-      distinct.push(trimmed);
-      if (distinct.length === 2) break;
-    }
-
-    return distinct;
   }
 
   function getRefinementPanelSummary(iteration: ClarificationIteration): string {
@@ -219,10 +183,11 @@ export default function AIInteractionPage() {
   }
 
   if (response.mode === "integrated_view") {
+    if (response.currentClarity?.trim()) {
+      return `${response.message}\n\nCurrent clarity:\n${response.currentClarity.trim()}`;
+    }
     return response.message;
   }
-
-  const distinctSuggestedQuestions = getDistinctSuggestedQuestions(response);
 
   const sections = [
     `${t.aiInteraction.whatAppearsToBeHappening}:\n${response.observable.join("\n")}`,
@@ -235,14 +200,14 @@ export default function AIInteractionPage() {
     sections.push(response.orientation.trim());
   }
 
-  if (response.question) {
-    sections.push(`${t.aiInteraction.clarifyingQuestion}:\n${response.question}`);
+  if (response.currentClarity?.trim()) {
+    sections.push(
+      `${t.aiInteraction.currentClarity}:\n${response.currentClarity.trim()}`
+    );
   }
 
-  if (distinctSuggestedQuestions.length) {
-    sections.push(
-      `${t.aiInteraction.suggestedQuestions}:\n${distinctSuggestedQuestions.join("\n")}`
-    );
+  if (response.question?.trim()) {
+    sections.push(`${t.aiInteraction.clarifyingQuestion}:\n${response.question.trim()}`);
   }
 
   return sections.join("\n\n");
@@ -342,16 +307,6 @@ export default function AIInteractionPage() {
 
       setResult(typedData);
 
-      // auto-redirect when conversation is complete
-      if (typedData.mode === "close") {
-      if (redirectTimeoutRef.current) {
-      clearTimeout(redirectTimeoutRef.current);
-    }
-      redirectTimeoutRef.current = setTimeout(() => {
-      router.push("/");
-    },  2000);
-}
-      
       setTimeout(() => {
         const target = pathTopRef.current ?? resultRef.current;
         target?.scrollIntoView({
@@ -391,7 +346,12 @@ export default function AIInteractionPage() {
   if (result.mode === "close") {
     text = result.message;
   } else if (result.mode === "integrated_view") {
-    text = result.message;
+    text = [
+      result.message,
+      ...(result.currentClarity?.trim()
+        ? ["", t.aiInteraction.currentClarity + ":", result.currentClarity.trim()]
+        : []),
+    ].join("\n");
   } else {
     text = [
       t.aiInteraction.whatAppearsToBeHappening + ",",
@@ -408,12 +368,12 @@ export default function AIInteractionPage() {
       ...(result.orientation.trim()
         ? ["", t.aiInteraction.integratedView + ":", result.orientation.trim()]
         : []),
-      ...(result.question ? ["", t.aiInteraction.clarifyingQuestion + ":", result.question] : []),
-      ...(
-        result.suggestedQuestions?.length
-          ? ["", t.aiInteraction.suggestedQuestions + ":", ...result.suggestedQuestions]
-          : []
-      ),
+      ...(result.currentClarity?.trim()
+        ? ["", t.aiInteraction.currentClarity + ":", result.currentClarity.trim()]
+        : []),
+      ...(result.question?.trim()
+        ? ["", t.aiInteraction.clarifyingQuestion + ":", result.question.trim()]
+        : []),
     ].join("\n");
   }
 
@@ -491,10 +451,6 @@ function handleDismissOnboarding(): void {
     if (loading || !result) return;
 
     setIsDone(true);
-
-    if (redirectTimeoutRef.current) {
-      clearTimeout(redirectTimeoutRef.current);
-    }
 
     setTimeout(() => {
       resultRef.current?.scrollIntoView({
@@ -610,7 +566,6 @@ function handleDismissOnboarding(): void {
     showYourInput?: string
   ) {
     const response = panel.iteration.response;
-    const refinementQuestions = getDistinctSuggestedQuestions(response);
     return (
       <div style={{ padding: "0 0 0.1rem 0", minWidth: 0, maxWidth: "100%" }}>
         {showYourInput && (
@@ -661,11 +616,7 @@ function handleDismissOnboarding(): void {
         {response.orientation.trim().length > 0 && (
   <div
     style={{
-      marginBottom: response.question
-        ? "1.75rem"
-        : refinementQuestions.length > 0
-          ? "1.65rem"
-          : 0,
+      marginBottom: 0,
       backgroundColor: "#f7f4ee",
       border: "1px solid #ebe5db",
       borderRadius: "14px",
@@ -736,123 +687,79 @@ function handleDismissOnboarding(): void {
       >
         {response.orientation}
       </p>
-    </div>
-  </div>
-)}
 
-        {response.question && (
+      {response.currentClarity?.trim() ? (
+        <div
+          style={{
+            marginTop: "1.05rem",
+            paddingTop: "1rem",
+            borderTop: "1px solid rgba(0,0,0,0.07)",
+          }}
+        >
           <div
-            style={{
-              padding: "1.125rem 1.25rem",
-              backgroundColor: "#f9f8f5",
-              border: "1px solid #e7e5e4",
-              borderLeft: "3px solid #111",
-              borderRadius: "0 10px 10px 0",
-              marginBottom: refinementQuestions.length > 0 ? "1.25rem" : 0,
-              maxWidth: "100%",
-              minWidth: 0,
-              boxSizing: "border-box",
-            }}
-          >
-            <div
-            style={{
-              display: "flex",
-              alignItems: "baseline",
-              justifyContent: "space-between",
-              gap: "0.75rem",
-              margin: "0 0 0.55rem 0",
-              flexWrap: "wrap",
-            }}
-          >
-              
-           <h3
             style={{
               fontSize: "0.72rem",
               fontWeight: 700,
               letterSpacing: "0.1em",
               textTransform: "uppercase",
               color: "#8e8a84",
+              margin: "0 0 0.45rem 0",
+            }}
+          >
+            {t.aiInteraction.currentClarity}
+          </div>
+          <p
+            style={{
+              color: "#333",
               margin: 0,
+              fontSize: "0.92rem",
+              lineHeight: 1.65,
+              overflowWrap: "anywhere",
+              wordBreak: "break-word",
+            }}
+          >
+            {response.currentClarity.trim()}
+          </p>
+        </div>
+      ) : null}
+
+      {response.question?.trim() ? (
+        <div
+          style={{
+            marginTop: "1.05rem",
+            paddingTop: "1rem",
+            borderTop: "1px solid rgba(0,0,0,0.07)",
+          }}
+        >
+          <div
+            style={{
+              fontSize: "0.72rem",
+              fontWeight: 700,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              color: "#8e8a84",
+              margin: "0 0 0.45rem 0",
             }}
           >
             {t.aiInteraction.clarifyingQuestion}
-          </h3>
-
-          <span
+          </div>
+          <p
             style={{
-                fontSize: "0.72rem",
-                fontWeight: 600,
-                letterSpacing: "0.04em",
-                color: "#8e8a84",
-                opacity: 0.80,
-                margin: 0,
-                whiteSpace: "nowrap",
-              }}
-            >
-              {t.aiInteraction.optional}
-            </span>
-          </div>    
-            <p
-              style={{
-                color: "#111",
-                margin: 0,
-                fontSize: "0.95rem",
-                lineHeight: 1.65,
-                fontWeight: 500,
-                overflowWrap: "anywhere",
-                wordBreak: "break-word",
-              }}
-            >
-              {response.question}
-            </p>
-          </div>
-        )}
-
-        {refinementQuestions.length > 0 && (
-          <div style={{ marginTop: "1.65rem" }}>
-            <h3
-              style={{
-                fontSize: "0.72rem",
-                fontWeight: 700,
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                color: "#8e8a84",
-                margin: "0 0 0.85rem 0",
-              }}
-            >
-              {t.aiInteraction.suggestedQuestions}
-            </h3>
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.7rem" }}>
-              {refinementQuestions.map((item, index) => (
-                <div
-                  key={`${panel.id}-${item}-${index}`}
-                  style={{
-                    padding: "0.9rem 1rem",
-                    borderRadius: "10px",
-                    border: "1px solid #e7e5e4",
-                    backgroundColor: "#fff",
-                    maxWidth: "100%",
-                    minWidth: 0,
-                    boxSizing: "border-box",
-                  }}
-                >
-                  <p
-                    style={{
-                      margin: 0,
-                      color: "#333",
-                      fontSize: "0.92rem",
-                      lineHeight: 1.55,
-                      overflowWrap: "anywhere",
-                      wordBreak: "break-word",
-                    }}
-                  >
-                    {item}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+              color: "#333",
+              margin: 0,
+              fontSize: "0.92rem",
+              lineHeight: 1.65,
+              overflowWrap: "anywhere",
+              wordBreak: "break-word",
+            }}
+          >
+            {response.question.trim()}
+          </p>
+        </div>
+      ) : null}
+    </div>
+  </div>
+)}
       </div>
     );
   }
@@ -1002,6 +909,40 @@ function renderActiveResponse(panel: ClarificationPanel) {
           >
             {response.message}
           </p>
+          {response.mode === "integrated_view" && response.currentClarity?.trim() ? (
+            <div
+              style={{
+                marginTop: "1.15rem",
+                paddingTop: "1rem",
+                borderTop: "1px solid rgba(0,0,0,0.07)",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: "0.72rem",
+                  fontWeight: 700,
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                  color: "#8e8a84",
+                  margin: "0 0 0.45rem 0",
+                }}
+              >
+                {t.aiInteraction.currentClarity}
+              </div>
+              <p
+                style={{
+                  color: "#333",
+                  margin: 0,
+                  fontSize: "0.92rem",
+                  lineHeight: 1.65,
+                  overflowWrap: "anywhere",
+                  wordBreak: "break-word",
+                }}
+              >
+                {response.currentClarity.trim()}
+              </p>
+            </div>
+          ) : null}
         </div>
       </div>
     );

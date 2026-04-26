@@ -127,12 +127,12 @@ export interface TranslationDictionary {
     whatMayBeInfluencingTheSituation: string;
     integratedView: string;
     howTheSituationReadsAsAWhole: string;
+    currentClarity: string;
     integratedViewListen: string;
     integratedViewStopAudio: string;
     ttsCouldNotPlay: string;
     clarifyingQuestion: string;
     optional: string;
-    suggestedQuestions: string;
     clarificationPath: string;
     clarificationPathDescription: string;
     response: string;
@@ -188,12 +188,12 @@ export interface TranslationDictionary {
     whatMayBeInfluencingTheAIInteraction: string;
     integratedView: string;
     howTheSituationReadsAsAWhole: string;
+    currentClarity: string;
     integratedViewListen: string;
     integratedViewStopAudio: string;
     ttsCouldNotPlay: string;
     clarifyingQuestion: string;
     optional: string;
-    suggestedQuestions: string;
     clarificationPath: string;
     clarificationPathDescription: string;
     response: string;

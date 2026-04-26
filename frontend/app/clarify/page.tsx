@@ -61,8 +61,14 @@ type ClarifyResponse = {
   unknown: string[];
   structural: string[];
   orientation: string;
+  currentClarity?: string;
   question?: string;
-  suggestedQuestions?: string[];
+};
+
+type IntegratedViewResponse = {
+  mode: "integrated_view";
+  message: string;
+  currentClarity?: string;
 };
 
 type CloseResponse = {
@@ -72,6 +78,7 @@ type CloseResponse = {
 
 type VirekaResponse =
   | (ClarifyResponse & { conversationId?: string | null })
+  | (IntegratedViewResponse & { conversationId?: string | null })
   | (CloseResponse & { conversationId?: string | null });
 
 type ClarificationIteration = {
@@ -164,7 +171,6 @@ export default function ClarifyPage() {
   const router = useRouter();
   const pathname = usePathname();
   const homeMode = pathname === "/";
-  const redirectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   function getStableAnonymousId(): string {
     try {
@@ -208,9 +214,6 @@ export default function ClarifyPage() {
 
   useEffect(() => {
     return () => {
-      if (redirectTimeoutRef.current) {
-        clearTimeout(redirectTimeoutRef.current);
-      }
       if (copyResetTimeoutRef.current) {
         clearTimeout(copyResetTimeoutRef.current);
       }
@@ -416,42 +419,10 @@ export default function ClarifyPage() {
     return () => document.removeEventListener("keydown", onKeydown);
   }, [leftMenuOpen]);
 
-  function normalizeQuestion(text: string): string {
-    return text
-      .trim()
-      .toLowerCase()
-      .replace(/[^\w\s]/g, "")
-      .replace(/\s+/g, " ");
-  }
-
   function truncateText(text: string, maxLength = 78): string {
     const trimmed = text.trim();
     if (trimmed.length <= maxLength) return trimmed;
     return `${trimmed.slice(0, maxLength).trimEnd()}…`;
-  }
-
-  function getDistinctSuggestedQuestions(response: ClarifyResponse): string[] {
-    const mainQuestionNormalized = response.question
-      ? normalizeQuestion(response.question)
-      : "";
-
-    const seen = new Set<string>();
-    const rawSuggestions = response.suggestedQuestions ?? [];
-    const distinct: string[] = [];
-
-    for (const item of rawSuggestions) {
-      const trimmed = item.trim();
-      if (!trimmed) continue;
-      const normalized = normalizeQuestion(trimmed);
-      if (!normalized) continue;
-      if (mainQuestionNormalized && normalized === mainQuestionNormalized) continue;
-      if (seen.has(normalized)) continue;
-      seen.add(normalized);
-      distinct.push(trimmed);
-      if (distinct.length === 2) break;
-    }
-
-    return distinct;
   }
 
   function getRefinementPanelSummary(iteration: ClarificationIteration): string {
@@ -517,7 +488,12 @@ export default function ClarifyPage() {
       return response.message;
     }
 
-    const distinctSuggestedQuestions = getDistinctSuggestedQuestions(response);
+    if (response.mode === "integrated_view") {
+      if (response.currentClarity?.trim()) {
+        return `${response.message}\n\n${t.clarify.currentClarity}:\n${response.currentClarity.trim()}`;
+      }
+      return response.message;
+    }
 
     const sections = [
       `${t.clarify.whatAppearsToBeHappening}:\n${response.observable.join("\n")}`,
@@ -530,14 +506,14 @@ export default function ClarifyPage() {
       sections.push(response.orientation.trim());
     }
 
-    if (response.question) {
-      sections.push(`${t.clarify.clarifyingQuestion}:\n${response.question}`);
+    if (response.currentClarity?.trim()) {
+      sections.push(
+        `${t.clarify.currentClarity}:\n${response.currentClarity.trim()}`
+      );
     }
 
-    if (distinctSuggestedQuestions.length) {
-      sections.push(
-        `${t.clarify.suggestedQuestions}:\n${distinctSuggestedQuestions.join("\n")}`
-      );
+    if (response.question?.trim()) {
+      sections.push(`${t.clarify.clarifyingQuestion}:\n${response.question.trim()}`);
     }
 
     return sections.join("\n\n");
@@ -788,17 +764,7 @@ export default function ClarifyPage() {
       }
 
       setResult(typedData);
-      
-      // auto-redirect when conversation is complete
-      if (typedData.mode === "close") {
-      if (redirectTimeoutRef.current) {
-      clearTimeout(redirectTimeoutRef.current);
-    }
 
-      redirectTimeoutRef.current = setTimeout(() => {
-        router.push("/");
-    }, 2000);
-}  
       setTimeout(() => {
         const target = pathTopRef.current ?? resultRef.current;
         target?.scrollIntoView({
@@ -826,7 +792,14 @@ function handleCopyResult(): void {
   const text =
     result.mode === "close"
       ? result.message
-      : [
+      : result.mode === "integrated_view"
+        ? [
+            result.message,
+            ...(result.currentClarity?.trim()
+              ? ["", t.clarify.currentClarity + ":", result.currentClarity.trim()]
+              : []),
+          ].join("\n")
+        : [
           t.clarify.whatAppearsToBeHappening + ",",
           ...result.observable,
           "",
@@ -841,12 +814,12 @@ function handleCopyResult(): void {
           ...(result.orientation.trim()
               ? ["", t.clarify.integratedView + ":", result.orientation.trim()]
               : []),
-          ...(result.question ? ["", t.clarify.clarifyingQuestion + ":", result.question] : []),
-          ...(
-            result.suggestedQuestions?.length
-              ? ["", t.clarify.suggestedQuestions + ":", ...result.suggestedQuestions]
-              : []
-          ),
+          ...(result.currentClarity?.trim()
+            ? ["", t.clarify.currentClarity + ":", result.currentClarity.trim()]
+            : []),
+          ...(result.question?.trim()
+            ? ["", t.clarify.clarifyingQuestion + ":", result.question.trim()]
+            : []),
         ].join("\n");
 
   const resetLabel = () => {
@@ -902,7 +875,9 @@ function handleCopyResult(): void {
 }
 
 function buildAIReadyContext(): string | undefined {
-  if (!result || result.mode === "close") return undefined;
+  if (!result || result.mode === "close" || result.mode !== "clarify") {
+    return undefined;
+  }
 
   const sections: string[] = [
     "Use the following clarified context as the basis for your response.",
@@ -929,6 +904,7 @@ function buildAIReadyContext(): string | undefined {
   appendListSection("What remains unclear", result.unknown);
   appendListSection("What may be influencing the situation", result.structural);
   appendTextSection("Integrated view", result.orientation);
+  appendTextSection("Current clarity", result.currentClarity);
   appendTextSection("Clarifying question", result.question);
 
   sections.push(
@@ -1159,7 +1135,6 @@ function handleStartNew(): void {
     showYourInput?: string
   ) {
     const response = panel.iteration.response;
-    const refinementQuestions = getDistinctSuggestedQuestions(response);
     return (
       <div style={{ padding: "0 0 0.1rem 0", minWidth: 0, maxWidth: "100%" }}>
         {showYourInput && (
@@ -1210,11 +1185,7 @@ function handleStartNew(): void {
         {response.orientation.trim().length > 0 && (
   <div
     style={{
-      marginBottom: response.question
-        ? "1.75rem"
-        : refinementQuestions.length > 0
-          ? "1.65rem"
-          : 0,
+      marginBottom: 0,
       backgroundColor: "#f7f4ee",
       border: "1px solid #ebe5db",
       borderRadius: "14px",
@@ -1285,123 +1256,79 @@ function handleStartNew(): void {
       >
         {response.orientation}
       </p>
-    </div>
-  </div>
-)}
 
-        {response.question && (
-          <div
-            style={{
-              padding: "1.125rem 1.25rem",
-              backgroundColor: "#f9f8f5",
-              border: "1px solid #e7e5e4",
-              borderLeft: "3px solid #111",
-              borderRadius: "0 10px 10px 0",
-              marginBottom: refinementQuestions.length > 0 ? "1.25rem" : 0,
-              maxWidth: "100%",
-              minWidth: 0,
-              boxSizing: "border-box",
-            }}
-          >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "baseline",
-              justifyContent: "space-between",
-              gap: "0.75rem",
-              margin: "0 0 0.55rem 0",
-              flexWrap: "wrap",
+      {response.currentClarity?.trim() ? (
+        <div
+          style={{
+            marginTop: "1.05rem",
+            paddingTop: "1rem",
+            borderTop: "1px solid rgba(0,0,0,0.07)",
           }}
-          >
-            <h3
+        >
+          <div
             style={{
               fontSize: "0.72rem",
               fontWeight: 700,
               letterSpacing: "0.1em",
               textTransform: "uppercase",
               color: "#8e8a84",
+              margin: "0 0 0.45rem 0",
+            }}
+          >
+            {t.clarify.currentClarity}
+          </div>
+          <p
+            style={{
+              color: "#333",
               margin: 0,
-          }}
-            >
-              {t.clarify.clarifyingQuestion}
-            </h3>
+              fontSize: "0.92rem",
+              lineHeight: 1.65,
+              overflowWrap: "anywhere",
+              wordBreak: "break-word",
+            }}
+          >
+            {response.currentClarity.trim()}
+          </p>
+        </div>
+      ) : null}
 
-            <span
-              style={{
-              fontSize: "0.72rem",
-              fontWeight: 600,
-              letterSpacing: "0.04em",
-              color: "#8e8a84",
-              opacity: 0.80,
-              margin: 0,
-              whiteSpace: "nowrap",
+      {response.question?.trim() ? (
+        <div
+          style={{
+            marginTop: "1.05rem",
+            paddingTop: "1rem",
+            borderTop: "1px solid rgba(0,0,0,0.07)",
           }}
         >
-            {t.clarify.optional}
-          </span>
+          <div
+            style={{
+              fontSize: "0.72rem",
+              fontWeight: 700,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              color: "#8e8a84",
+              margin: "0 0 0.45rem 0",
+            }}
+          >
+            {t.clarify.clarifyingQuestion}
+          </div>
+          <p
+            style={{
+              color: "#333",
+              margin: 0,
+              fontSize: "0.92rem",
+              lineHeight: 1.65,
+              overflowWrap: "anywhere",
+              wordBreak: "break-word",
+            }}
+          >
+            {response.question.trim()}
+          </p>
         </div>
-            
-            <p
-              style={{
-                color: "#111",
-                margin: 0,
-                fontSize: "0.95rem",
-                lineHeight: 1.65,
-                fontWeight: 500,
-                overflowWrap: "anywhere",
-                wordBreak: "break-word",
-              }}
-            >
-              {response.question}
-            </p>
-          </div>
-        )}
-
-        {refinementQuestions.length > 0 && (
-          <div style={{ marginTop: "1.65rem" }}>
-            <h3
-              style={{
-                fontSize: "0.72rem",
-                fontWeight: 700,
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                color: "#8e8a84",
-                margin: "0 0 0.85rem 0",
-              }}
-            >
-              {t.clarify.suggestedQuestions}
-            </h3>
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.7rem" }}>
-              {refinementQuestions.map((item, index) => (
-                <div
-                  key={`${panel.id}-${item}-${index}`}
-                  style={{
-                    padding: "0.9rem 1rem",
-                    borderRadius: "10px",
-                    border: "1px solid #e7e5e4",
-                    backgroundColor: "#fff",
-                    maxWidth: "100%",
-                    minWidth: 0,
-                    boxSizing: "border-box",
-                  }}
-                >
-                  <p
-                    style={{
-                      margin: 0,
-                      color: "#333",
-                      fontSize: "0.92rem",
-                      lineHeight: 1.55,
-                      overflowWrap: "anywhere",
-                      wordBreak: "break-word",
-                    }}
-                  >
-                    {item}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+      ) : null}
+    </div>
+  </div>
+)}
       </div>
     );
   }
@@ -1563,6 +1490,40 @@ function handleStartNew(): void {
           >
             {response.message}
           </p>
+          {response.mode === "integrated_view" && response.currentClarity?.trim() ? (
+            <div
+              style={{
+                marginTop: "1.15rem",
+                paddingTop: "1rem",
+                borderTop: "1px solid rgba(0,0,0,0.07)",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: "0.72rem",
+                  fontWeight: 700,
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                  color: "#8e8a84",
+                  margin: "0 0 0.45rem 0",
+                }}
+              >
+                {t.clarify.currentClarity}
+              </div>
+              <p
+                style={{
+                  color: "#333",
+                  margin: 0,
+                  fontSize: "0.92rem",
+                  lineHeight: 1.65,
+                  overflowWrap: "anywhere",
+                  wordBreak: "break-word",
+                }}
+              >
+                {response.currentClarity.trim()}
+              </p>
+            </div>
+          ) : null}
         </div>
       </div>
     );

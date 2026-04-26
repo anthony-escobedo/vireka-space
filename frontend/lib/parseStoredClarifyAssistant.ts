@@ -7,8 +7,8 @@ export type ClarifyResponse = {
   unknown: string[];
   structural: string[];
   orientation: string;
+  currentClarity?: string;
   question?: string;
-  suggestedQuestions?: string[];
 };
 
 export type CloseResponse = {
@@ -82,12 +82,11 @@ export function parseStoredAssistantContent(content: unknown): VirekaResponse {
       base.structural = nonEmptyLines(body);
     } else if (h.startsWith("integrated view")) {
       base.orientation = body.trim();
+    } else if (h.startsWith("current clarity")) {
+      base.currentClarity = body.trim() || undefined;
     } else if (h.startsWith("clarifying question")) {
       const lines = nonEmptyLines(body);
       base.question = lines.join("\n").trim() || undefined;
-    } else if (h.startsWith("suggested questions")) {
-      const lines = nonEmptyLines(body);
-      if (lines.length) base.suggestedQuestions = lines;
     }
   }
 

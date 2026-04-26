@@ -56,13 +56,16 @@ type ClarifyResponse = {
   unknown: string[];
   structural: string[];
   orientation: string;
-  question?: string;
-  suggestedQuestions?: string[];
+  /** One concise sentence (or very short paragraph) naming the clearest carry-forward point. */
+  currentClarity?: string;
+  /** Exactly one, always present in API responses. */
+  question: string;
 };
 
 type IntegratedViewResponse = {
   mode: "integrated_view";
   message: string;
+  currentClarity?: string;
 };
 
 type CloseResponse = {
@@ -181,12 +184,13 @@ Section guidance:
 - In interpretive, describe possible assumptions or interpretations without presenting them as facts.
 - In unknown, state clearly what is not yet established.
 - In structural, identify contextual or situational influences such as incentives, timing, roles, expectations, constraints, institutional context, or environment.
-- In orientation, provide an integrated view of the situation as a whole.
-- Orientation should read as one plain, natural paragraph that reflects what is happening, possible interpretations, and what remains unclear without labeling those parts explicitly.
+- In orientation, provide a short integrated view of the situation: one concise paragraph, preferably 1-2 sentences, synthesizing how the situation reads as a whole without restating every bullet. Preserve uncertainty.
+- Orientation should read as a plain, natural paragraph that reflects what is happening, possible interpretations, and what remains unclear without labeling those parts explicitly.
 - Orientation should use direct, non-academic wording and avoid phrases such as "the situation involves", "may be interpreted in the context of", and "uncertainty remains regarding".
 - Orientation should not sound like a report or essay.
 - Orientation should be a single continuous paragraph with no bullet points, no line breaks between sentences, and no stacked sentence formatting.
-- Orientation should usually be 3-6 sentences unless the situation is extremely minimal.
+- In currentClarity, name the clearest point the user can carry forward at this stage, based only on the provided context. It is not an answer, advice, conclusion, diagnosis, or recommendation. Do not present interpretations as facts. Do not infer motive, intent, blame, or hidden cause. Do not introduce facts the user did not provide. When uncertainty remains, state it clearly. Prefer patterns such as: "What is clearer is...", "The situation appears to involve...", "It remains unclear whether...", "The available context does not establish...", "This is being interpreted as...". Avoid: "The real issue is...", "The truth is...", "This proves...", "You should...". A useful shape is: what is clearer is [visible structure], while [what remains unclear] remains uncertain.
+- Distinguish orientation (short synthesis) from currentClarity: orientation summarizes how the situation reads overall; currentClarity names the single most salient point of additional clarity, including what is still not established.
 - Orientation should remain clear, concise, and non-prescriptive.
 - Orientation should support clearer interpretation without forcing resolution of uncertainty.
 - Orientation should not restate each structural element individually.
@@ -198,9 +202,6 @@ Section guidance:
 - Clarify conditions influencing interpretation when relevant.
 - Support decision clarity in clarify mode without prescribing action.
 - Support prompt clarity in AI interaction mode without prescribing revisions.
-- Ask at most one clarifying question, and only when another distinction would materially improve clarity.
-- Do not ask a question when sufficient clarity is already present.
-
 Necessity-language behavior:
 - When necessity language appears in a way that proposes a solution, implies inevitability, implies required personal change, assumes a specific path forward, or frames one outcome as required without clarifying why that path or outcome is necessary, include one additional interpretive bullet that gently surfaces the embedded necessity as interpretive rather than observational.
 - Use neutral wording such as:
@@ -211,14 +212,10 @@ Necessity-language behavior:
 - Do not make the system question everything.
 - Only surface embedded necessity when doing so meaningfully expands clarity.
 
-Question behavior:
-- Any clarifying question must be specific to the situation.
-- It must not sound generic, templated, therapeutic, or like a coaching prompt.
-- It should help differentiate a real uncertainty in the actual input.
-- Suggested questions, when included, must also be specific to the situation.
-- Include suggested questions only when helpful.
-- Suggested questions should be short, neutral, and specific.
-- Do not include suggested questions when clarity already appears sufficient.
+Clarifying question (mode "clarify" only, required):
+- Every clarify response must include exactly one "question" string: a single focused clarifying question. Never omit it. Do not return a "suggestedQuestions" field for mode "clarify" (omit it or use empty; the client ignores it).
+- The question should target what would most help resolve what remains unclear; invite more context; do not give advice, directives, or a list. Do not pack multiple unrelated questions, bullet lists, or chatbot phrasing such as "Would you like me to...". Avoid generic prompts such as "Can you tell me more?".
+- The question should be plain, specific, and concise, and should connect to the integrated view, currentClarity (when present), and what remains unclear.
 
 Rumination prevention:
 - Do not repeatedly reframe the same distinction once sufficient structural visibility has been achieved.
@@ -226,10 +223,10 @@ Rumination prevention:
 - Support participation rather than recursive reinterpretation.
 
 Closure behavior:
-- Recognize completion signals such as gratitude or statements indicating sufficient clarity.
-- Examples include: "thank you", "this helps", "I understand", "I'm clear now", "that is enough".
-- When closure is clearly signaled, respond briefly and politely.
-- Do not reopen interpretation unnecessarily.
+- Use mode "close" only when the user clearly and explicitly ends the clarification session. Do not use mode "close" for brief thanks, routine acknowledgments, or appreciation that might precede a follow-up.
+- Do not return mode "close" for casual phrases such as "thank you", "thanks", "got it", or "I understand" on their own, or for mixed messages that introduce new content, contrast ("but", "however"), or another question.
+- When the user explicitly signals the session should end, respond briefly and politely with mode "close" and a short message.
+- Do not reopen interpretation unnecessarily after a true close.
 
 Integrated view behavior:
 - When integrated-view mode is requested, synthesize the structural elements into a coherent description of how the situation currently appears when observations, assumptions, unknowns, and influences are considered together.
@@ -265,36 +262,33 @@ For mode "clarify", use:
   "unknown": ["..."],
   "structural": ["..."],
   "orientation": "...",
-  "question": "...",
-  "suggestedQuestions": ["...", "..."]
+  "currentClarity": "...",
+  "question": "..."
 }
 
 Rules for mode "clarify":
 - observable, interpretive, unknown, structural must each contain at least one item
-- orientation must be one string
-- question is optional
-- suggestedQuestions is optional
-- suggestedQuestions should include 1-2 useful follow-up questions only when helpful
-- suggestedQuestions must relate specifically to the situation
-- do not include generic template questions
-- do not include suggestedQuestions when clarity already appears sufficient
-- each item should be concise, neutral, and structurally phrased
+- orientation must be one string: a concise integrated view, preferably 1-2 sentences, without repeating every bullet; preserve uncertainty
+- currentClarity should be one concise sentence, or a very short paragraph only if needed; it names the clearest carry-forward point; it must follow the currentClarity guardrails above. Include currentClarity whenever a meaningful such point can be named without overstating certainty; omit it only if it would be redundant or misleading
+- question is required: exactly one string, a single question as described under "Clarifying question" above. Do not include "suggestedQuestions" in the JSON for mode "clarify".
+- each list item in observable through structural should be concise, neutral, and structurally phrased
 - do not use second-person references
 - do not use third-person references such as "the user"
 
 For mode "integrated_view", use:
 {
   "mode": "integrated_view",
-  "message": "..."
+  "message": "...",
+  "currentClarity": "..."
 }
 
 Rules for mode "integrated_view":
-- message should synthesize observable, interpretive, unknown, and structural elements into one plain, natural paragraph
+- message should synthesize observable, interpretive, unknown, and structural elements into one plain, natural paragraph, preferably 1-2 sentences; do not restate every bullet; preserve uncertainty
 - message should use direct, non-academic wording and avoid phrases such as "the situation involves", "may be interpreted in the context of", and "uncertainty remains regarding"
 - message should be a single continuous paragraph with no bullet points, no line breaks between sentences, and no stacked sentence formatting
 - message should reflect what is happening, possible interpretations, and what remains unclear without labeling these explicitly
-- message should usually be 2 to 4 sentences unless the situation is extremely minimal
 - message should remain grounded in the clarification that was already produced
+- currentClarity follows the same rules as in clarify mode; include whenever meaningful; otherwise omit
 
 - message should not restate bullet points individually
 - message should not function as a summary of each section
@@ -364,6 +358,18 @@ function sanitizeLatestResult(value: unknown): ClarifyResponse | null {
   if (!isNonEmptyStringArray(value.structural)) return null;
   if (!isNonEmptyString(value.orientation)) return null;
 
+  let currentClarity: string | undefined;
+  if (
+    typeof value.currentClarity === "string" &&
+    value.currentClarity.trim().length > 0
+  ) {
+    currentClarity = normalizeWhitespace(value.currentClarity);
+  }
+
+  const question = isNonEmptyString(value.question)
+    ? normalizeWhitespace(value.question)
+    : normalizeWhitespace(fallbackForSection("question"));
+
   return {
     mode: "clarify",
     observable: value.observable.map(normalizeWhitespace),
@@ -371,38 +377,40 @@ function sanitizeLatestResult(value: unknown): ClarifyResponse | null {
     unknown: value.unknown.map(normalizeWhitespace),
     structural: value.structural.map(normalizeWhitespace),
     orientation: normalizeWhitespace(value.orientation),
-    question:
-      typeof value.question === "string"
-        ? normalizeWhitespace(value.question)
-        : undefined,
-    suggestedQuestions: Array.isArray(value.suggestedQuestions)
-      ? value.suggestedQuestions
-          .filter(
-            (q): q is string => typeof q === "string" && q.trim().length > 0
-          )
-          .slice(0, 2)
-          .map(normalizeWhitespace)
-      : undefined,
+    currentClarity,
+    question,
   };
 }
 
+/** True only for explicit session-end phrasing. Full message must match; no substring "thanks" style matches. */
 function detectClosureSignal(input: string): boolean {
-  const normalized = input.toLowerCase();
+  const t = input
+    .trim()
+    .replace(/\s+/g, " ")
+    .replace(/[''\u2019]/g, "'")
+    .toLowerCase();
+  if (!t) return false;
 
-  return [
-    "thank you",
-    "thanks",
-    "this helps",
-    "that helps",
-    "i understand",
-    "i'm clear",
-    "im clear",
-    "all clear",
-    "that is enough",
-    "got it",
-    "i'm good now",
-    "im good now",
-  ].some((phrase) => normalized.includes(phrase));
+  // If the line clearly continues the conversation, do not treat as a closure shortcut.
+  if (/\b(but|however|although|and yet|one more|another|also|still|question)\b/.test(t)) {
+    return false;
+  }
+
+  const patterns: RegExp[] = [
+    /^i'm done[.!]*$/,
+    /^i am done[.!]*$/,
+    /^im done[.!]*$/,
+    /^i'm finished[.!]*$/,
+    /^i am finished[.!]*$/,
+    /^im finished[.!]*$/,
+    /^end this clarification[.!]*$/,
+    /^close this clarification[.!]*$/,
+    /^finish here[.!]*$/,
+    /^stop here[.!]*$/,
+    /^this is complete[.!]*$/,
+  ];
+
+  return patterns.some((re) => re.test(t));
 }
 
 function validateClarifyResponse(data: unknown): ClarifyResponse {
@@ -432,21 +440,13 @@ function validateClarifyResponse(data: unknown): ClarifyResponse {
     throw new Error("orientation required");
   }
 
-  let question: string | undefined;
-  if (typeof data.question === "string" && data.question.trim().length > 0) {
-    question = normalizeWhitespace(data.question);
-  }
+  const question = isNonEmptyString(data.question)
+    ? normalizeWhitespace(data.question)
+    : normalizeWhitespace(fallbackForSection("question"));
 
-  let suggestedQuestions: string[] | undefined;
-  if (Array.isArray(data.suggestedQuestions)) {
-    const filtered = data.suggestedQuestions
-      .filter((q): q is string => typeof q === "string" && q.trim().length > 0)
-      .map(normalizeWhitespace)
-      .slice(0, 2);
-
-    if (filtered.length > 0) {
-      suggestedQuestions = filtered;
-    }
+  let currentClarity: string | undefined;
+  if (typeof data.currentClarity === "string" && data.currentClarity.trim()) {
+    currentClarity = normalizeWhitespace(data.currentClarity);
   }
 
   return {
@@ -456,8 +456,8 @@ function validateClarifyResponse(data: unknown): ClarifyResponse {
     unknown: data.unknown.map(normalizeWhitespace),
     structural: data.structural.map(normalizeWhitespace),
     orientation: normalizeWhitespace(data.orientation),
+    currentClarity,
     question,
-    suggestedQuestions,
   };
 }
 
@@ -473,9 +473,18 @@ function validateResponse(data: unknown): VirekaResponse {
       throw new Error("Integrated view message required");
     }
 
+    let currentClarity: string | undefined;
+    if (
+      typeof data.currentClarity === "string" &&
+      data.currentClarity.trim().length > 0
+    ) {
+      currentClarity = normalizeWhitespace(data.currentClarity);
+    }
+
     return {
       mode: "integrated_view",
       message: normalizeWhitespace(data.message),
+      currentClarity,
     };
   }
 
@@ -530,15 +539,11 @@ function buildIntegratedViewUserMessage(
     `Orientation:\n${latestResult.orientation}`,
   ];
 
-  if (latestResult.question) {
-    sections.push(`Clarifying question:\n${latestResult.question}`);
+  if (latestResult.currentClarity?.trim()) {
+    sections.push(`Current clarity:\n${latestResult.currentClarity.trim()}`);
   }
 
-  if (latestResult.suggestedQuestions?.length) {
-    sections.push(
-      `Suggested questions:\n${latestResult.suggestedQuestions.join("\n")}`
-    );
-  }
+  sections.push(`Clarifying question:\n${latestResult.question}`);
 
   const contextLine =
     context === "ai-interaction"
@@ -571,8 +576,8 @@ type ClarifySection =
   | "unknown"
   | "structural"
   | "orientation"
+  | "current_clarity"
   | "question"
-  | "suggested_question"
   | "integrated_view"
   | "close";
 
@@ -644,10 +649,10 @@ function fallbackForSection(section: ClarifySection): string {
       return "Timing, expectations, roles, or constraints may be shaping the situation.";
     case "orientation":
       return "Further differentiation may help clarify what is established, what is assumed, and what remains uncertain.";
+    case "current_clarity":
+      return "What is clearer is how the described elements relate; several parts of the situation remain not yet established.";
     case "question":
       return "Which specific part of the situation remains least established?";
-    case "suggested_question":
-      return "Which part of the situation is directly observable?";
     case "integrated_view":
       return "The situation may become easier to follow by seeing how observations, assumptions, unknowns, and influences fit together.";
     case "close":
@@ -693,14 +698,18 @@ function enforceNeutralResponse(response: VirekaResponse): VirekaResponse {
       "orientation"
     );
 
-    const question = response.question
-      ? neutralizeTextBySection(response.question, "question")
+    const currentClarity = response.currentClarity?.trim()
+      ? neutralizeTextBySection(response.currentClarity, "current_clarity")
       : undefined;
 
-    const suggestedQuestions = response.suggestedQuestions
-      ?.map((item) => neutralizeTextBySection(item, "suggested_question"))
-      .filter(Boolean)
-      .slice(0, 2);
+    const questionRaw = neutralizeTextBySection(
+      response.question,
+      "question"
+    );
+    const question =
+      questionRaw.trim().length > 0
+        ? questionRaw
+        : fallbackForSection("question");
 
     return {
       mode: "clarify",
@@ -719,18 +728,20 @@ function enforceNeutralResponse(response: VirekaResponse): VirekaResponse {
           ? structural
           : [fallbackForSection("structural")],
       orientation,
+      currentClarity,
       question,
-      suggestedQuestions:
-        suggestedQuestions && suggestedQuestions.length > 0
-          ? suggestedQuestions
-          : undefined,
     };
   }
 
   if (response.mode === "integrated_view") {
+    const currentClarity = response.currentClarity?.trim()
+      ? neutralizeTextBySection(response.currentClarity, "current_clarity")
+      : undefined;
+
     return {
       mode: "integrated_view",
       message: neutralizeTextBySection(response.message, "integrated_view"),
+      currentClarity,
     };
   }
 
@@ -746,7 +757,11 @@ function enforceNeutralResponse(response: VirekaResponse): VirekaResponse {
   }
 
   if (response.mode === "integrated_view") {
-    return response.message;
+    let text = response.message;
+    if (response.currentClarity?.trim()) {
+      text = `${text}\n\nCurrent clarity:\n${response.currentClarity.trim()}`;
+    }
+    return text;
   }
 
   const sections = [
@@ -760,15 +775,11 @@ function enforceNeutralResponse(response: VirekaResponse): VirekaResponse {
     sections.push(`Integrated view:\n${response.orientation}`);
   }
 
-  if (response.question) {
-    sections.push(`Clarifying question:\n${response.question}`);
+  if (response.currentClarity?.trim()) {
+    sections.push(`Current clarity:\n${response.currentClarity.trim()}`);
   }
 
-  if (response.suggestedQuestions?.length) {
-    sections.push(
-      `Suggested questions:\n${response.suggestedQuestions.join("\n")}`
-    );
-  }
+  sections.push(`Clarifying question:\n${response.question}`);
 
   return sections.join("\n\n");
 }

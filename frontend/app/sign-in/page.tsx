@@ -570,7 +570,9 @@ export default function SignInPage() {
                   : googlePrimaryButtonStyle
               }
             >
-              {oauthLoading ? t.signIn.sending : t.signIn.continueWithGoogle}
+              {oauthLoading
+                ? t.signIn.googleLoading
+                : t.signIn.continueWithGoogle}
             </button>
             <label htmlFor="sign-in-email" style={{ display: "none" }}>
               {t.signIn.emailPlaceholder}

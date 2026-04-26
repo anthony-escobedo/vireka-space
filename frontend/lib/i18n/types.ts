@@ -56,6 +56,7 @@ export interface TranslationDictionary {
     intro: string;
     continueWithEmail: string;
     continueWithGoogle: string;
+    googleLoading: string;
     paidPlanNote: string;
     emailPlaceholder: string;
     sending: string;

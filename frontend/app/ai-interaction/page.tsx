@@ -1205,6 +1205,7 @@ function renderActiveResponse(panel: ClarificationPanel) {
             <InterpretationInput
               textareaRef={topInputRef}
               id="ai-input-composer"
+              transcribeLanguage={language}
               transcribingLabel={t.aiInteraction.transcribing}
               helperText=""
               placeholder={composerPlaceholder}

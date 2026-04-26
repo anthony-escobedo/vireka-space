@@ -14,6 +14,7 @@ import {
   type ReactNode,
   type Ref,
 } from "react";
+import type { Language } from "../lib/i18n/config";
 import { WHISPER_TRANSCRIBE_URL } from "../lib/whisperTranscribeUrl";
 
 const TEXTAREA_MIN_PX = 72;
@@ -51,6 +52,11 @@ export type InterpretationInputProps = {
   surfaceVariant?: "card" | "composer";
   /** Shown while audio is being transcribed (voice UI). */
   transcribingLabel: string;
+  /**
+   * Whisper / transcription language hint (UI locale, not a new user control).
+   * For `en`, no `language` field is sent (Whisper auto-detect). `es` / `pt` are sent.
+   */
+  transcribeLanguage?: Language;
 };
 
 function mergeRefs<T>(
@@ -611,6 +617,7 @@ const InterpretationInput = forwardRef<
     clarifyLoadingLabel,
     surfaceVariant = "card",
     transcribingLabel,
+    transcribeLanguage,
   },
   ref
 ) {
@@ -882,6 +889,9 @@ const InterpretationInput = forwardRef<
 
               const formData = new FormData();
               formData.append("file", audioBlob, filename);
+              if (transcribeLanguage === "es" || transcribeLanguage === "pt") {
+                formData.append("language", transcribeLanguage);
+              }
 
               console.log("[mic] before fetch to /transcribe", {
                 url: urlDebug.resolvedUrl,
@@ -989,6 +999,7 @@ const InterpretationInput = forwardRef<
     cleanupRecorder,
     releaseStream,
     revokeAudioUrl,
+    transcribeLanguage,
     transcribeUrl,
   ]);
 

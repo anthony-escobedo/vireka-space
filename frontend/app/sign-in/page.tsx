@@ -134,11 +134,72 @@ const backWrapStyle: CSSProperties = {
   textAlign: "center" as const,
 };
 
+const secondaryButtonStyle: CSSProperties = {
+  display: "block",
+  width: "100%",
+  boxSizing: "border-box",
+  margin: "0.65rem 0 0 0",
+  padding: "0.7rem 1rem",
+  border: "1px solid rgba(0,0,0,0.1)",
+  borderRadius: "12px",
+  backgroundColor: "rgba(255,255,255,0.55)",
+  color: "rgba(47,43,39,0.9)",
+  fontSize: "0.9rem",
+  fontWeight: 500,
+  letterSpacing: "-0.01em",
+  cursor: "pointer",
+  fontFamily: "inherit",
+};
+
+const secondaryButtonDisabledStyle: CSSProperties = {
+  ...secondaryButtonStyle,
+  cursor: "not-allowed",
+  opacity: 0.6,
+};
+
+const RATE_LIMIT_OTP_MESSAGE =
+  "Too many sign-in emails were requested. Please wait and try again, or use Google sign-in.";
+
+const GOOGLE_SIGN_IN_LABEL = "Continue with Google";
+
 function isValidEmail(value: string): boolean {
   const t = value.trim();
   if (t.length < 3) return false;
   if (!t.includes("@")) return false;
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(t);
+}
+
+function getSafeRedirectPath(): string {
+  const redirectParam = new URLSearchParams(window.location.search).get(
+    "redirect"
+  );
+  return redirectParam && redirectParam.startsWith("/") ? redirectParam : "/plan";
+}
+
+function getAuthRedirectTo(): string {
+  return `${window.location.origin}${getSafeRedirectPath()}`;
+}
+
+function isOtpRateLimited(
+  error: { status?: number; message?: string; code?: string } | null
+): boolean {
+  if (!error) return false;
+  if (error.status === 429) return true;
+  const c = (error.code ?? "").toLowerCase();
+  if (
+    c === "over_email_send_rate_limit" ||
+    c.startsWith("over_email")
+  ) {
+    return true;
+  }
+  const m = (error.message ?? "").toLowerCase();
+  if (m.includes("rate limit")) return true;
+  if (m.includes("too many")) return true;
+  if (m.includes("email") && m.includes("send") && (m.includes("rate") || m.includes("over"))) {
+    return true;
+  }
+  if (m.includes("over_email")) return true;
+  return false;
 }
 
 export default function SignInPage() {
@@ -149,9 +210,10 @@ export default function SignInPage() {
     "idle"
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const handleSubmit = useCallback(async () => {
-    if (status === "loading") return;
+    if (status === "loading" || googleLoading) return;
     setErrorMessage(null);
     const supabase = getSupabaseClient();
     if (!supabase) {
@@ -165,12 +227,7 @@ export default function SignInPage() {
       return;
     }
     setStatus("loading");
-    const redirectParam = new URLSearchParams(window.location.search).get(
-      "redirect"
-    );
-    const safeRedirect =
-      redirectParam && redirectParam.startsWith("/") ? redirectParam : "/plan";
-    const emailRedirectTo = `${window.location.origin}${safeRedirect}`;
+    const emailRedirectTo = getAuthRedirectTo();
 
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
@@ -182,15 +239,57 @@ export default function SignInPage() {
 
     if (error) {
       console.error("Supabase sign-in error:", error);
-      setErrorMessage(t.signIn.couldNotSendLink);
+      setErrorMessage(
+        isOtpRateLimited(error)
+          ? RATE_LIMIT_OTP_MESSAGE
+          : t.signIn.couldNotSendLink
+      );
       setStatus("error");
       return;
     }
     setStatus("success");
-  }, [email, status, t.signIn.couldNotSendLink, t.signIn.errorGeneric]);
+  }, [
+    email,
+    googleLoading,
+    status,
+    t.signIn.couldNotSendLink,
+    t.signIn.errorGeneric,
+  ]);
 
-  const canSubmit = isValidEmail(email) && status !== "loading" && status !== "success";
+  const handleGoogle = useCallback(async () => {
+    if (status === "loading" || googleLoading) return;
+    setErrorMessage(null);
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+      setErrorMessage(t.signIn.errorGeneric);
+      return;
+    }
+    setGoogleLoading(true);
+    const emailRedirectTo = getAuthRedirectTo();
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: emailRedirectTo,
+      },
+    });
+    if (error) {
+      console.error("Supabase sign-in error:", error);
+      setErrorMessage(
+        isOtpRateLimited(error)
+          ? RATE_LIMIT_OTP_MESSAGE
+          : t.signIn.couldNotSendLink
+      );
+      setGoogleLoading(false);
+    }
+  }, [googleLoading, status, t.signIn.couldNotSendLink, t.signIn.errorGeneric]);
+
+  const canSubmit =
+    isValidEmail(email) &&
+    status !== "loading" &&
+    status !== "success" &&
+    !googleLoading;
   const isLoading = status === "loading";
+  const canUseGoogle = status !== "success" && !isLoading && !googleLoading;
 
   return (
     <div style={pageStyle}>
@@ -225,7 +324,7 @@ export default function SignInPage() {
                   void handleSubmit();
                 }
               }}
-              disabled={isLoading}
+              disabled={isLoading || googleLoading}
               placeholder={t.signIn.emailPlaceholder}
               style={inputStyle}
             />
@@ -238,6 +337,18 @@ export default function SignInPage() {
               style={!canSubmit ? primaryButtonDisabledStyle : primaryButtonStyle}
             >
               {isLoading ? t.signIn.sending : t.signIn.continueWithEmail}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                void handleGoogle();
+              }}
+              disabled={!canUseGoogle}
+              style={
+                !canUseGoogle ? secondaryButtonDisabledStyle : secondaryButtonStyle
+              }
+            >
+              {googleLoading ? t.signIn.sending : GOOGLE_SIGN_IN_LABEL}
             </button>
             {errorMessage ? <p style={errorTextStyle}>{errorMessage}</p> : null}
             <p style={noteStyle}>{t.signIn.paidPlanNote}</p>

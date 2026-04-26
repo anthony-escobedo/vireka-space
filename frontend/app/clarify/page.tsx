@@ -1573,6 +1573,8 @@ function handleStartNew(): void {
     const showGreenDot =
       !workspaceMenuAuth.planLoading &&
       (plan === "pro" || plan === "pro_plus");
+    const showNeutralDot =
+      !workspaceMenuAuth.planLoading && plan === "free";
     const accessLabel = workspaceMenuAuth.planLoading
       ? "…"
       : plan === "pro"
@@ -1586,24 +1588,27 @@ function handleStartNew(): void {
         style={{
           borderBottom: "1px solid rgba(0,0,0,0.06)",
           marginBottom: "0.3rem",
-          padding: "0.35rem 0.4rem 0.55rem",
+          padding: "0.3rem 0.4rem 0.5rem",
         }}
       >
         <div
           style={{
-            fontSize: "0.72rem",
-            letterSpacing: "0.02em",
-            color: "rgba(0,0,0,0.45)",
-            marginBottom: "0.2rem",
+            fontSize: "0.65rem",
+            fontWeight: 500,
+            letterSpacing: "0.04em",
+            textTransform: "uppercase",
+            color: "rgba(0,0,0,0.38)",
+            marginBottom: "0.25rem",
           }}
         >
-          {wm.signedIn}
+          {wm.signedInAs}
         </div>
         <div
           style={{
-            fontSize: "0.86rem",
-            color: "#3f3b36",
-            lineHeight: 1.35,
+            fontSize: "0.9rem",
+            fontWeight: 500,
+            color: "rgba(0,0,0,0.78)",
+            lineHeight: 1.4,
             wordBreak: "break-word",
           }}
         >
@@ -1614,37 +1619,38 @@ function handleStartNew(): void {
             display: "flex",
             flexWrap: "wrap",
             alignItems: "center",
-            gap: "0.35rem",
-            marginTop: "0.45rem",
-            rowGap: "0.2rem",
+            gap: "0.4rem",
+            marginTop: "0.35rem",
           }}
         >
-          <span
-            style={{
-              fontSize: "0.72rem",
-              color: "rgba(0,0,0,0.45)",
-            }}
-          >
-            {wm.currentAccess}
-          </span>
-          {showGreenDot ? (
+          {workspaceMenuAuth.planLoading ? null : showGreenDot ? (
             <span
               aria-hidden
               style={{
-                width: 6,
-                height: 6,
+                width: 5,
+                height: 5,
                 borderRadius: "50%",
                 backgroundColor: "#2e7d4a",
                 flexShrink: 0,
-                display: "inline-block",
-                verticalAlign: "middle",
+              }}
+            />
+          ) : showNeutralDot ? (
+            <span
+              aria-hidden
+              style={{
+                width: 5,
+                height: 5,
+                borderRadius: "50%",
+                backgroundColor: "rgba(0,0,0,0.2)",
+                flexShrink: 0,
               }}
             />
           ) : null}
           <span
             style={{
-              fontSize: "0.86rem",
-              color: "#3f3b36",
+              fontSize: "0.75rem",
+              color: "rgba(0,0,0,0.48)",
+              lineHeight: 1.3,
             }}
           >
             {accessLabel}
@@ -1668,8 +1674,8 @@ function handleStartNew(): void {
           style={{
             display: "block",
             width: "100%",
-            margin: "0.45rem 0 0",
-            padding: "0.45rem 0.4rem",
+            margin: "0.7rem 0 0",
+            padding: "0.4rem 0.4rem",
             border: "none",
             borderRadius: "8px",
             background: "transparent",
@@ -2682,6 +2688,7 @@ function handleStartNew(): void {
             <InterpretationInput
               textareaRef={topInputRef}
               id="clarify-input-composer"
+              transcribeLanguage={language}
               transcribingLabel={t.clarify.transcribing}
               helperText=""
               placeholder={composerPlaceholder}

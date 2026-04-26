@@ -110,7 +110,7 @@ const buttonsWrapStyle: CSSProperties = {
   flexDirection: "column",
   alignItems: "center",
   gap: "0.85rem",
-  marginTop: "2.25rem",
+  marginTop: "clamp(44px, 7vh, 88px)",
   width: "100%",
 };
 

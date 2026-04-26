@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
- * Pro subscription checkout only. Requires `Authorization: Bearer` with a valid session.
+ * Pro subscription checkout. Requires `Authorization: Bearer` with a valid session.
  * Env: `STRIPE_SECRET_KEY`, `STRIPE_PRO_PRICE_ID`, `NEXT_PUBLIC_APP_URL`.
  */
 export async function POST(req: NextRequest) {
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
       customerEmail = body.email.trim();
     }
   } catch {
-    // No JSON body or parse error — continue without pre-fill email
+    // No JSON body
   }
 
   let stripe: ReturnType<typeof getStripe>;
@@ -81,6 +81,5 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
-
   return NextResponse.json({ url: session.url });
 }

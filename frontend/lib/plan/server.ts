@@ -2,6 +2,11 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { type PlanId, dailyLimitForPlan } from "../plans";
 
+/**
+ * Pro/Pro+ access in `getEffectivePlanId` only for these Stripe subscription statuses.
+ * All others (e.g. canceled, incomplete, past_due, unpaid) fall back to free.
+ * Keep in sync with `ACTIVE_PLAN_STATUSES` in `app/api/stripe/webhook/route.ts`.
+ */
 const ACTIVE_SUBSCRIPTION = new Set(["active", "trialing"]);
 
 export type PlanAccess = {

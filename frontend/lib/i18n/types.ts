@@ -227,9 +227,13 @@ export interface TranslationDictionary {
     subscriptionEnablesAdditional: string;
     planStructureMayEvolve: string;
     fullHistoryAvailableWithSubscription: string;
+    /** Shown on the Free tier card when the user’s access is a higher plan (e.g. Pro). */
+    notCurrentFreeTier: string;
     statusSection: {
       currentAccess: string;
       subscription: string;
+      /** Shown when subscription is active and no next renewal / period end is shown. */
+      renewsAutomatically: string;
       dailyInteractions: string;
       history: string;
       perDay: string;

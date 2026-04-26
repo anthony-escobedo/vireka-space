@@ -26,8 +26,13 @@ type SubscriptionRow = {
   updated_at: string;
 };
 
+/**
+ * Must stay aligned with `ACTIVE_SUBSCRIPTION` in `lib/plan/server.ts`:
+ * only `active` and `trialing` get a paid `plan` in the row; all other
+ * Stripe subscription statuses store `plan: "free"` (access falls back the same way).
+ */
 const ACTIVE_PLAN_STATUSES: ReadonlySet<Stripe.Subscription.Status> =
-  new Set<Stripe.Subscription.Status>(["active", "trialing", "past_due"]);
+  new Set<Stripe.Subscription.Status>(["active", "trialing"]);
 
 function firstPriceId(sub: Stripe.Subscription): string | null {
   const item = sub.items?.data?.[0];

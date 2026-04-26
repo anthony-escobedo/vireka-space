@@ -8,7 +8,8 @@ import type { PlanId } from "../../lib/plans";
 import { getSupabaseClient } from "../../lib/supabaseClient";
 import { useLanguage } from "../../lib/i18n/useLanguage";
 
-const signInToPlan = () => "/sign-in?redirect=" + encodeURIComponent("/plan");
+const signInToPlan = () =>
+  "/sign-in?redirect=" + encodeURIComponent("/plan");
 
 const gridStyle: CSSProperties = {
   display: "grid",
@@ -70,14 +71,36 @@ const proPlusInactiveStyle: CSSProperties = {
   ...actionStyle,
   opacity: 0.55,
   cursor: "not-allowed",
+  pointerEvents: "none",
+  userSelect: "none",
+};
+
+const proCurrentAccessDisabledStyle: CSSProperties = {
+  ...actionStyle,
+  cursor: "not-allowed",
+  opacity: 0.8,
+  border: "1px solid rgba(0,0,0,0.06)",
+  backgroundColor: "rgba(250,248,244,0.5)",
+  color: "rgba(55, 50, 45, 0.72)",
+  pointerEvents: "none",
+};
+
+const freeTierInactiveActionStyle: CSSProperties = {
+  ...actionStyle,
+  opacity: 0.4,
+  border: "1px solid rgba(0,0,0,0.05)",
+  backgroundColor: "rgba(250,248,244,0.35)",
+  color: "rgba(55, 50, 45, 0.45)",
+  fontWeight: 500,
+  pointerEvents: "none",
 };
 
 const planStatusWrapStyle: CSSProperties = {
   margin: "0 0 1.2rem 0",
   padding: "0.9rem 1.05rem",
   borderRadius: "12px",
-  border: "1px solid rgba(0,0,0,0.06)",
-  backgroundColor: "rgba(255,255,255,0.5)",
+  border: "1px solid rgba(0,0,0,0.045)",
+  backgroundColor: "rgba(255,255,255,0.36)",
   maxWidth: "100%",
   boxSizing: "border-box",
 };
@@ -111,11 +134,28 @@ const planStatusValueStyle: CSSProperties = {
   color: "rgba(32, 29, 26, 0.9)",
 };
 
+const planStatusSubscriptionValueWrap: CSSProperties = {
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "flex-start",
+  gap: "0.2rem",
+};
+
+const planStatusRenewsHintStyle: CSSProperties = {
+  margin: 0,
+  fontSize: "0.78rem",
+  lineHeight: 1.4,
+  fontWeight: 400,
+  color: "rgba(0, 0, 0, 0.4)",
+};
+
 type RemotePlanStatus = {
   plan: PlanId;
   dailyLimit: number;
   hasFullHistory: boolean;
   status?: string;
+  /** If present, renewal hint is hidden (e.g. when a specific renewal/period is shown). */
+  currentPeriodEnd?: string;
 };
 
 function planDisplayName(
@@ -137,6 +177,12 @@ function formatSubscriptionStatus(
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
+function isActiveOrTrialingStatus(raw: string | undefined): boolean {
+  if (raw === undefined || raw === "") return false;
+  const s = String(raw).trim().toLowerCase();
+  return s === "active" || s === "trialing";
+}
+
 export default function PlanPage() {
   const { t } = useLanguage();
   const router = useRouter();
@@ -153,38 +199,54 @@ export default function PlanPage() {
       setRemoteStatus(null);
       return;
     }
-    void (async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        setSignedIn(false);
-        setRemoteStatus(null);
-        return;
-      }
-      setSignedIn(true);
-      setStatusLoading(true);
-      try {
-        const res = await fetch("/api/plan/status", {
-          method: "GET",
-          headers: { Authorization: `Bearer ${session.access_token}` },
-          cache: "no-store",
-        });
-        if (!res.ok) {
+    const loadStatus = () => {
+      void (async () => {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        if (!session?.access_token) {
+          setSignedIn(false);
           setRemoteStatus(null);
+          setStatusLoading(false);
           return;
         }
-        const data = (await res.json()) as RemotePlanStatus;
-        setRemoteStatus(data);
-      } catch {
-        setRemoteStatus(null);
-      } finally {
-        setStatusLoading(false);
-      }
-    })();
+        setSignedIn(true);
+        setStatusLoading(true);
+        try {
+          const res = await fetch("/api/plan/status", {
+            method: "GET",
+            headers: { Authorization: `Bearer ${session.access_token}` },
+            cache: "no-store",
+          });
+          if (!res.ok) {
+            setRemoteStatus(null);
+            return;
+          }
+          const data = (await res.json()) as RemotePlanStatus;
+          setRemoteStatus(data);
+        } catch {
+          setRemoteStatus(null);
+        } finally {
+          setStatusLoading(false);
+        }
+      })();
+    };
+    loadStatus();
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(() => {
+      loadStatus();
+    });
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
-  const startProCheckout = useCallback(async () => {
+  const startProCheckout = useCallback(
+    async (currentPlan: PlanId) => {
+    if (currentPlan === "pro" || currentPlan === "pro_plus") {
+      return;
+    }
     try {
       const supabase = getSupabaseClient();
       if (!supabase) {
@@ -205,9 +267,7 @@ export default function PlanPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify(
-          userEmail ? { email: userEmail } : {}
-        ),
+        body: JSON.stringify(userEmail ? { email: userEmail } : {}),
       });
       if (res.status === 401) {
         router.push(signInToPlan());
@@ -228,7 +288,9 @@ export default function PlanPage() {
     } catch {
       window.alert("Checkout could not be started. Please try again.");
     }
-  }, [router]);
+  },
+  [router]
+  );
 
   const tierCards: {
     key: string;
@@ -246,6 +308,14 @@ export default function PlanPage() {
     dailyLimit: 10,
     hasFullHistory: false,
   };
+  const planId = accessForDisplay.plan;
+  const isFreePlan = planId === "free";
+  const isProPlan = planId === "pro";
+  const isProPlusPlan = planId === "pro_plus";
+  const showRenewsHint =
+    Boolean(accessForDisplay.status) &&
+    isActiveOrTrialingStatus(accessForDisplay.status) &&
+    !accessForDisplay.currentPeriodEnd;
   const historyLabelValue = accessForDisplay.hasFullHistory
     ? s.historyFull
     : s.historyLimited;
@@ -292,12 +362,19 @@ export default function PlanPage() {
             </div>
             <div style={planStatusRowStyle}>
               <span style={planStatusLabelStyle}>{s.subscription}</span>
-              <span style={planStatusValueStyle}>
-                {formatSubscriptionStatus(
-                  accessForDisplay.status,
-                  s.noActiveSubscription
-                )}
-              </span>
+              <div style={planStatusSubscriptionValueWrap}>
+                <span style={planStatusValueStyle}>
+                  {formatSubscriptionStatus(
+                    accessForDisplay.status,
+                    s.noActiveSubscription
+                  )}
+                </span>
+                {showRenewsHint ? (
+                  <p style={planStatusRenewsHintStyle}>
+                    {s.renewsAutomatically}
+                  </p>
+                ) : null}
+              </div>
             </div>
             <div style={planStatusRowStyle}>
               <span style={planStatusLabelStyle}>{s.dailyInteractions}</span>
@@ -326,21 +403,54 @@ export default function PlanPage() {
               </ul>
             </div>
             {variant === "free" ? (
-              <span style={actionStyle}>{tier.action}</span>
+              isFreePlan ? (
+                <span style={actionStyle}>{tier.action}</span>
+              ) : (
+                <span
+                  style={freeTierInactiveActionStyle}
+                  aria-hidden
+                >
+                  —
+                </span>
+              )
             ) : variant === "pro" ? (
-              <button
-                type="button"
-                onClick={() => {
-                  void startProCheckout();
-                }}
-                style={{
-                  ...actionStyle,
-                  cursor: "pointer",
-                  font: "inherit",
-                }}
-              >
-                {tier.action}
-              </button>
+              signedIn && statusLoading ? (
+                <span style={actionStyle}>{s.loading}</span>
+              ) : isProPlan ? (
+                <button
+                  type="button"
+                  disabled
+                  tabIndex={-1}
+                  aria-disabled="true"
+                  style={{
+                    ...proCurrentAccessDisabledStyle,
+                    font: "inherit",
+                  }}
+                >
+                  {s.currentAccess}
+                </button>
+              ) : isProPlusPlan ? (
+                <span
+                  style={proPlusInactiveStyle}
+                  aria-hidden
+                >
+                  {t.plan.notCurrentFreeTier}
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    void startProCheckout(planId);
+                  }}
+                  style={{
+                    ...actionStyle,
+                    cursor: "pointer",
+                    font: "inherit",
+                  }}
+                >
+                  {tier.action}
+                </button>
+              )
             ) : (
               <span
                 style={proPlusInactiveStyle}

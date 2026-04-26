@@ -2,14 +2,16 @@ import { Analytics } from "@vercel/analytics/react";
 import "./globals.css"
 import { LanguageProvider } from "../lib/i18n/LanguageProvider"
 
+const pageTitle = "VIREKA Space — Clarity Before Decisions and AI Prompts";
+const pageDescription =
+  "VIREKA Space is a structured environment for seeing how a situation is being understood before decisions are made or AI prompts are written. It makes visible what appears, what may be assumed, and what remains unclear.";
+
 export const metadata = {
-  title: "VIREKA Space — Clarity Before Decision. Clarity Before AI.",
-  description:
-    "VIREKA Space helps clarify how situations are being understood before decisions are made or AI prompts are written. It supports clearer interpretation by separating what appears, what is inferred, and what remains uncertain.",
+  title: pageTitle,
+  description: pageDescription,
   openGraph: {
-    title: "VIREKA Space — Clarity Before Decision. Clarity Before AI.",
-    description:
-      "VIREKA Space helps clarify how situations are being understood before decisions are made or AI prompts are written. It supports clearer interpretation by separating what appears, what is inferred, and what remains uncertain.",
+    title: pageTitle,
+    description: pageDescription,
     url: "https://vireka.space",
     siteName: "VIREKA Space",
     images: [
@@ -17,21 +19,20 @@ export const metadata = {
         url: "https://vireka.space/og-image.png",
         width: 1200,
         height: 630,
-        alt: "VIREKA Space — Clarity Before Decision. Clarity Before AI.",
+        alt: pageTitle,
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "VIREKA Space — Clarity Before Decision. Clarity Before AI.",
-    description:
-      "VIREKA Space helps clarify how situations are being understood before decisions are made or AI prompts are written. It supports clearer interpretation by separating what appears, what is inferred, and what remains uncertain.",
+    title: pageTitle,
+    description: pageDescription,
     images: [
       {
         url: "https://vireka.space/og-image.png",
         width: 1200,
         height: 630,
-        alt: "VIREKA Space — Clarity Before Decision. Clarity Before AI.",
+        alt: pageTitle,
       },
     ],
   },

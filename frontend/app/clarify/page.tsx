@@ -10,6 +10,8 @@ import InterpretationInput from "../../components/InterpretationInput";
 import IntegratedViewTtsButton from "../../components/IntegratedViewTtsButton";
 
 import { getClarifyRequestHeaders } from "../../lib/clarifyRequestHeaders";
+import type { PlanId } from "../../lib/plans";
+import { getSupabaseClient } from "../../lib/supabaseClient";
 import { getOrCreateAnonymousId } from "../../lib/anonymous";
 import { normalizeMessageContentToPreviewSource } from "../../lib/historyReadHelpers";
 import type { Language } from "../../lib/i18n/config";
@@ -128,6 +130,17 @@ export default function ClarifyPage() {
   const [isReviewingHistorySession, setIsReviewingHistorySession] = useState(false);
   const [leftMenuOpen, setLeftMenuOpen] = useState(false);
   const [languageMenuOpen, setLanguageMenuOpen] = useState(false);
+  const [workspaceMenuAuth, setWorkspaceMenuAuth] = useState<{
+    ready: boolean;
+    email: string | null;
+    plan: PlanId | null;
+    planLoading: boolean;
+  }>({
+    ready: false,
+    email: null,
+    plan: null,
+    planLoading: false,
+  });
   const { t, language, setLanguage } = useLanguage();
   const [copyLabel, setCopyLabel] = useState(t.clarify.copyResult);
   const [hoveredHistoryEndAction, setHoveredHistoryEndAction] = useState<
@@ -207,6 +220,75 @@ export default function ClarifyPage() {
     };
   }, []);
 
+  useEffect(() => {
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+      setWorkspaceMenuAuth({
+        ready: true,
+        email: null,
+        plan: null,
+        planLoading: false,
+      });
+      return;
+    }
+    const sync = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        setWorkspaceMenuAuth({
+          ready: true,
+          email: null,
+          plan: null,
+          planLoading: false,
+        });
+        return;
+      }
+      const token = session.access_token;
+      setWorkspaceMenuAuth({
+        ready: true,
+        email: session.user.email ?? null,
+        plan: null,
+        planLoading: true,
+      });
+      try {
+        const res = await fetch("/api/plan/status", {
+          method: "GET",
+          headers: { Authorization: `Bearer ${token}` },
+          cache: "no-store",
+        });
+        if (res.ok) {
+          const j = (await res.json()) as { plan: PlanId };
+          setWorkspaceMenuAuth((prev) => ({
+            ...prev,
+            plan: j.plan,
+            planLoading: false,
+          }));
+        } else {
+          setWorkspaceMenuAuth((prev) => ({
+            ...prev,
+            plan: "free",
+            planLoading: false,
+          }));
+        }
+      } catch {
+        setWorkspaceMenuAuth((prev) => ({
+          ...prev,
+          plan: "free",
+          planLoading: false,
+        }));
+      }
+    };
+    void sync();
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(() => {
+      void sync();
+    });
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const loadHistory = useCallback(async () => {
     try {
@@ -939,7 +1021,14 @@ function handleStartNew(): void {
   const workspaceTitle = t.clarify.heroTitle;
   const workspaceOrientation = homeMode ? t.clarify.descriptionParagraph : "";
 
-  function renderList(items: string[] | undefined, label: string) {
+  function renderList(
+    items: string[] | undefined,
+    label:
+      | "whatAppearsToBeHappening"
+      | "whatMayBeAssumed"
+      | "whatMayRemainUnclear"
+      | "whatMayBeInfluencingTheSituation"
+  ) {
     if (!items || items.length === 0) return null;
 
     return (
@@ -954,7 +1043,7 @@ function handleStartNew(): void {
             margin: "0 0 0.7rem 0",
           }}
         >
-          {t.clarify[label.replace(/\s+/g, '') as keyof typeof t.clarify]}
+          {t.clarify[label]}
         </h3>
         <ul style={{ paddingLeft: "1.125rem", margin: 0, listStyleType: "disc" }}>
           {items.map((item, i) => (
@@ -1427,6 +1516,186 @@ function handleStartNew(): void {
     return text.replace(/^What appears to be happening:\s*/i, "").trimStart();
   }
 
+  function renderWorkspaceMenuAccount() {
+    const wm = t.clarify.workspaceMenu;
+    if (!workspaceMenuAuth.ready) {
+      return null;
+    }
+    if (!workspaceMenuAuth.email) {
+      return (
+        <div
+          style={{
+            borderBottom: "1px solid rgba(0,0,0,0.06)",
+            marginBottom: "0.3rem",
+            paddingBottom: "0.4rem",
+          }}
+        >
+          <button
+            type="button"
+            onClick={() => {
+              setLeftMenuOpen(false);
+              setLanguageMenuOpen(false);
+              router.push(
+                "/sign-in?redirect=" + encodeURIComponent("/clarify")
+              );
+            }}
+            style={{
+              display: "block",
+              width: "100%",
+              margin: 0,
+              padding: "0.5rem 0.55rem",
+              border: "none",
+              borderRadius: "8px",
+              background: "transparent",
+              color: "rgba(0,0,0,0.5)",
+              cursor: "pointer",
+              font: "inherit",
+              fontSize: "0.86rem",
+              lineHeight: 1.35,
+              textAlign: "left",
+              transition: "background-color 150ms ease, color 150ms ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "rgba(0,0,0,0.05)";
+              e.currentTarget.style.color = "rgba(0,0,0,0.75)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "transparent";
+              e.currentTarget.style.color = "rgba(0,0,0,0.5)";
+            }}
+          >
+            {wm.signIn}
+          </button>
+        </div>
+      );
+    }
+    const plan = workspaceMenuAuth.plan;
+    const showGreenDot =
+      !workspaceMenuAuth.planLoading &&
+      (plan === "pro" || plan === "pro_plus");
+    const accessLabel = workspaceMenuAuth.planLoading
+      ? "…"
+      : plan === "pro"
+        ? wm.pro
+        : plan === "pro_plus"
+          ? wm.proPlus
+          : wm.free;
+
+    return (
+      <div
+        style={{
+          borderBottom: "1px solid rgba(0,0,0,0.06)",
+          marginBottom: "0.3rem",
+          padding: "0.35rem 0.4rem 0.55rem",
+        }}
+      >
+        <div
+          style={{
+            fontSize: "0.72rem",
+            letterSpacing: "0.02em",
+            color: "rgba(0,0,0,0.45)",
+            marginBottom: "0.2rem",
+          }}
+        >
+          {wm.signedIn}
+        </div>
+        <div
+          style={{
+            fontSize: "0.86rem",
+            color: "#3f3b36",
+            lineHeight: 1.35,
+            wordBreak: "break-word",
+          }}
+        >
+          {workspaceMenuAuth.email}
+        </div>
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "center",
+            gap: "0.35rem",
+            marginTop: "0.45rem",
+            rowGap: "0.2rem",
+          }}
+        >
+          <span
+            style={{
+              fontSize: "0.72rem",
+              color: "rgba(0,0,0,0.45)",
+            }}
+          >
+            {wm.currentAccess}
+          </span>
+          {showGreenDot ? (
+            <span
+              aria-hidden
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: "50%",
+                backgroundColor: "#2e7d4a",
+                flexShrink: 0,
+                display: "inline-block",
+                verticalAlign: "middle",
+              }}
+            />
+          ) : null}
+          <span
+            style={{
+              fontSize: "0.86rem",
+              color: "#3f3b36",
+            }}
+          >
+            {accessLabel}
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={async () => {
+            setLeftMenuOpen(false);
+            setLanguageMenuOpen(false);
+            const supabase = getSupabaseClient();
+            await supabase?.auth.signOut();
+            setWorkspaceMenuAuth({
+              ready: true,
+              email: null,
+              plan: null,
+              planLoading: false,
+            });
+            window.location.reload();
+          }}
+          style={{
+            display: "block",
+            width: "100%",
+            margin: "0.45rem 0 0",
+            padding: "0.45rem 0.4rem",
+            border: "none",
+            borderRadius: "8px",
+            background: "transparent",
+            color: "#3f3b36",
+            cursor: "pointer",
+            font: "inherit",
+            fontSize: "0.86rem",
+            lineHeight: 1.35,
+            textAlign: "left",
+            transition: "background-color 150ms ease, color 150ms ease",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = "rgba(0,0,0,0.07)";
+            e.currentTarget.style.color = "rgba(0,0,0,0.9)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "transparent";
+            e.currentTarget.style.color = "#3f3b36";
+          }}
+        >
+          {wm.signOut}
+        </button>
+      </div>
+    );
+  }
+
   function renderMenuLink(item: (typeof MENU_LINKS)[number]) {
     return (
       <Link
@@ -1577,6 +1846,7 @@ function handleStartNew(): void {
           zIndex: 40,
         }}
       >
+        {renderWorkspaceMenuAccount()}
         {MENU_LINKS.slice(0, 3).map((item) => renderMenuLink(item))}
         <div
           style={{ position: "relative" }}

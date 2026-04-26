@@ -132,6 +132,15 @@ export interface TranslationDictionary {
     usageLimitBody: string;
     genericNoticeTitle: string;
     anUnexpectedErrorOccurred: string;
+    workspaceMenu: {
+      signedIn: string;
+      signIn: string;
+      signOut: string;
+      currentAccess: string;
+      free: string;
+      pro: string;
+      proPlus: string;
+    };
   };
 
   // History (sidebar / review actions)

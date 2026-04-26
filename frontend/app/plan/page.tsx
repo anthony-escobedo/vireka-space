@@ -108,12 +108,16 @@ export default function PlanPage() {
         router.push(signInToPlan());
         return;
       }
+      const userEmail = session.user?.email;
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${session.access_token}`,
         },
+        body: JSON.stringify(
+          userEmail ? { email: userEmail } : {}
+        ),
       });
       if (res.status === 401) {
         router.push(signInToPlan());

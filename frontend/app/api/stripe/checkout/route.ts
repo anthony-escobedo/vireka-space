@@ -38,6 +38,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  let customerEmail: string | undefined;
+  try {
+    const body = (await req.json()) as { email?: unknown };
+    if (
+      typeof body?.email === "string" &&
+      body.email.trim() !== "" &&
+      body.email.includes("@")
+    ) {
+      customerEmail = body.email.trim();
+    }
+  } catch {
+    // No JSON body or parse error — continue without pre-fill email
+  }
+
   let stripe: ReturnType<typeof getStripe>;
   try {
     stripe = getStripe();
@@ -58,6 +72,7 @@ export async function POST(req: NextRequest) {
     subscription_data: {
       metadata: { user_id: userId, plan: "pro" },
     },
+    ...(customerEmail ? { customer_email: customerEmail } : {}),
   });
 
   if (!session.url) {

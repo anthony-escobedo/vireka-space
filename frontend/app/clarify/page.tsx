@@ -151,6 +151,7 @@ export default function ClarifyPage() {
   const resultRef = useRef<HTMLDivElement | null>(null);
   const leftMenuRef = useRef<HTMLDivElement | null>(null);
   const mobileMenuRef = useRef<HTMLDivElement | null>(null);
+  const menuHoverCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const copyResetTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const historyRefreshTimeoutsRef = useRef<number[]>([]);
   const anonymousIdRef = useRef<string | null>(null);
@@ -370,6 +371,49 @@ export default function ClarifyPage() {
 
     document.addEventListener("mousedown", handlePointerDown);
     return () => document.removeEventListener("mousedown", handlePointerDown);
+  }, [leftMenuOpen]);
+
+  const clearMenuHoverCloseTimer = useCallback(() => {
+    if (menuHoverCloseTimerRef.current != null) {
+      clearTimeout(menuHoverCloseTimerRef.current);
+      menuHoverCloseTimerRef.current = null;
+    }
+  }, []);
+
+  const handleWorkspaceMenuPointerEnter = useCallback(() => {
+    clearMenuHoverCloseTimer();
+  }, [clearMenuHoverCloseTimer]);
+
+  const handleWorkspaceMenuPointerLeave = useCallback(() => {
+    if (typeof window === "undefined") return;
+    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+      return;
+    }
+    if (!leftMenuOpen) return;
+    clearMenuHoverCloseTimer();
+    menuHoverCloseTimerRef.current = setTimeout(() => {
+      setLeftMenuOpen(false);
+      setLanguageMenuOpen(false);
+      menuHoverCloseTimerRef.current = null;
+    }, 200);
+  }, [leftMenuOpen, clearMenuHoverCloseTimer]);
+
+  useEffect(() => {
+    return () => {
+      clearMenuHoverCloseTimer();
+    };
+  }, [clearMenuHoverCloseTimer]);
+
+  useEffect(() => {
+    if (typeof document === "undefined" || !leftMenuOpen) return;
+    const onKeydown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setLeftMenuOpen(false);
+        setLanguageMenuOpen(false);
+      }
+    };
+    document.addEventListener("keydown", onKeydown);
+    return () => document.removeEventListener("keydown", onKeydown);
   }, [leftMenuOpen]);
 
   function normalizeQuestion(text: string): string {
@@ -1840,7 +1884,7 @@ function handleStartNew(): void {
       <div
         style={{
           position: "absolute",
-          top: "3.35rem",
+          top: "calc(100% + 10px)",
           left: 0,
           width: isMobile ? "220px" : "230px",
           padding: "0.45rem",
@@ -1912,6 +1956,31 @@ function handleStartNew(): void {
           ) : null}
         </div>
         {MENU_LINKS.slice(3).map((item) => renderMenuLink(item))}
+      </div>
+    );
+  }
+
+  function renderHamburgerWithFloatingMenu(isMobile: boolean) {
+    return (
+      <div
+        onPointerEnter={handleWorkspaceMenuPointerEnter}
+        onPointerLeave={handleWorkspaceMenuPointerLeave}
+        style={{
+          position: "relative",
+          alignSelf: "flex-start",
+          minWidth: isMobile ? 220 : 230,
+        }}
+      >
+        <div
+          style={{
+            flexShrink: 0,
+            alignSelf: "flex-start",
+            padding: "2px 10px 10px 2px",
+          }}
+        >
+          {renderHamburgerButton()}
+        </div>
+        {leftMenuOpen ? renderFloatingMenu(isMobile) : null}
       </div>
     );
   }
@@ -2024,16 +2093,7 @@ function handleStartNew(): void {
                 >
                   VIREKA Space
                 </Link>
-                <div
-                  style={{
-                    flexShrink: 0,
-                    alignSelf: "flex-start",
-                    padding: "2px 10px 10px 2px",
-                  }}
-                >
-                  {renderHamburgerButton()}
-                </div>
-                {leftMenuOpen ? renderFloatingMenu(false) : null}
+                {renderHamburgerWithFloatingMenu(false)}
               </div>
               {railHistoryRows.length > 0 ? (
                 <div
@@ -2230,16 +2290,7 @@ function handleStartNew(): void {
               >
                 VIREKA Space
               </Link>
-              <div
-                style={{
-                  flexShrink: 0,
-                  alignSelf: "flex-start",
-                  padding: "2px 10px 10px 2px",
-                }}
-              >
-                {renderHamburgerButton()}
-              </div>
-              {leftMenuOpen ? renderFloatingMenu(true) : null}
+              {renderHamburgerWithFloatingMenu(true)}
             </div>
           ) : (
             <div />

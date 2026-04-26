@@ -1,5 +1,15 @@
 import { Language } from './config';
 
+/** Clarify hamburger “account” block (signed-in / plan / sign out). */
+export interface ClarifyWorkspaceMenu {
+  signedInAs: string;
+  signIn: string;
+  signOut: string;
+  free: string;
+  pro: string;
+  proPlus: string;
+}
+
 export interface TranslationDictionary {
   // Header/Navigation
   header: {
@@ -132,15 +142,7 @@ export interface TranslationDictionary {
     usageLimitBody: string;
     genericNoticeTitle: string;
     anUnexpectedErrorOccurred: string;
-    workspaceMenu: {
-      signedIn: string;
-      signIn: string;
-      signOut: string;
-      currentAccess: string;
-      free: string;
-      pro: string;
-      proPlus: string;
-    };
+    workspaceMenu: ClarifyWorkspaceMenu;
   };
 
   // History (sidebar / review actions)

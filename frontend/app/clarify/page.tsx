@@ -139,6 +139,7 @@ export default function ClarifyPage() {
   const [mobileHistoryOpen, setMobileHistoryOpen] = useState(false);
   const [isReviewingHistorySession, setIsReviewingHistorySession] = useState(false);
   const [markedClarity, setMarkedClarity] = useState<string | null>(null);
+  const [showReviewResultsAction, setShowReviewResultsAction] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [checkedOnboarding, setCheckedOnboarding] = useState(false);
   const [leftMenuOpen, setLeftMenuOpen] = useState(false);
@@ -162,6 +163,7 @@ export default function ClarifyPage() {
   const topInputRef = useRef<HTMLTextAreaElement | null>(null);
   const pathTopRef = useRef<HTMLDivElement | null>(null);
   const resultRef = useRef<HTMLDivElement | null>(null);
+  const reviewResultsSentinelRef = useRef<HTMLDivElement | null>(null);
   const leftMenuRef = useRef<HTMLDivElement | null>(null);
   const mobileMenuRef = useRef<HTMLDivElement | null>(null);
   const menuHoverCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -217,6 +219,45 @@ export default function ClarifyPage() {
   useEffect(() => {
     iterationsRef.current = iterations;
   }, [iterations]);
+
+  useEffect(() => {
+    if (loading) {
+      setShowReviewResultsAction(false);
+    }
+  }, [loading]);
+
+  useEffect(() => {
+    setShowReviewResultsAction(false);
+  }, [latestPanelId]);
+
+  useEffect(() => {
+    if (isDone || isReviewingHistorySession || latestPanelId == null) {
+      return;
+    }
+    const node = reviewResultsSentinelRef.current;
+    if (!node) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setShowReviewResultsAction(true);
+          }
+        }
+      },
+      { root: null, rootMargin: "0px 0px 160px 0px", threshold: 0 }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [
+    isDone,
+    isReviewingHistorySession,
+    latestPanelId,
+    iterations.length,
+    markedClarity,
+    result,
+    loading,
+  ]);
 
   useEffect(() => {
     return () => {
@@ -1536,6 +1577,18 @@ function handleStartNew(): void {
     </div>
   </div>
 )}
+        {isLatestPanel ? (
+          <div
+            ref={reviewResultsSentinelRef}
+            aria-hidden
+            style={{
+              height: 1,
+              width: "100%",
+              overflow: "hidden",
+              pointerEvents: "none",
+            }}
+          />
+        ) : null}
       </div>
     );
   }
@@ -2186,6 +2239,7 @@ function handleStartNew(): void {
   setHistoryDetailLoading(false);
   setMobileHistoryOpen(false);
   setIsReviewingHistorySession(false);
+  setShowReviewResultsAction(false);
   scheduleHistoryRefresh();
 }
 
@@ -2926,7 +2980,7 @@ function handleStartNew(): void {
         >
           <div style={{ pointerEvents: "auto" }}>
             <>
-            {canShowDoneButton ? (
+            {canShowDoneButton && showReviewResultsAction ? (
               <div
                 style={{
                   display: "flex",

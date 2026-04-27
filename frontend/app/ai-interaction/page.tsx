@@ -88,11 +88,13 @@ export default function AIInteractionPage() {
   const [showOnboarding, setShowOnboarding] = useState<boolean>(false);
   const [checkedOnboarding, setCheckedOnboarding] = useState(false);
   const [markedClarity, setMarkedClarity] = useState<string | null>(null);
+  const [showReviewResultsAction, setShowReviewResultsAction] = useState(false);
   const { t, language } = useLanguage();
   const [copyLabel, setCopyLabel] = useState(t.aiInteraction.copyResult);
   const topInputRef = useRef<HTMLTextAreaElement | null>(null);
   const pathTopRef = useRef<HTMLDivElement | null>(null);
   const resultRef = useRef<HTMLDivElement | null>(null);
+  const reviewResultsSentinelRef = useRef<HTMLDivElement | null>(null);
   const copyResetTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -113,6 +115,44 @@ export default function AIInteractionPage() {
     }
   };
 }, []);
+
+  useEffect(() => {
+    if (loading) {
+      setShowReviewResultsAction(false);
+    }
+  }, [loading]);
+
+  useEffect(() => {
+    setShowReviewResultsAction(false);
+  }, [latestPanelId]);
+
+  useEffect(() => {
+    if (isDone || latestPanelId == null) {
+      return;
+    }
+    const node = reviewResultsSentinelRef.current;
+    if (!node) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setShowReviewResultsAction(true);
+          }
+        }
+      },
+      { root: null, rootMargin: "0px 0px 160px 0px", threshold: 0 }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [
+    isDone,
+    latestPanelId,
+    iterations.length,
+    markedClarity,
+    result,
+    loading,
+  ]);
 
   function truncateText(text: string, maxLength = 78): string {
     const trimmed = text.trim();
@@ -908,6 +948,18 @@ function handleDismissOnboarding(): void {
     </div>
   </div>
 )}
+        {isLatestPanel ? (
+          <div
+            ref={reviewResultsSentinelRef}
+            aria-hidden
+            style={{
+              height: 1,
+              width: "100%",
+              overflow: "hidden",
+              pointerEvents: "none",
+            }}
+          />
+        ) : null}
       </div>
     );
   }
@@ -1110,6 +1162,7 @@ function renderActiveResponse(panel: ClarificationPanel) {
   setIterations([]);
   setOpenPanelIds([]);
   setLatestPanelId(null);
+  setShowReviewResultsAction(false);
 }
 
   return (
@@ -1267,7 +1320,7 @@ function renderActiveResponse(panel: ClarificationPanel) {
           }}
         >
           <div style={{ pointerEvents: "auto" }}>
-            {canShowDoneButton ? (
+            {canShowDoneButton && showReviewResultsAction ? (
               <div
                 style={{
                   display: "flex",

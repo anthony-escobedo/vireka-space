@@ -309,6 +309,7 @@ export interface TranslationDictionary {
     optionalInstructionHelper: string;
     optionalInstructionPlaceholder: string;
     userRequest: string;
+    instructionAddedToContext: string;
     copyAIReadyContext: string;
     copied: string;
     startNewSituation: string;

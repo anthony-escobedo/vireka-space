@@ -300,6 +300,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       optionalInstructionPlaceholder:
         'Example: Draft a response, prepare notes, plan, design, or organize next steps.',
       userRequest: 'User request',
+      instructionAddedToContext: 'Added to AI-ready context',
       copyAIReadyContext: 'Copy AI-ready context',
       copied: 'Copied',
       startNewSituation: 'Start new situation',
@@ -841,6 +842,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       optionalInstructionPlaceholder:
         'Ejemplo: redactar una respuesta, preparar notas, planear, diseñar u organizar los próximos pasos.',
       userRequest: 'Solicitud del usuario',
+      instructionAddedToContext: 'Agregado al contexto para IA',
       copyAIReadyContext: 'Copiar contexto para IA',
       copied: 'Copiado',
       startNewSituation: 'Comenzar nueva situación',
@@ -1382,6 +1384,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       optionalInstructionPlaceholder:
         'Exemplo: redigir uma resposta, preparar notas, planejar, desenhar ou organizar os próximos passos.',
       userRequest: 'Solicitação do usuário',
+      instructionAddedToContext: 'Adicionado ao contexto para IA',
       copyAIReadyContext: 'Copiar contexto para IA',
       copied: 'Copiado',
       startNewSituation: 'Começar nova situação',

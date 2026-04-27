@@ -29,7 +29,9 @@ export default function DoneState({
     "copy" | "prepare" | "new" | "aiCopy" | null
   >(null);
   const [showAIReadyContext, setShowAIReadyContext] = React.useState(false);
-  const [aiInstruction, setAiInstruction] = React.useState("");
+  const [aiInstructionDraft, setAiInstructionDraft] = React.useState("");
+  const [aiInstructionConfirmed, setAiInstructionConfirmed] = React.useState("");
+  const [instructionStatus, setInstructionStatus] = React.useState("");
   const [aiCopyLabel, setAICopyLabel] = React.useState(t.doneState.copyAIReadyContext);
   const [cursorNorm, setCursorNorm] = React.useState({ x: 0, y: 0 });
   const [cursorPx, setCursorPx] = React.useState({ x: 50, y: 50 });
@@ -112,22 +114,28 @@ export default function DoneState({
 
   const aiReadyExportText = React.useMemo(() => {
     if (!aiReadyText) return "";
-    const trimmed = aiInstruction.trim();
+    const trimmed = aiInstructionConfirmed.trim();
     if (!trimmed) return aiReadyText;
     return `${aiReadyText}\n\n${t.doneState.userRequest}:\n\n${trimmed}`;
-  }, [aiInstruction, aiReadyText, t.doneState.userRequest]);
+  }, [aiInstructionConfirmed, aiReadyText, t.doneState.userRequest]);
 
   const instructionFitBounds = React.useMemo(
-    () => ({ min: isCompactViewport ? 64 : 60, max: 200 }),
+    () => ({ min: isCompactViewport ? 64 : 52, max: 200 }),
     [isCompactViewport]
   );
 
   const handleOptionalInstructionSend = React.useCallback(async () => {
+    const trimmed = aiInstructionDraft.trim();
     if (typeof document !== "undefined") {
       document.getElementById("done-ai-instruction")?.blur();
     }
+    if (trimmed) {
+      setAiInstructionConfirmed(trimmed);
+      setAiInstructionDraft("");
+      setInstructionStatus(t.doneState.instructionAddedToContext);
+    }
     return true;
-  }, []);
+  }, [aiInstructionDraft, t.doneState.instructionAddedToContext]);
 
   const getActionStyle = (button: "copy" | "prepare" | "new" | "aiCopy"): React.CSSProperties => {
     const isActive = hoveredButton === button;
@@ -475,8 +483,11 @@ export default function DoneState({
                   id="done-ai-instruction"
                   placeholder={t.doneState.optionalInstructionPlaceholder}
                   helperText=""
-                  value={aiInstruction}
-                  onChange={(e) => setAiInstruction(e.target.value)}
+                  value={aiInstructionDraft}
+                  onChange={(e) => {
+                    setAiInstructionDraft(e.target.value);
+                    setInstructionStatus("");
+                  }}
                   voiceEnabled
                   transcribeLanguage={language}
                   transcribingLabel={t.clarify.transcribing}
@@ -489,6 +500,18 @@ export default function DoneState({
                     boxShadow: "0 1px 3px rgba(0, 0, 0, 0.04)",
                   }}
                 />
+                {instructionStatus ? (
+                  <p
+                    style={{
+                      margin: "0.45rem 0 0 0",
+                      fontSize: "0.75rem",
+                      lineHeight: 1.45,
+                      color: "rgba(0,0,0,0.42)",
+                    }}
+                  >
+                    {instructionStatus}
+                  </p>
+                ) : null}
               </div>
               <div
                 style={{

@@ -11,6 +11,7 @@ import InterpretationInput from "../../components/InterpretationInput";
 import IntegratedViewTtsButton from "../../components/IntegratedViewTtsButton";
 
 import { getClarifyRequestHeaders } from "../../lib/clarifyRequestHeaders";
+import { saveMarkedClarityToConversation } from "../../lib/saveMarkedClarityToConversation";
 import { getOrCreateAnonymousId } from "../../lib/anonymous";
 import { useLanguage } from "../../lib/i18n/useLanguage";
 
@@ -86,6 +87,7 @@ export default function AIInteractionPage() {
   const [latestPanelId, setLatestPanelId] = useState<string | null>(null);
   const [showOnboarding, setShowOnboarding] = useState<boolean>(false);
   const [checkedOnboarding, setCheckedOnboarding] = useState(false);
+  const [markedClarity, setMarkedClarity] = useState<string | null>(null);
   const { t, language } = useLanguage();
   const [copyLabel, setCopyLabel] = useState(t.aiInteraction.copyResult);
   const topInputRef = useRef<HTMLTextAreaElement | null>(null);
@@ -306,6 +308,12 @@ export default function AIInteractionPage() {
       }
 
       setResult(typedData);
+      setMarkedClarity(null);
+      void saveMarkedClarityToConversation(
+        typedData.conversationId,
+        getOrCreateAnonymousId(),
+        null
+      );
 
       if (typedData.mode === "close") {
         setIsDone(true);
@@ -330,6 +338,63 @@ export default function AIInteractionPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  function buildAIReadyContext(): string | undefined {
+    if (!result || result.mode === "close" || result.mode !== "clarify") {
+      return undefined;
+    }
+
+    const sections: string[] = [
+      "Use the following clarified context as the basis for your response.",
+      "",
+      "Do not assume unresolved points are facts. Where uncertainty remains, preserve it or ask for clarification before proceeding.",
+      "",
+      "Context:",
+    ];
+
+    const appendListSection = (label: string, items: string[]) => {
+      const lines = items.map((item) => item.trim()).filter(Boolean);
+      if (!lines.length) return;
+      sections.push("", `${label}:`, ...lines.map((item) => `- ${item}`));
+    };
+
+    const appendTextSection = (label: string, text: string | undefined) => {
+      const value = text?.trim();
+      if (!value) return;
+      sections.push("", `${label}:`, value);
+    };
+
+    appendListSection("What appears to be happening", result.observable);
+    appendListSection("What may be assumed", result.interpretive);
+    appendListSection("What remains unclear", result.unknown);
+    appendListSection("What may be influencing the situation", result.structural);
+    appendTextSection("Integrated view", result.orientation);
+    if (markedClarity != null && markedClarity.trim() !== "") {
+      sections.push(
+        "",
+        `${t.aiInteraction.markedClarity}:`,
+        t.aiInteraction.theUserMarkedTheFollowing,
+        `"${markedClarity}"`
+      );
+    } else {
+      appendTextSection(t.aiInteraction.currentClarity, result.currentClarity);
+    }
+
+    sections.push(
+      "",
+      "Task:",
+      "",
+      "Respond in a way that remains consistent with the clarified context.",
+      "",
+      "Where appropriate, allow a next step to emerge from what is clear.",
+      "",
+      "Do not introduce direction that is not supported by the context.",
+      "",
+      "If needed, ask clarifying questions before proceeding."
+    );
+
+    return sections.join("\n");
   }
 
   function handleIntegratedView(): void {
@@ -570,6 +635,7 @@ function handleDismissOnboarding(): void {
     showYourInput?: string
   ) {
     const response = panel.iteration.response;
+    const isLatestPanel = panel.id === latestPanelId;
     return (
       <div style={{ padding: "0 0 0.1rem 0", minWidth: 0, maxWidth: "100%" }}>
         {showYourInput && (
@@ -700,30 +766,100 @@ function handleDismissOnboarding(): void {
             borderTop: "1px solid rgba(0,0,0,0.07)",
           }}
         >
-          <div
-            style={{
-              fontSize: "0.72rem",
-              fontWeight: 700,
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              color: "#8e8a84",
-              margin: "0 0 0.45rem 0",
-            }}
-          >
-            {t.aiInteraction.currentClarity}
-          </div>
-          <p
-            style={{
-              color: "#333",
-              margin: 0,
-              fontSize: "0.92rem",
-              lineHeight: 1.65,
-              overflowWrap: "anywhere",
-              wordBreak: "break-word",
-            }}
-          >
-            {response.currentClarity.trim()}
-          </p>
+          {isLatestPanel && markedClarity !== null ? (
+            <>
+              <div
+                style={{
+                  fontSize: "0.72rem",
+                  fontWeight: 700,
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                  color: "#8e8a84",
+                  margin: "0 0 0.4rem 0",
+                }}
+              >
+                {t.aiInteraction.clarityMarked}
+              </div>
+              <p
+                style={{
+                  margin: "0 0 0.4rem 0",
+                  color: "rgba(90, 85, 80, 0.95)",
+                  fontSize: "0.82rem",
+                  lineHeight: 1.55,
+                }}
+              >
+                {t.aiInteraction.youMarkedThisAsClearEnough}
+              </p>
+              <p
+                style={{
+                  color: "#333",
+                  margin: 0,
+                  fontSize: "0.92rem",
+                  lineHeight: 1.65,
+                  overflowWrap: "anywhere",
+                  wordBreak: "break-word",
+                }}
+              >
+                {`"${markedClarity}"`}
+              </p>
+            </>
+          ) : (
+            <>
+              <div
+                style={{
+                  fontSize: "0.72rem",
+                  fontWeight: 700,
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                  color: "#8e8a84",
+                  margin: "0 0 0.45rem 0",
+                }}
+              >
+                {t.aiInteraction.currentClarity}
+              </div>
+              <p
+                style={{
+                  color: "#333",
+                  margin: 0,
+                  fontSize: "0.92rem",
+                  lineHeight: 1.65,
+                  overflowWrap: "anywhere",
+                  wordBreak: "break-word",
+                }}
+              >
+                {response.currentClarity.trim()}
+              </p>
+              {isLatestPanel ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const text = response.currentClarity?.trim() ?? "";
+                    setMarkedClarity(text);
+                    void saveMarkedClarityToConversation(
+                      conversationId,
+                      getOrCreateAnonymousId(),
+                      text || null
+                    );
+                  }}
+                  disabled={loading}
+                  style={{
+                    marginTop: "0.75rem",
+                    padding: 0,
+                    background: "none",
+                    border: "none",
+                    borderBottom: "1px solid rgba(0,0,0,0.2)",
+                    fontSize: "0.78rem",
+                    fontWeight: 500,
+                    color: "rgba(90, 85, 80, 0.95)",
+                    cursor: loading ? "not-allowed" : "pointer",
+                    opacity: loading ? 0.5 : 1,
+                  }}
+                >
+                  {t.aiInteraction.clearEnoughForNow}
+                </button>
+              ) : null}
+            </>
+          )}
         </div>
       ) : null}
 
@@ -737,15 +873,35 @@ function handleDismissOnboarding(): void {
         >
           <div
             style={{
-              fontSize: "0.72rem",
-              fontWeight: 700,
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              color: "#8e8a84",
+              display: "flex",
+              flexWrap: "wrap",
+              alignItems: "baseline",
+              gap: "0.35rem 0.5rem",
               margin: "0 0 0.45rem 0",
             }}
           >
-            {t.aiInteraction.clarifyingQuestion}
+            <span
+              style={{
+                fontSize: "0.72rem",
+                fontWeight: 700,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                color: "#8e8a84",
+              }}
+            >
+              {t.aiInteraction.clarifyingQuestion}
+            </span>
+            <span
+              style={{
+                fontSize: "0.65rem",
+                fontWeight: 500,
+                letterSpacing: "0.02em",
+                textTransform: "none",
+                color: "rgba(142, 138, 132, 0.88)",
+              }}
+            >
+              {t.aiInteraction.optional}
+            </span>
           </div>
           <p
             style={{
@@ -961,6 +1117,7 @@ function renderActiveResponse(panel: ClarificationPanel) {
   setConversationId(null);
   setError(null);
   setIsDone(false);
+  setMarkedClarity(null);
   setInitialSituation("");
   setIterations([]);
   setOpenPanelIds([]);
@@ -996,6 +1153,7 @@ function renderActiveResponse(panel: ClarificationPanel) {
           onCopy={handleCopyResult}
           onNew={handleStartNew}
           copyLabel={copyLabel}
+          aiReadyText={buildAIReadyContext()}
           completionMessage={
             result?.mode === "close" && result.message?.trim()
               ? result.message

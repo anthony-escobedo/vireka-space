@@ -70,7 +70,9 @@ create table if not exists public.conversations (
   title text,
   source text not null,
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+  marked_clarity text,
+  marked_clarity_at timestamptz
 );
 
 create table if not exists public.messages (

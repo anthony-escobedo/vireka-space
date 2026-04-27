@@ -133,6 +133,11 @@ export interface TranslationDictionary {
     ttsCouldNotPlay: string;
     clarifyingQuestion: string;
     optional: string;
+    clearEnoughForNow: string;
+    clarityMarked: string;
+    youMarkedThisAsClearEnough: string;
+    markedClarity: string;
+    theUserMarkedTheFollowing: string;
     clarificationPath: string;
     clarificationPathDescription: string;
     response: string;
@@ -158,6 +163,10 @@ export interface TranslationDictionary {
     useThisClarification: string;
     startNewSituation: string;
     recents: string;
+    /** Quiet label for history delete (e.g. “Delete”) */
+    deleteFromHistory: string;
+    deleteSituationConfirmTitle: string;
+    deleteSituationConfirmDetail: string;
   };
   
   // AI Interaction Page
@@ -194,6 +203,11 @@ export interface TranslationDictionary {
     ttsCouldNotPlay: string;
     clarifyingQuestion: string;
     optional: string;
+    clearEnoughForNow: string;
+    clarityMarked: string;
+    youMarkedThisAsClearEnough: string;
+    markedClarity: string;
+    theUserMarkedTheFollowing: string;
     clarificationPath: string;
     clarificationPathDescription: string;
     response: string;

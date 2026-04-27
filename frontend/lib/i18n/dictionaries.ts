@@ -703,7 +703,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       deleteFromHistory: 'Eliminar',
       deleteSituationConfirmTitle: '¿Eliminar esta situación?',
       deleteSituationConfirmDetail:
-        'Se eliminará la situación guardada y su claridad marcada del historial. Esta acción no se puede deshacer.',
+        'Esto eliminará la situación guardada y la claridad marcada del historial. Esta acción no se puede deshacer.',
     },
     aiInteraction: {
       pageTitle: 'Interacción con IA',
@@ -1247,7 +1247,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       deleteFromHistory: 'Excluir',
       deleteSituationConfirmTitle: 'Excluir esta situação?',
       deleteSituationConfirmDetail:
-        'Isso remove a situação salva e a clareza marcada do histórico. Não é possível desfazer.',
+        'Isso removerá a situação salva e a clareza marcada do histórico. Esta ação não pode ser desfeita.',
     },
     aiInteraction: {
       pageTitle: 'Interação com IA',

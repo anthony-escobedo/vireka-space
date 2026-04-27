@@ -1240,6 +1240,17 @@ function handleStartNew(): void {
   ) {
     const response = panel.iteration.response;
     const isLatestPanel = panel.id === latestPanelId;
+    const pathPanels = getPanels();
+    const lastPathPanel =
+      pathPanels.length > 0 ? pathPanels[pathPanels.length - 1] : null;
+    const isLastClarifyPanelInPath =
+      lastPathPanel != null && panel.id === lastPathPanel.id;
+    const hasMarkedClarityText =
+      markedClarity != null && markedClarity.trim() !== "";
+    const showClarityMarkedBlock =
+      hasMarkedClarityText &&
+      (isLatestPanel ||
+        (isReviewingHistorySession && isLastClarifyPanelInPath));
     return (
       <div style={{ padding: "0 0 0.1rem 0", minWidth: 0, maxWidth: "100%" }}>
         {showYourInput && (
@@ -1370,7 +1381,7 @@ function handleStartNew(): void {
             borderTop: "1px solid rgba(0,0,0,0.07)",
           }}
         >
-          {isLatestPanel && markedClarity !== null ? (
+          {showClarityMarkedBlock ? (
             <>
               <div
                 style={{
@@ -1404,7 +1415,7 @@ function handleStartNew(): void {
                   wordBreak: "break-word",
                 }}
               >
-                {`"${markedClarity}"`}
+                {`"${markedClarity.trim()}"`}
               </p>
             </>
           ) : (

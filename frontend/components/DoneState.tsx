@@ -456,19 +456,6 @@ export default function DoneState({
                 {t.doneState.aiReadyContext}
               </h3>
               <div style={{ width: "100%", marginBottom: "0.85rem" }}>
-                <label
-                  htmlFor="done-ai-instruction"
-                  style={{
-                    display: "block",
-                    margin: "0 0 0.35rem 0",
-                    fontSize: "0.875rem",
-                    fontWeight: 500,
-                    lineHeight: 1.4,
-                    color: "#5c5650",
-                  }}
-                >
-                  {t.doneState.optionalInstruction}
-                </label>
                 <p
                   style={{
                     margin: "0 0 0.5rem 0",

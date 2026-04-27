@@ -30,12 +30,16 @@ export interface TranslationDictionary {
     title: string[];
     subtitle: string;
     homeTagline: string;
+    /** Shown under home tagline on the marketing homepage. */
+    homeOrientationLine: string;
     tryCta: string;
     enterVirekaSpace: string;
     clarifyButton: string;
     aiButton: string;
     developedBy: string;
     basedOn: string;
+    /** Homepage header FAQ label (clarify menu may use a longer localized label). */
+    homeHeaderFaq: string;
   };
   
   // Footer

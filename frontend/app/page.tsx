@@ -22,7 +22,8 @@ const pageStyle: CSSProperties = {
 const navStyle: CSSProperties = {
   display: "flex",
   alignItems: "center",
-  justifyContent: "flex-start",
+  justifyContent: "space-between",
+  gap: "1rem",
   padding: "1rem 1.5rem",
   maxWidth: "980px",
   width: "100%",
@@ -48,7 +49,7 @@ const mainStyle: CSSProperties = {
   boxSizing: "border-box",
   paddingLeft: "1.25rem",
   paddingRight: "1.25rem",
-  paddingBottom: "1.5rem",
+  paddingBottom: "clamp(1.75rem, 4vh, 2.5rem)",
   paddingTop: "clamp(72px, 12vh, 132px)",
 };
 
@@ -106,12 +107,22 @@ const sublineStyle: CSSProperties = {
   marginRight: "auto",
 };
 
+const homeOrientationStyle: CSSProperties = {
+  fontSize: "0.875rem",
+  lineHeight: 1.55,
+  color: "rgba(0,0,0,0.5)",
+  margin: "14px auto 0",
+  maxWidth: "26rem",
+  marginLeft: "auto",
+  marginRight: "auto",
+};
+
 const buttonsWrapStyle: CSSProperties = {
   display: "flex",
   flexDirection: "column",
   alignItems: "center",
   gap: "0.85rem",
-  marginTop: "clamp(44px, 7vh, 88px)",
+  marginTop: "clamp(36px, 6vh, 76px)",
   width: "100%",
 };
 
@@ -172,6 +183,15 @@ export default function HomePage() {
   const { t } = useLanguage();
   const [hovered, setHovered] = useState<null | "try" | "signin">(null);
   const [signedIn, setSignedIn] = useState(false);
+  const [showHomeHeaderLinks, setShowHomeHeaderLinks] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 640px)");
+    const apply = () => setShowHomeHeaderLinks(mq.matches);
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, []);
 
   useEffect(() => {
     const supabase = getSupabaseClient();
@@ -233,6 +253,20 @@ export default function HomePage() {
         <div style={pageStyle}>
           <header style={navStyle}>
             <span style={brandStyle}>VIREKA Space</span>
+            {showHomeHeaderLinks ? (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "1.25rem",
+                  flexShrink: 0,
+                  fontSize: "0.82rem",
+                }}
+              >
+                <HeroFooterLink href="/about">{t.header.about}</HeroFooterLink>
+                <HeroFooterLink href="/faq">{t.hero.homeHeaderFaq}</HeroFooterLink>
+              </div>
+            ) : null}
           </header>
 
           <main style={mainStyle}>
@@ -243,6 +277,7 @@ export default function HomePage() {
                 {t.hero.title[1]}
               </h1>
               <p style={sublineStyle}>{t.hero.homeTagline}</p>
+              <p style={homeOrientationStyle}>{t.hero.homeOrientationLine}</p>
               <div style={buttonsWrapStyle}>
                 <button
                   type="button"

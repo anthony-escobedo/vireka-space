@@ -22,12 +22,15 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       ],
       subtitle: 'VIREKA Space helps distinguish what is happening from what may be assumed, so responses begin from clearer understanding.',
       homeTagline: 'What is clear carries forward',
-      tryCta: 'Try VIREKA Space',
+      homeOrientationLine:
+        'Clarify how a situation is being understood before deciding, writing, or using AI.',
+      tryCta: 'Start clarifying',
       enterVirekaSpace: 'Enter VIREKA Space',
       clarifyButton: 'Clarify a situation',
       aiButton: 'AI interaction',
       developedBy: 'Developed by Anthony Escobedo',
       basedOn: 'Based on <em>Beyond Thought: Awareness as Design Intelligence</em>',
+      homeHeaderFaq: 'FAQ',
     },
     footer: {
       privacy: 'Privacy',
@@ -303,7 +306,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
         'Example: Draft a response, prepare notes, plan, design, or organize next steps.',
       userRequest: 'User request',
       instructionAddedToContext: 'Added to AI-ready context',
-      copyAIReadyContext: 'Copy AI-ready context',
+      copyAIReadyContext: 'Copy AI-ready prompt',
       copied: 'Copied',
       startNewSituation: 'Start new situation',
       returnHome: 'Return home',
@@ -406,7 +409,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
           question: 'How is VIREKA Space different from using AI directly?',
           answer: [
             'AI systems respond to the structure they are given. If a situation is described with unclear assumptions, missing context, or unresolved uncertainty, the response may reflect that.',
-            'VIREKA Space works before the prompt or response. It clarifies the structure first, so any later interaction with AI can begin from a more stable starting point.',
+            'Prompt engineering focuses on how to ask. VIREKA Space works earlier by clarifying what the prompt is based on before the prompt or response is formed.',
           ],
         },
         prepareForAI: {
@@ -562,12 +565,15 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       ],
       subtitle: 'VIREKA Space ayuda a distinguir lo que sucede de lo que se asume, para que las respuestas partan de una comprensión más clara.',
       homeTagline: 'Lo que se aclara se puede llevar adelante',
-      tryCta: 'Probar VIREKA Space',
+      homeOrientationLine:
+        'Aclara cómo se está comprendiendo una situación antes de decidir, escribir o usar IA.',
+      tryCta: 'Empezar a aclarar',
       enterVirekaSpace: 'Entrar a VIREKA Space',
       clarifyButton: 'Aclarar una situación',
       aiButton: 'Interacción con IA',
       developedBy: 'Desarrollado por Anthony Escobedo',
       basedOn: 'Basado en <em>Beyond Thought: Awareness as Design Intelligence</em>',
+      homeHeaderFaq: 'FAQ',
     },
     footer: {
       privacy: 'Privacidad',
@@ -844,7 +850,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
         'Ejemplo: redactar una respuesta, preparar notas, planear, diseñar u organizar los próximos pasos.',
       userRequest: 'Solicitud del usuario',
       instructionAddedToContext: 'Agregado al contexto para IA',
-      copyAIReadyContext: 'Copiar contexto para IA',
+      copyAIReadyContext: 'Copiar prompt listo para IA',
       copied: 'Copiado',
       startNewSituation: 'Comenzar nueva situación',
       returnHome: 'Volver al inicio',
@@ -947,7 +953,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
           question: '¿En qué se diferencia VIREKA Space de usar IA directamente?',
           answer: [
             'Los sistemas de IA responden a la estructura que reciben. Si una situación se describe con supuestos poco claros, contexto faltante o incertidumbre no resuelta, la respuesta puede reflejar eso.',
-            'VIREKA Space trabaja antes del prompt o la respuesta. Primero aclara la estructura, para que cualquier interacción posterior con IA pueda comenzar desde un punto de partida más estable.',
+            'La ingeniería de prompts se enfoca en cómo preguntar. VIREKA Space trabaja antes, aclarando en qué se basa el prompt antes de que el prompt o la respuesta se formen.',
           ],
         },
         prepareForAI: {
@@ -1103,12 +1109,15 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       ],
       subtitle: 'VIREKA Space ajuda a distinguir o que acontece do que se assume, para que as respostas partam de uma compreensão mais clara.',
       homeTagline: 'O que se esclarece pode seguir adiante',
-      tryCta: 'Experimentar VIREKA Space',
+      homeOrientationLine:
+        'Esclareça como uma situação está sendo compreendida antes de decidir, escrever ou usar IA.',
+      tryCta: 'Começar a esclarecer',
       enterVirekaSpace: 'Entrar no VIREKA Space',
       clarifyButton: 'Clarificar uma situação',
       aiButton: 'Interação com IA',
       developedBy: 'Desenvolvido por Anthony Escobedo',
       basedOn: 'Baseado em <em>Beyond Thought: Awareness as Design Intelligence</em>',
+      homeHeaderFaq: 'FAQ',
     },
     footer: {
       privacy: 'Privacidade',
@@ -1385,7 +1394,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
         'Exemplo: redigir uma resposta, preparar notas, planejar, desenhar ou organizar os próximos passos.',
       userRequest: 'Solicitação do usuário',
       instructionAddedToContext: 'Adicionado ao contexto para IA',
-      copyAIReadyContext: 'Copiar contexto para IA',
+      copyAIReadyContext: 'Copiar prompt pronto para IA',
       copied: 'Copiado',
       startNewSituation: 'Começar nova situação',
       returnHome: 'Voltar ao início',
@@ -1488,7 +1497,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
           question: 'Como o VIREKA Space é diferente de usar IA diretamente?',
           answer: [
             'Sistemas de IA respondem à estrutura que recebem. Se uma situação é descrita com pressupostos pouco claros, contexto ausente ou incerteza não resolvida, a resposta pode refletir isso.',
-            'O VIREKA Space trabalha antes do prompt ou da resposta. Primeiro ele esclarece a estrutura, para que qualquer interação posterior com IA possa começar a partir de um ponto de partida mais estável.',
+            'A engenharia de prompts se concentra em como perguntar. O VIREKA Space trabalha antes, esclarecendo em que o prompt se baseia antes que o prompt ou a resposta sejam formados.',
           ],
         },
         prepareForAI: {

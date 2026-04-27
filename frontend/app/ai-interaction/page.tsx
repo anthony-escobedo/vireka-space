@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
+import { ClarityMarkedHeading } from "../../components/ClarityMarkedHeading";
 import CollapsibleLayer from "../../components/CollapsibleLayer";
 import OnboardingModal from "../../components/OnboardingModal";
 import DoneState from "../../components/DoneState";
@@ -766,18 +767,7 @@ function handleDismissOnboarding(): void {
         >
           {isLatestPanel && markedClarity !== null ? (
             <>
-              <div
-                style={{
-                  fontSize: "0.72rem",
-                  fontWeight: 700,
-                  letterSpacing: "0.1em",
-                  textTransform: "uppercase",
-                  color: "#8e8a84",
-                  margin: "0 0 0.4rem 0",
-                }}
-              >
-                {t.aiInteraction.clarityMarked}
-              </div>
+              <ClarityMarkedHeading>{t.aiInteraction.clarityMarked}</ClarityMarkedHeading>
               <p
                 style={{
                   margin: "0 0 0.4rem 0",

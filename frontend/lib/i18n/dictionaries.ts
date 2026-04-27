@@ -74,7 +74,9 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       defaultBody: {
         line1: 'VIREKA does not decide what you should do.',
         line2: 'It helps clarify how the situation is being understood.',
-        line3: 'When something becomes clear enough, you can mark that point.',
+        line3: 'When something becomes clear enough, clarity can be marked.',
+        line4:
+          'There is also an option to carry the clarified context forward into another AI system.',
       },
       begin: 'Got it',
       notNow: 'Remind me later',
@@ -612,7 +614,9 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       defaultBody: {
         line1: 'VIREKA no decide qué debes hacer.',
         line2: 'Ayuda a aclarar cómo se está comprendiendo la situación.',
-        line3: 'Cuando algo se vuelve suficientemente claro, puedes marcar ese punto.',
+        line3: 'Cuando algo se vuelve suficientemente claro, la claridad puede marcarse.',
+        line4:
+          'También existe la opción de llevar el contexto aclarado hacia adelante en otro sistema de IA.',
       },
       begin: 'Entendido',
       notNow: 'Recordármelo después',
@@ -1151,7 +1155,9 @@ const dictionaries: Record<Language, TranslationDictionary> = {
       defaultBody: {
         line1: 'A VIREKA não decide o que você deve fazer.',
         line2: 'Ela ajuda a esclarecer como a situação está sendo compreendida.',
-        line3: 'Quando algo se torna claro o suficiente, você pode marcar esse ponto.',
+        line3: 'Quando algo se torna claro o suficiente, a clareza pode ser marcada.',
+        line4:
+          'Também há a opção de levar o contexto esclarecido adiante para outro sistema de IA.',
       },
       begin: 'Entendi',
       notNow: 'Me lembra depois',

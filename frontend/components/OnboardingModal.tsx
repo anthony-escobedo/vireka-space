@@ -74,13 +74,16 @@ export default function OnboardingModal({
         >
           {body ?? (
             <>
-              <p style={{ margin: "0 0 0.75rem 0" }}>
+              <p style={{ margin: "0 0 0.65rem 0" }}>
                 {t.onboarding.defaultBody.line1}
               </p>
-              <p style={{ margin: "0 0 0.75rem 0" }}>
+              <p style={{ margin: "0 0 0.65rem 0" }}>
                 {t.onboarding.defaultBody.line2}
               </p>
-              <p style={{ margin: 0 }}>{t.onboarding.defaultBody.line3}</p>
+              <p style={{ margin: "0 0 0.65rem 0" }}>
+                {t.onboarding.defaultBody.line3}
+              </p>
+              <p style={{ margin: 0 }}>{t.onboarding.defaultBody.line4}</p>
             </>
           )}
         </div>

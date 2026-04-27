@@ -89,11 +89,9 @@ export interface TranslationDictionary {
   onboarding: {
     defaultTitle: string;
     defaultBody: {
-      description: string;
-      usefulWhenTitle: string;
-      usefulWhenList: string[];
-      beginWith: string;
-      systemNote: string;
+      line1: string;
+      line2: string;
+      line3: string;
     };
     begin: string;
     notNow: string;

@@ -74,31 +74,13 @@ export default function OnboardingModal({
         >
           {body ?? (
             <>
-              <p style={{ margin: "0 0 0.9rem 0" }}>
-                {t.onboarding.defaultBody.description}
+              <p style={{ margin: "0 0 0.75rem 0" }}>
+                {t.onboarding.defaultBody.line1}
               </p>
-
-              <div style={{ margin: "0 0 0.9rem 0" }}>
-                <p style={{ margin: "0 0 0.45rem 0" }}>{t.onboarding.defaultBody.usefulWhenTitle}</p>
-                <ul
-                  style={{
-                    margin: 0,
-                    paddingLeft: "1.1rem",
-                    listStyleType: "disc",
-                  }}
-                >
-                  {t.onboarding.defaultBody.usefulWhenList.map((item, index) => (
-                    <li key={index} style={{ marginBottom: "0.35rem" }}>
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <p style={{ margin: "0 0 0.35rem 0" }}>
-                {t.onboarding.defaultBody.beginWith}
+              <p style={{ margin: "0 0 0.75rem 0" }}>
+                {t.onboarding.defaultBody.line2}
               </p>
-              <p style={{ margin: 0 }}>{t.onboarding.defaultBody.systemNote}</p>
+              <p style={{ margin: 0 }}>{t.onboarding.defaultBody.line3}</p>
             </>
           )}
         </div>

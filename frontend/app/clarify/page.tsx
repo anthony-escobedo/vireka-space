@@ -18,6 +18,7 @@ import type { Language } from "../../lib/i18n/config";
 import { useLanguage } from "../../lib/i18n/useLanguage";
 import { parseStoredAssistantContent } from "../../lib/parseStoredClarifyAssistant";
 import { saveMarkedClarityToConversation } from "../../lib/saveMarkedClarityToConversation";
+import OnboardingModal from "../../components/OnboardingModal";
 
 /** Matches API body when daily free limit is exceeded (see app/api/clarify/route.ts). */
 const FREE_USAGE_LIMIT_ERROR_EN =
@@ -137,6 +138,8 @@ export default function ClarifyPage() {
   const [mobileHistoryOpen, setMobileHistoryOpen] = useState(false);
   const [isReviewingHistorySession, setIsReviewingHistorySession] = useState(false);
   const [markedClarity, setMarkedClarity] = useState<string | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [checkedOnboarding, setCheckedOnboarding] = useState(false);
   const [leftMenuOpen, setLeftMenuOpen] = useState(false);
   const [languageMenuOpen, setLanguageMenuOpen] = useState(false);
   const [workspaceMenuAuth, setWorkspaceMenuAuth] = useState<{
@@ -361,6 +364,14 @@ export default function ClarifyPage() {
       document.body.style.overflow = prev;
     };
   }, [mobileHistoryOpen, showDesktopHistoryPanel]);
+
+  useEffect(() => {
+    const accepted =
+      typeof window !== "undefined" &&
+      window.localStorage.getItem("vireka_onboarding_accepted") === "true";
+    setShowOnboarding(!accepted);
+    setCheckedOnboarding(true);
+  }, []);
 
   useEffect(() => {
     if (typeof document === "undefined" || !leftMenuOpen) return;
@@ -2187,9 +2198,28 @@ function handleStartNew(): void {
   setIsReviewingHistorySession(false);
   scheduleHistoryRefresh();
 }
+
+  function handleBeginOnboarding(): void {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("vireka_onboarding_accepted", "true");
+    }
+    setShowOnboarding(false);
+    topInputRef.current?.focus();
+  }
+
+  function handleDismissOnboarding(): void {
+    setShowOnboarding(false);
+  }
   
   return (
   <div>
+    {checkedOnboarding && (
+      <OnboardingModal
+        isOpen={showOnboarding}
+        onBegin={handleBeginOnboarding}
+        onDismiss={handleDismissOnboarding}
+      />
+    )}
         <main
       style={{
         minHeight: "100svh",

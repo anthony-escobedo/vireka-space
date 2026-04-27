@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
@@ -95,7 +94,6 @@ export default function AIInteractionPage() {
   const resultRef = useRef<HTMLDivElement | null>(null);
   const copyResetTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const router = useRouter();
   useEffect(() => {
   getOrCreateAnonymousId();
 }, []);
@@ -513,7 +511,7 @@ function handleStartNew(): void {
 }
 
 function handleDismissOnboarding(): void {
-  router.push("/");
+  setShowOnboarding(false);
 }
   
   function handleDone(): void {

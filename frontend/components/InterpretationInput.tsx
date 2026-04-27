@@ -6,6 +6,7 @@ import {
   useEffect,
   useImperativeHandle,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
   type ChangeEvent,
@@ -50,6 +51,10 @@ export type InterpretationInputProps = {
   /** Shown while the text submit request is running. */
   clarifyLoadingLabel?: string;
   surfaceVariant?: "card" | "composer";
+  /**
+   * When set, overrides default min/max height for auto-growing textarea (composer or card).
+   */
+  fitHeightBounds?: { min: number; max: number };
   /** Shown while audio is being transcribed (voice UI). */
   transcribingLabel: string;
   /**
@@ -616,6 +621,7 @@ const InterpretationInput = forwardRef<
     clarifyLoading = false,
     clarifyLoadingLabel,
     surfaceVariant = "card",
+    fitHeightBounds,
     transcribingLabel,
     transcribeLanguage,
   },
@@ -641,14 +647,18 @@ const InterpretationInput = forwardRef<
   const audioElRef = useRef<HTMLAudioElement | null>(null);
 
   const isComposer = surfaceVariant === "composer";
-  const syncHeight = useCallback(() => {
-    fitTextareaHeight(
-      innerRef.current,
-      isComposer
+  const fitBounds = useMemo(
+    () =>
+      fitHeightBounds ??
+      (isComposer
         ? { min: COMPOSER_TEXT_MIN_PX, max: COMPOSER_TEXT_MAX_PX }
-        : undefined
-    );
-  }, [isComposer]);
+        : undefined),
+    [fitHeightBounds, isComposer]
+  );
+
+  const syncHeight = useCallback(() => {
+    fitTextareaHeight(innerRef.current, fitBounds);
+  }, [fitBounds]);
 
   useLayoutEffect(() => {
     syncHeight();
@@ -747,14 +757,7 @@ const InterpretationInput = forwardRef<
 
   const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     onChange(e);
-    requestAnimationFrame(() =>
-      fitTextareaHeight(
-        e.currentTarget,
-        isComposer
-          ? { min: COMPOSER_TEXT_MIN_PX, max: COMPOSER_TEXT_MAX_PX }
-          : undefined
-      )
-    );
+    requestAnimationFrame(() => fitTextareaHeight(e.currentTarget, fitBounds));
   };
 
   const startRecording = useCallback(async () => {
@@ -1368,8 +1371,16 @@ const InterpretationInput = forwardRef<
           maxWidth: "100%",
           minWidth: 0,
           boxSizing: "border-box",
-          minHeight: isComposer ? COMPOSER_TEXT_MIN_PX : TEXTAREA_MIN_PX,
-          maxHeight: isComposer ? COMPOSER_TEXT_MAX_PX : TEXTAREA_MAX_PX,
+          minHeight: fitHeightBounds
+            ? fitHeightBounds.min
+            : isComposer
+              ? COMPOSER_TEXT_MIN_PX
+              : TEXTAREA_MIN_PX,
+          maxHeight: fitHeightBounds
+            ? fitHeightBounds.max
+            : isComposer
+              ? COMPOSER_TEXT_MAX_PX
+              : TEXTAREA_MAX_PX,
           height: isComposer ? "auto" : TEXTAREA_MIN_PX,
           backgroundColor: isComposer ? "transparent" : "#fafaf8",
           color: "#111",

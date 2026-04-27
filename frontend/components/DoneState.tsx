@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
+import InterpretationInput from "./InterpretationInput";
 import { useLanguage } from "../lib/i18n/useLanguage";
 
 type DoneStateProps = {
@@ -21,7 +22,7 @@ export default function DoneState({
   completionMessage,
 }: DoneStateProps) {
   const router = useRouter();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [isDesktopInteractive, setIsDesktopInteractive] = React.useState(false);
   const [isCompactViewport, setIsCompactViewport] = React.useState(false);
   const [hoveredButton, setHoveredButton] = React.useState<
@@ -115,6 +116,18 @@ export default function DoneState({
     if (!trimmed) return aiReadyText;
     return `${aiReadyText}\n\n${t.doneState.userRequest}:\n\n${trimmed}`;
   }, [aiInstruction, aiReadyText, t.doneState.userRequest]);
+
+  const instructionFitBounds = React.useMemo(
+    () => ({ min: isCompactViewport ? 64 : 60, max: 200 }),
+    [isCompactViewport]
+  );
+
+  const handleOptionalInstructionSend = React.useCallback(async () => {
+    if (typeof document !== "undefined") {
+      document.getElementById("done-ai-instruction")?.blur();
+    }
+    return true;
+  }, []);
 
   const getActionStyle = (button: "copy" | "prepare" | "new" | "aiCopy"): React.CSSProperties => {
     const isActive = hoveredButton === button;
@@ -425,7 +438,7 @@ export default function DoneState({
             >
               <h3
                 style={{
-                  margin: "0 0 0.45rem 0",
+                  margin: "0 0 0.65rem 0",
                   fontSize: "1rem",
                   lineHeight: 1.35,
                   fontWeight: 600,
@@ -434,16 +447,6 @@ export default function DoneState({
               >
                 {t.doneState.aiReadyContext}
               </h3>
-              <p
-                style={{
-                  margin: "0 0 0.9rem 0",
-                  fontSize: "0.9rem",
-                  lineHeight: 1.55,
-                  color: "#6f6962",
-                }}
-              >
-                {t.doneState.aiReadyDescription}
-              </p>
               <div style={{ width: "100%", marginBottom: "0.85rem" }}>
                 <label
                   htmlFor="done-ai-instruction"
@@ -468,41 +471,22 @@ export default function DoneState({
                 >
                   {t.doneState.optionalInstructionHelper}
                 </p>
-                <textarea
+                <InterpretationInput
                   id="done-ai-instruction"
+                  placeholder={t.doneState.optionalInstructionPlaceholder}
+                  helperText=""
                   value={aiInstruction}
                   onChange={(e) => setAiInstruction(e.target.value)}
-                  placeholder={t.doneState.optionalInstructionPlaceholder}
-                  rows={3}
-                  style={{
-                    display: "block",
-                    width: "100%",
-                    maxWidth: "100%",
-                    minWidth: 0,
-                    boxSizing: "border-box",
-                    minHeight: "72px",
-                    maxHeight: "140px",
-                    margin: 0,
-                    backgroundColor: "#fafaf8",
-                    color: "#111",
-                    border: "1px solid #e7e5e4",
-                    borderRadius: "12px",
-                    padding: "0.75rem 1rem",
-                    fontSize: "0.925rem",
-                    lineHeight: 1.65,
-                    resize: "none",
-                    outline: "none",
-                    fontFamily: "inherit",
-                    transition: "border-color 0.15s ease",
-                    overflowY: "auto",
-                    overflowWrap: "anywhere",
-                    wordBreak: "break-word",
-                  }}
-                  onFocus={(e) => {
-                    e.currentTarget.style.borderColor = "#c9c5c0";
-                  }}
-                  onBlur={(e) => {
-                    e.currentTarget.style.borderColor = "#e7e5e4";
+                  voiceEnabled
+                  transcribeLanguage={language}
+                  transcribingLabel={t.clarify.transcribing}
+                  surfaceVariant="composer"
+                  fitHeightBounds={instructionFitBounds}
+                  clarifyLoading={false}
+                  onSend={handleOptionalInstructionSend}
+                  cardStyle={{
+                    borderColor: "#dfdcd6",
+                    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.04)",
                   }}
                 />
               </div>

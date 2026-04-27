@@ -28,6 +28,7 @@ export default function DoneState({
     "copy" | "prepare" | "new" | "aiCopy" | null
   >(null);
   const [showAIReadyContext, setShowAIReadyContext] = React.useState(false);
+  const [aiInstruction, setAiInstruction] = React.useState("");
   const [aiCopyLabel, setAICopyLabel] = React.useState(t.doneState.copyAIReadyContext);
   const [cursorNorm, setCursorNorm] = React.useState({ x: 0, y: 0 });
   const [cursorPx, setCursorPx] = React.useState({ x: 50, y: 50 });
@@ -108,6 +109,13 @@ export default function DoneState({
     };
   }, [isDesktopInteractive]);
 
+  const aiReadyExportText = React.useMemo(() => {
+    if (!aiReadyText) return "";
+    const trimmed = aiInstruction.trim();
+    if (!trimmed) return aiReadyText;
+    return `${aiReadyText}\n\n${t.doneState.userRequest}:\n\n${trimmed}`;
+  }, [aiInstruction, aiReadyText, t.doneState.userRequest]);
+
   const getActionStyle = (button: "copy" | "prepare" | "new" | "aiCopy"): React.CSSProperties => {
     const isActive = hoveredButton === button;
     const hasActivePeer = hoveredButton !== null && !isActive;
@@ -141,7 +149,7 @@ export default function DoneState({
   };
 
   const copyAIReadyContext = () => {
-    if (!aiReadyText) return;
+    if (!aiReadyExportText) return;
 
     const resetLabel = () => {
       if (aiCopyResetTimeoutRef.current) {
@@ -154,7 +162,7 @@ export default function DoneState({
 
     const fallbackCopy = () => {
       const textarea = document.createElement("textarea");
-      textarea.value = aiReadyText;
+      textarea.value = aiReadyExportText;
       textarea.setAttribute("readonly", "");
       textarea.style.position = "fixed";
       textarea.style.opacity = "0";
@@ -177,7 +185,7 @@ export default function DoneState({
 
     if (navigator.clipboard && window.isSecureContext) {
       navigator.clipboard
-        .writeText(aiReadyText)
+        .writeText(aiReadyExportText)
         .then(() => {
           setAICopyLabel(t.doneState.copied);
           resetLabel();
@@ -436,6 +444,68 @@ export default function DoneState({
               >
                 {t.doneState.aiReadyDescription}
               </p>
+              <div style={{ width: "100%", marginBottom: "0.85rem" }}>
+                <label
+                  htmlFor="done-ai-instruction"
+                  style={{
+                    display: "block",
+                    margin: "0 0 0.35rem 0",
+                    fontSize: "0.875rem",
+                    fontWeight: 500,
+                    lineHeight: 1.4,
+                    color: "#5c5650",
+                  }}
+                >
+                  {t.doneState.optionalInstruction}
+                </label>
+                <p
+                  style={{
+                    margin: "0 0 0.5rem 0",
+                    fontSize: "0.8rem",
+                    lineHeight: 1.55,
+                    color: "#888",
+                  }}
+                >
+                  {t.doneState.optionalInstructionHelper}
+                </p>
+                <textarea
+                  id="done-ai-instruction"
+                  value={aiInstruction}
+                  onChange={(e) => setAiInstruction(e.target.value)}
+                  placeholder={t.doneState.optionalInstructionPlaceholder}
+                  rows={3}
+                  style={{
+                    display: "block",
+                    width: "100%",
+                    maxWidth: "100%",
+                    minWidth: 0,
+                    boxSizing: "border-box",
+                    minHeight: "72px",
+                    maxHeight: "140px",
+                    margin: 0,
+                    backgroundColor: "#fafaf8",
+                    color: "#111",
+                    border: "1px solid #e7e5e4",
+                    borderRadius: "12px",
+                    padding: "0.75rem 1rem",
+                    fontSize: "0.925rem",
+                    lineHeight: 1.65,
+                    resize: "none",
+                    outline: "none",
+                    fontFamily: "inherit",
+                    transition: "border-color 0.15s ease",
+                    overflowY: "auto",
+                    overflowWrap: "anywhere",
+                    wordBreak: "break-word",
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = "#c9c5c0";
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = "#e7e5e4";
+                  }}
+                />
+              </div>
               <div
                 style={{
                   position: "relative",
@@ -481,7 +551,7 @@ export default function DoneState({
                     userSelect: "text",
                   }}
                 >
-                  {aiReadyText}
+                  {aiReadyExportText}
                 </pre>
               </div>
               <button

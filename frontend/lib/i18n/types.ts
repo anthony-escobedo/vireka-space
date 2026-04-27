@@ -305,6 +305,10 @@ export interface TranslationDictionary {
     prepareForAI: string;
     aiReadyContext: string;
     aiReadyDescription: string;
+    optionalInstruction: string;
+    optionalInstructionHelper: string;
+    optionalInstructionPlaceholder: string;
+    userRequest: string;
     copyAIReadyContext: string;
     copied: string;
     startNewSituation: string;

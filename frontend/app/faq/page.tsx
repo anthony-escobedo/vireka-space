@@ -6,16 +6,14 @@ import type { TranslationDictionary } from '../../lib/i18n/types';
 
 const FAQ_KEYS = [
   'whatIsVirekaSpace',
-  'whatDoesItDo',
   'providesAnswers',
-  'isAITool',
-  'worksWithAI',
+  'currentClarity',
+  'markClarity',
+  'whatShouldIUseVirekaFor',
+  'benefitOfUsingIt',
   'whyNotUseAIDirectly',
   'prepareForAI',
-  'whatShouldIEnter',
-  'whenShouldIUseIt',
-  'benefitOfUsingIt',
-  'inputPrivacy',
+  'areInputsSaved',
 ] as const satisfies readonly (keyof TranslationDictionary['faq']['questions'])[];
 
 export default function FAQPage() {
@@ -115,20 +113,24 @@ export default function FAQPage() {
                 {item.question}
               </h2>
 
-              <p
-                style={{
-                  margin: 0,
-                  fontSize: 16,
-                  lineHeight: 1.72,
-                  color: "#2b2b2b",
-                  fontWeight: 400,
-                  maxWidth: 640,
-                  wordBreak: "break-word",
-                  overflowWrap: "anywhere",
-                }}
-              >
-                {item.answer.join(" ")}
-              </p>
+              {item.answer.map((paragraph, pIndex) => (
+                <p
+                  key={pIndex}
+                  style={{
+                    margin: 0,
+                    marginTop: pIndex > 0 ? "1rem" : 0,
+                    fontSize: 16,
+                    lineHeight: 1.72,
+                    color: "#2b2b2b",
+                    fontWeight: 400,
+                    maxWidth: 640,
+                    wordBreak: "break-word",
+                    overflowWrap: "anywhere",
+                  }}
+                >
+                  {paragraph}
+                </p>
+              ))}
             </section>
           );
         })}

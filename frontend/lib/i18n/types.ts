@@ -355,23 +355,23 @@ export interface TranslationDictionary {
         question: string;
         answer: string[];
       };
-      whatDoesItDo: {
-        question: string;
-        answer: string[];
-      };
       providesAnswers: {
         question: string;
         answer: string[];
       };
-      inputPrivacy: {
+      currentClarity: {
         question: string;
         answer: string[];
       };
-      isAITool: {
+      markClarity: {
         question: string;
         answer: string[];
       };
-      worksWithAI?: {
+      whatShouldIUseVirekaFor: {
+        question: string;
+        answer: string[];
+      };
+      benefitOfUsingIt: {
         question: string;
         answer: string[];
       };
@@ -383,15 +383,7 @@ export interface TranslationDictionary {
         question: string;
         answer: string[];
       };
-      whatShouldIEnter: {
-        question: string;
-        answer: string[];
-      };
-      whenShouldIUseIt: {
-        question: string;
-        answer: string[];
-      };
-      benefitOfUsingIt: {
+      areInputsSaved: {
         question: string;
         answer: string[];
       };

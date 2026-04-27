@@ -88,7 +88,7 @@ export default function OnboardingModal({
         <div
           style={{
             display: "flex",
-            gap: "0.75rem",
+            gap: "0.65rem",
             alignItems: "center",
             justifyContent: "flex-start",
             flexWrap: "wrap",
@@ -125,15 +125,17 @@ export default function OnboardingModal({
             type="button"
             onClick={onDismiss}
             style={{
-              padding: "0.72rem 1rem",
+              padding: "0.65rem 0.85rem",
+              maxWidth: "100%",
               backgroundColor: "#fff",
               color: "#111",
               border: "1px solid #d6d3d1",
               borderRadius: "999px",
-              fontSize: "0.9rem",
+              fontSize: "0.88rem",
               fontWeight: 600,
+              lineHeight: 1.35,
               cursor: "pointer",
-              whiteSpace: "nowrap",
+              textAlign: "center",
             }}
           >
             {t.onboarding.notNow}

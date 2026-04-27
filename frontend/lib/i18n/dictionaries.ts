@@ -76,8 +76,8 @@ const dictionaries: Record<Language, TranslationDictionary> = {
         line2: 'It helps clarify how the situation is being understood.',
         line3: 'When something becomes clear enough, you can mark that point.',
       },
-      begin: 'Begin',
-      notNow: 'Not now',
+      begin: 'Got it',
+      notNow: 'Remind me later',
     },
     clarify: {
       pageTitle: 'Clarity',
@@ -611,8 +611,8 @@ const dictionaries: Record<Language, TranslationDictionary> = {
         line2: 'Ayuda a aclarar cómo se está comprendiendo la situación.',
         line3: 'Cuando algo se vuelve suficientemente claro, puedes marcar ese punto.',
       },
-      begin: 'Comenzar',
-      notNow: 'Ahora no',
+      begin: 'Entendido',
+      notNow: 'Recordármelo después',
     },
     clarify: {
       pageTitle: 'Claridad',
@@ -1147,8 +1147,8 @@ const dictionaries: Record<Language, TranslationDictionary> = {
         line2: 'Ela ajuda a esclarecer como a situação está sendo compreendida.',
         line3: 'Quando algo se torna claro o suficiente, você pode marcar esse ponto.',
       },
-      begin: 'Começar',
-      notNow: 'Agora não',
+      begin: 'Entendi',
+      notNow: 'Me lembra depois',
     },
     clarify: {
       pageTitle: 'Clareza',
